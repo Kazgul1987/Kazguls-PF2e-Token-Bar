@@ -9,6 +9,8 @@ class PF2ETokenBar {
     bar.id = "pf2e-token-bar";
     tokens.forEach(t => {
       const img = document.createElement("img");
+      img.src = t.document.texture.src;
+      img.title = t.document.name;
       img.src = t.texture.src;
       img.title = t.name;
       img.classList.add("pf2e-token-bar-token");
@@ -28,6 +30,7 @@ class PF2ETokenBar {
 
   static requestRoll() {
     const tokens = this._activePlayerTokens();
+    const tokenOptions = tokens.map(t => `<div><input type="checkbox" name="token" value="${t.id}"/> ${t.document.name}</div>`).join("");
     const tokenOptions = tokens.map(t => `<div><input type="checkbox" name="token" value="${t.id}"/> ${t.name}</div>`).join("");
     const skills = CONFIG.PF2E?.skills || {};
     const skillOptions = Object.entries(skills).map(([k,v]) => `<option value="${k}">${v.label ?? v}</option>`).join("");
