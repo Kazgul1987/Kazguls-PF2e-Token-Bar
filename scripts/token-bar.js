@@ -1,7 +1,8 @@
 class PF2ETokenBar {
   static render() {
     if (!canvas?.ready) return;
-    const tokens = this._activePlayerTokens();
+
+    const tokens = this._partyTokens(); 
     if (!tokens.length) return;
     let bar = document.getElementById("pf2e-token-bar");
     if (bar) bar.remove();
@@ -24,6 +25,14 @@ class PF2ETokenBar {
     document.body.appendChild(bar);
   }
 
+  static _partyTokens() {
+    const partyMembers = game.actors.party?.members || [];
+    return canvas.tokens.placeables.filter(t => t.actor && partyMembers.includes(t.actor));
+  }
+
+  static requestRoll() {
+    const tokens = this._partyTokens();
+    const tokenOptions = tokens.map(t => `<div><input type="checkbox" name="token" value="${t.id}"/> ${t.document.name}</div>`).join("");
   static _activePlayerTokens() {
     return canvas.tokens.placeables.filter(t => t.actor?.hasPlayerOwner);
   }
