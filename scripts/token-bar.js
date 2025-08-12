@@ -1,7 +1,8 @@
 class PF2ETokenBar {
   static render() {
     if (!canvas?.ready) return;
-    const tokens = this._partyTokens();
+
+    const tokens = this._partyTokens(); 
     if (!tokens.length) return;
     let bar = document.getElementById("pf2e-token-bar");
     if (bar) bar.remove();
@@ -11,6 +12,8 @@ class PF2ETokenBar {
       const img = document.createElement("img");
       img.src = t.document.texture.src;
       img.title = t.document.name;
+      img.src = t.texture.src;
+      img.title = t.name;
       img.classList.add("pf2e-token-bar-token");
       img.addEventListener("click", () => t.actor?.sheet.render(true));
       bar.appendChild(img);
@@ -30,6 +33,14 @@ class PF2ETokenBar {
   static requestRoll() {
     const tokens = this._partyTokens();
     const tokenOptions = tokens.map(t => `<div><input type="checkbox" name="token" value="${t.id}"/> ${t.document.name}</div>`).join("");
+  static _activePlayerTokens() {
+    return canvas.tokens.placeables.filter(t => t.actor?.hasPlayerOwner);
+  }
+
+  static requestRoll() {
+    const tokens = this._activePlayerTokens();
+    const tokenOptions = tokens.map(t => `<div><input type="checkbox" name="token" value="${t.id}"/> ${t.document.name}</div>`).join("");
+    const tokenOptions = tokens.map(t => `<div><input type="checkbox" name="token" value="${t.id}"/> ${t.name}</div>`).join("");
     const skills = CONFIG.PF2E?.skills || {};
     const skillOptions = Object.entries(skills).map(([k,v]) => `<option value="${k}">${v.label ?? v}</option>`).join("");
     const saveOptions = ["fortitude","reflex","will"].map(s => `<option value="${s}">${s}</option>`).join("");
