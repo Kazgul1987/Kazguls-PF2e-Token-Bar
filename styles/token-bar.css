@@ -1,0 +1,15 @@
+#pf2e-token-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: rgba(0,0,0,0.5);
+}
+
+#pf2e-token-bar img.pf2e-token-bar-token {
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+}

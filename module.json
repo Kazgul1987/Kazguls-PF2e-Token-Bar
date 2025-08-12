@@ -1,0 +1,21 @@
+{
+  "id": "pf2e-token-bar",
+  "title": "PF2e Token Bar",
+  "description": "Displays active player tokens and allows roll requests",
+  "version": "0.1.0",
+  "foundryVersion": "11",
+  "systems": ["pf2e"],
+  "authors": [
+    {
+      "name": "Kazgul"
+    }
+  ],
+  "esmodules": [
+    "scripts/token-bar.js"
+  ],
+  "styles": [
+    "styles/token-bar.css"
+  ],
+  "manifest": "https://example.com/module.json",
+  "download": "https://example.com/module.zip"
+}
