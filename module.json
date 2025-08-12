@@ -20,6 +20,6 @@
   "styles": [
     "styles/token-bar.css"
   ],
-  "manifest": "https://github.com/Kazgul/Kazguls-PF2e-Token-Bar/main/module.json",
+  "manifest": "https://raw.githubusercontent.com/Kazgul1987/Kazguls-PF2e-Token-Bar/main/module.json",
   "download": "https://github.com/Kazgul/Kazguls-PF2e-Token-Bar/releases/latest/download/module.zip"
 }
