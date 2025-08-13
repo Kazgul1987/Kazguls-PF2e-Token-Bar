@@ -117,7 +117,8 @@ class PF2ETokenBar {
               if (!token?.actor) return;
               const skillLabel = CONFIG.PF2E?.skills[skill]?.label ?? skill;
               const link = `<a class="pf2e-token-bar-roll" data-token-id="${id}" data-skill="${skill}" data-dc="${dc ?? ""}">${skillLabel}</a>`;
-              const content = `${token.name ? token.name + ": " : ""}${link}`;
+              const img = `<img class="pf2e-token-bar-chat-token" src="${token.document.texture.src}"/>`;
+              const content = `${token.name ? token.name + ": " : ""}${img}${link}`;
               ChatMessage.create({ content });
             });
           }
