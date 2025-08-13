@@ -22,8 +22,8 @@
 }
 
 .chat-message img.pf2e-token-bar-chat-token {
-  width: 1em;
-  height: 1em;
+  width: 3em;
+  height: 3em;
   margin-right: 4px;
   vertical-align: middle;
 }
