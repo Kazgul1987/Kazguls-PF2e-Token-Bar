@@ -30,16 +30,12 @@ class PF2ETokenBar {
     return canvas.tokens.placeables.filter(t => t.actor && partyMembers.includes(t.actor));
   }
 
-  static requestRoll() {
-    const tokens = this._partyTokens();
-    const tokenOptions = tokens.map(t => `<div><input type="checkbox" name="token" value="${t.id}"/> ${t.document.name}</div>`).join("");
   static _activePlayerTokens() {
     return canvas.tokens.placeables.filter(t => t.actor?.hasPlayerOwner);
   }
 
   static requestRoll() {
     const tokens = this._activePlayerTokens();
-    const tokenOptions = tokens.map(t => `<div><input type="checkbox" name="token" value="${t.id}"/> ${t.document.name}</div>`).join("");
     const tokenOptions = tokens.map(t => `<div><input type="checkbox" name="token" value="${t.id}"/> ${t.name}</div>`).join("");
     const skills = CONFIG.PF2E?.skills || {};
     const skillOptions = Object.entries(skills).map(([k,v]) => `<option value="${k}">${v.label ?? v}</option>`).join("");
