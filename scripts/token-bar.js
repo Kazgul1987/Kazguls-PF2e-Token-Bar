@@ -2,7 +2,9 @@ class PF2ETokenBar {
   static render() {
     if (!canvas?.ready) return;
 
-    const tokens = this._partyTokens(); 
+    console.log("PF2ETokenBar | fetching party tokens");
+    const tokens = this._partyTokens();
+    console.log("PF2ETokenBar | found tokens", tokens.map(t => t.id));
     if (!tokens.length) return;
     let bar = document.getElementById("pf2e-token-bar");
     if (bar) bar.remove();
@@ -24,13 +26,19 @@ class PF2ETokenBar {
   }
 
   static _partyTokens() {
+    const partyMembers = game.actors.party?.members || [];
+    const tokens = canvas.tokens.placeables.filter(t => t.actor && partyMembers.includes(t.actor));
+    console.log(`PF2ETokenBar | _partyTokens filtered ${tokens.length} tokens`, tokens.map(t => t.actor.id));
+    return tokens;
     const partyIds = (game.actors.party?.members ?? []).map(a => a.id);
     if (!partyIds.length) return this._activePlayerTokens();
     return canvas.tokens.placeables.filter(t => t.actor && partyIds.includes(t.actor.id));
   }
 
   static _activePlayerTokens() {
-    return canvas.tokens.placeables.filter(t => t.actor?.hasPlayerOwner);
+    const tokens = canvas.tokens.placeables.filter(t => t.actor?.hasPlayerOwner);
+    console.log(`PF2ETokenBar | _activePlayerTokens filtered ${tokens.length} tokens`, tokens.map(t => t.actor?.id));
+    return tokens;
   }
 
   static requestRoll() {
@@ -57,6 +65,7 @@ class PF2ETokenBar {
             const dc = Number(form.querySelector('input[name="dc"]').value) || undefined;
             const skill = form.querySelector('select[name="skill"]').value;
             const selected = Array.from(form.querySelectorAll('input[name="token"]:checked')).map(i => i.value);
+            console.log("PF2ETokenBar | requestRoll selection", { tokens: selected, skill, dc });
             selected.forEach(id => {
               const token = canvas.tokens.get(id);
               const actor = token?.actor;
