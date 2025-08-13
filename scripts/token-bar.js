@@ -12,8 +12,6 @@ class PF2ETokenBar {
       const img = document.createElement("img");
       img.src = t.document.texture.src;
       img.title = t.document.name;
-      img.src = t.texture.src;
-      img.title = t.name;
       img.classList.add("pf2e-token-bar-token");
       img.addEventListener("click", () => t.actor?.sheet.render(true));
       bar.appendChild(img);
