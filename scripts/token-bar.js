@@ -114,13 +114,10 @@ class PF2ETokenBar {
             console.log("PF2ETokenBar | requestRoll selection", { tokens: selected, skill, dc });
             selected.forEach(id => {
               const token = canvas.tokens.get(id);
-              const actor = token?.actor;
-              if (!actor) return;
-              if (["fortitude","reflex","will"].includes(skill)) {
-                actor.saves[skill]?.check.roll({dc: dc ? {value: dc} : undefined});
-              } else {
-                actor.skills[skill]?.check.roll({dc: dc ? {value: dc} : undefined});
-              }
+              if (!token?.actor) return;
+              const link = `<a class="pf2e-token-bar-roll" data-token-id="${id}" data-skill="${skill}" data-dc="${dc ?? ""}">DC ${dc ?? ""} ${skill}</a>`;
+              const content = `${token.name ? token.name + ": " : ""}${link}`;
+              ChatMessage.create({ content });
             });
           }
         },
@@ -129,10 +126,31 @@ class PF2ETokenBar {
       default: "roll"
     }).render(true);
   }
+
+  static _handleRollClick(event) {
+    event.preventDefault();
+    const { tokenId, skill, dc } = event.currentTarget.dataset;
+    const token = canvas.tokens.get(tokenId);
+    const actor = token?.actor;
+    if (!actor) return;
+    const dcValue = dc ? Number(dc) : undefined;
+    const rollOpts = dcValue ? { dc: { value: dcValue } } : {};
+    if (["fortitude", "reflex", "will"].includes(skill)) {
+      actor.saves[skill]?.check.roll(rollOpts);
+    } else {
+      actor.skills[skill]?.check.roll(rollOpts);
+    }
+  }
 }
 
 Hooks.on("canvasReady", () => PF2ETokenBar.render());
 Hooks.on("updateToken", () => PF2ETokenBar.render());
 Hooks.on("createToken", () => PF2ETokenBar.render());
 Hooks.on("deleteToken", () => PF2ETokenBar.render());
+Hooks.on("renderChatMessage", (_message, html) => {
+  const links = html[0]?.querySelectorAll("a.pf2e-token-bar-roll") ?? [];
+  for (const link of links) {
+    link.addEventListener("click", PF2ETokenBar._handleRollClick);
+  }
+});
 
