@@ -14,8 +14,6 @@ class PF2ETokenBar {
       const img = document.createElement("img");
       img.src = t.document.texture.src;
       img.title = t.document.name;
-      img.src = t.texture.src;
-      img.title = t.name;
       img.classList.add("pf2e-token-bar-token");
       img.addEventListener("click", () => t.actor?.sheet.render(true));
       bar.appendChild(img);
@@ -32,6 +30,9 @@ class PF2ETokenBar {
     const tokens = canvas.tokens.placeables.filter(t => t.actor && partyMembers.includes(t.actor));
     console.log(`PF2ETokenBar | _partyTokens filtered ${tokens.length} tokens`, tokens.map(t => t.actor.id));
     return tokens;
+    const partyIds = (game.actors.party?.members ?? []).map(a => a.id);
+    if (!partyIds.length) return this._activePlayerTokens();
+    return canvas.tokens.placeables.filter(t => t.actor && partyIds.includes(t.actor.id));
   }
 
   static _activePlayerTokens() {
