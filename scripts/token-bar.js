@@ -115,7 +115,8 @@ class PF2ETokenBar {
             selected.forEach(id => {
               const token = canvas.tokens.get(id);
               if (!token?.actor) return;
-              const link = `<a class="pf2e-token-bar-roll" data-token-id="${id}" data-skill="${skill}" data-dc="${dc ?? ""}">DC ${dc ?? ""} ${skill}</a>`;
+              const skillLabel = CONFIG.PF2E?.skills[skill]?.label ?? skill;
+              const link = `<a class="pf2e-token-bar-roll" data-token-id="${id}" data-skill="${skill}" data-dc="${dc ?? ""}">${skillLabel}</a>`;
               const content = `${token.name ? token.name + ": " : ""}${link}`;
               ChatMessage.create({ content });
             });
