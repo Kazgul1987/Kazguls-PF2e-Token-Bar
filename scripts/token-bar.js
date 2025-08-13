@@ -2,7 +2,9 @@ class PF2ETokenBar {
   static render() {
     if (!canvas?.ready) return;
 
-    const tokens = this._partyTokens(); 
+    console.log("PF2ETokenBar | fetching party tokens");
+    const tokens = this._partyTokens();
+    console.log("PF2ETokenBar | found tokens", tokens.map(t => t.id));
     if (!tokens.length) return;
     let bar = document.getElementById("pf2e-token-bar");
     if (bar) bar.remove();
@@ -27,19 +29,19 @@ class PF2ETokenBar {
 
   static _partyTokens() {
     const partyMembers = game.actors.party?.members || [];
-    return canvas.tokens.placeables.filter(t => t.actor && partyMembers.includes(t.actor));
+    const tokens = canvas.tokens.placeables.filter(t => t.actor && partyMembers.includes(t.actor));
+    console.log(`PF2ETokenBar | _partyTokens filtered ${tokens.length} tokens`, tokens.map(t => t.actor.id));
+    return tokens;
   }
 
-  static requestRoll() {
-    const tokens = this._partyTokens();
-    const tokenOptions = tokens.map(t => `<div><input type="checkbox" name="token" value="${t.id}"/> ${t.document.name}</div>`).join("");
   static _activePlayerTokens() {
-    return canvas.tokens.placeables.filter(t => t.actor?.hasPlayerOwner);
+    const tokens = canvas.tokens.placeables.filter(t => t.actor?.hasPlayerOwner);
+    console.log(`PF2ETokenBar | _activePlayerTokens filtered ${tokens.length} tokens`, tokens.map(t => t.actor?.id));
+    return tokens;
   }
 
   static requestRoll() {
     const tokens = this._activePlayerTokens();
-    const tokenOptions = tokens.map(t => `<div><input type="checkbox" name="token" value="${t.id}"/> ${t.document.name}</div>`).join("");
     const tokenOptions = tokens.map(t => `<div><input type="checkbox" name="token" value="${t.id}"/> ${t.name}</div>`).join("");
     const skills = CONFIG.PF2E?.skills || {};
     const skillOptions = Object.entries(skills).map(([k,v]) => `<option value="${k}">${v.label ?? v}</option>`).join("");
@@ -62,6 +64,7 @@ class PF2ETokenBar {
             const dc = Number(form.querySelector('input[name="dc"]').value) || undefined;
             const skill = form.querySelector('select[name="skill"]').value;
             const selected = Array.from(form.querySelectorAll('input[name="token"]:checked')).map(i => i.value);
+            console.log("PF2ETokenBar | requestRoll selection", { tokens: selected, skill, dc });
             selected.forEach(id => {
               const token = canvas.tokens.get(id);
               const actor = token?.actor;
