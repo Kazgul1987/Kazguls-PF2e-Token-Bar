@@ -24,8 +24,9 @@ class PF2ETokenBar {
   }
 
   static _partyTokens() {
-    const partyMembers = game.actors.party?.members || [];
-    return canvas.tokens.placeables.filter(t => t.actor && partyMembers.includes(t.actor));
+    const partyIds = (game.actors.party?.members ?? []).map(a => a.id);
+    if (!partyIds.length) return this._activePlayerTokens();
+    return canvas.tokens.placeables.filter(t => t.actor && partyIds.includes(t.actor.id));
   }
 
   static _activePlayerTokens() {
