@@ -1,3 +1,12 @@
+Hooks.once("init", () => {
+  game.settings.register("pf2e-token-bar", "position", {
+    scope: "client",
+    config: false,
+    type: Object,
+    default: {}
+  });
+});
+
 class PF2ETokenBar {
   static render() {
     if (!canvas?.ready) return;
@@ -10,6 +19,14 @@ class PF2ETokenBar {
     if (bar) bar.remove();
     bar = document.createElement("div");
     bar.id = "pf2e-token-bar";
+    const pos = game.settings.get("pf2e-token-bar", "position");
+    if (pos?.top !== undefined && pos?.left !== undefined) {
+      bar.style.top = `${pos.top}px`;
+      bar.style.left = `${pos.left}px`;
+    } else {
+      bar.style.top = "0px";
+      bar.style.right = "0px";
+    }
     tokens.forEach(t => {
       const img = document.createElement("img");
       img.src = t.document.texture.src;
@@ -22,6 +39,35 @@ class PF2ETokenBar {
     btn.innerText = game.i18n?.localize("PF2E.Roll") || "Request Roll";
     btn.addEventListener("click", () => this.requestRoll());
     bar.appendChild(btn);
+
+    let dragging = false;
+    let offsetX = 0;
+    let offsetY = 0;
+
+    const onMouseMove = event => {
+      if (!dragging) return;
+      bar.style.left = `${event.clientX - offsetX}px`;
+      bar.style.top = `${event.clientY - offsetY}px`;
+    };
+
+    const onMouseUp = () => {
+      if (!dragging) return;
+      dragging = false;
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+      game.settings.set("pf2e-token-bar", "position", { top: bar.offsetTop, left: bar.offsetLeft });
+    };
+
+    bar.addEventListener("mousedown", event => {
+      if (event.target !== bar) return;
+      dragging = true;
+      offsetX = event.clientX - bar.offsetLeft;
+      offsetY = event.clientY - bar.offsetTop;
+      bar.style.right = "";
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
+    });
+
     document.body.appendChild(bar);
   }
 

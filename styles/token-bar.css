@@ -1,11 +1,11 @@
 #pf2e-token-bar {
   position: absolute;
   top: 0;
-  right: 0;
   display: flex;
   gap: 4px;
   padding: 4px;
   background: rgba(0,0,0,0.5);
+  cursor: move;
 }
 
 #pf2e-token-bar img.pf2e-token-bar-token {
