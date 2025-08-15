@@ -70,6 +70,11 @@ class PF2ETokenBar {
         icon.title = effect.name;
         const desc = effect.system?.description?.value || effect.system?.description || "";
         icon.addEventListener("mouseenter", event => ui.tooltip?.activate(event.currentTarget, { html: desc }));
+        icon.addEventListener("contextmenu", async event => {
+          event.preventDefault();
+          event.stopPropagation();
+          await t.actor.deleteEmbeddedDocuments("Item", [effect.id]);
+        });
         effectBar.appendChild(icon);
       }
       wrapper.appendChild(effectBar);
