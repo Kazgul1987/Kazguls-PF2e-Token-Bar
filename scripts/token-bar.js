@@ -67,6 +67,12 @@ class PF2ETokenBar {
     btn.addEventListener("click", () => this.requestRoll());
     bar.appendChild(btn);
 
+    const restBtn = document.createElement("button");
+    restBtn.innerHTML = '<i class="fas fa-bed"></i>';
+    restBtn.title = game.i18n?.localize("PF2E.RestAll") || "Rest All";
+    restBtn.addEventListener("click", () => this.restAll());
+    bar.appendChild(restBtn);
+
     let dragging = false;
     let offsetX = 0;
     let offsetY = 0;
@@ -114,6 +120,11 @@ class PF2ETokenBar {
     return tokens;
   }
 
+  static async restAll() {
+    const actors = this._partyTokens().map(t => t.actor).filter(a => a);
+    if (!actors.length) return;
+    await game.pf2e.actions.restForTheNight({ actors });
+    this.render();
   static async healAll() {
     const confirmed = await Dialog.confirm({
       title: "Heal All",
