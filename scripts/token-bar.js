@@ -27,6 +27,10 @@ class PF2ETokenBar {
       bar.style.top = "0px";
       bar.style.right = "0px";
     }
+    const handle = document.createElement("div");
+    handle.classList.add("pf2e-bar-handle");
+    handle.innerHTML = '<i class="fas fa-anchor"></i>';
+    bar.appendChild(handle);
     const content = document.createElement("div");
     content.classList.add("pf2e-token-bar-content");
     bar.appendChild(content);
@@ -74,6 +78,12 @@ class PF2ETokenBar {
           ui.tooltip?.activate(event.currentTarget, { html });
         });
         icon.addEventListener("mouseleave", () => ui.tooltip?.deactivate());
+        icon.addEventListener("mouseenter", event => ui.tooltip?.activate(event.currentTarget, { html: desc }));
+        icon.addEventListener("contextmenu", async event => {
+          event.preventDefault();
+          event.stopPropagation();
+          await t.actor.deleteEmbeddedDocuments("Item", [effect.id]);
+        });
         effectBar.appendChild(icon);
       }
       wrapper.appendChild(effectBar);
@@ -121,8 +131,8 @@ class PF2ETokenBar {
       game.settings.set("pf2e-token-bar", "position", { top: bar.offsetTop, left: bar.offsetLeft });
     };
 
-    bar.addEventListener("mousedown", event => {
-      if (event.target !== bar && event.target !== content) return;
+    handle.addEventListener("mousedown", event => {
+      event.preventDefault();
       dragging = true;
       offsetX = event.clientX - bar.offsetLeft;
       offsetY = event.clientY - bar.offsetTop;
