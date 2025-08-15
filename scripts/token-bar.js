@@ -107,11 +107,11 @@ class PF2ETokenBar {
   static _partyTokens() {
     const partyMembers = game.actors.party?.members || [];
     const tokens = canvas.tokens.placeables.filter(t => t.actor && partyMembers.includes(t.actor));
-    console.log(`PF2ETokenBar | _partyTokens filtered ${tokens.length} tokens`, tokens.map(t => t.actor.id));
+    console.log(
+      `PF2ETokenBar | _partyTokens filtered ${tokens.length} tokens`,
+      tokens.map(t => t.id)
+    );
     return tokens;
-    const partyIds = (game.actors.party?.members ?? []).map(a => a.id);
-    if (!partyIds.length) return this._activePlayerTokens();
-    return canvas.tokens.placeables.filter(t => t.actor && partyIds.includes(t.actor.id));
   }
 
   static _activePlayerTokens() {
