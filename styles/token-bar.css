@@ -2,15 +2,15 @@
   position: absolute;
   top: 0;
   display: flex;
-  gap: 4px;
-  padding: 4px;
+  gap: 8px;
+  padding: 8px;
   background: rgba(0,0,0,0.5);
   cursor: move;
 }
 
 #pf2e-token-bar img.pf2e-token-bar-token {
-  width: 32px;
-  height: 32px;
+  width: 64px;
+  height: 64px;
   cursor: pointer;
 }
 
