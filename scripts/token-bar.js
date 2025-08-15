@@ -35,6 +35,10 @@ class PF2ETokenBar {
       img.addEventListener("click", () => t.actor?.sheet.render(true));
       bar.appendChild(img);
     });
+    const healBtn = document.createElement("button");
+    healBtn.innerText = "Heal All";
+    healBtn.addEventListener("click", () => this.healAll());
+    bar.appendChild(healBtn);
     const btn = document.createElement("button");
     btn.innerText = game.i18n?.localize("PF2E.Roll") || "Request Roll";
     btn.addEventListener("click", () => this.requestRoll());
@@ -85,6 +89,24 @@ class PF2ETokenBar {
     const tokens = canvas.tokens.placeables.filter(t => t.actor?.hasPlayerOwner);
     console.log(`PF2ETokenBar | _activePlayerTokens filtered ${tokens.length} tokens`, tokens.map(t => t.actor?.id));
     return tokens;
+  }
+
+  static async healAll() {
+    const confirmed = await Dialog.confirm({
+      title: "Heal All",
+      content: "<p>Alle auf volle HP setzen?</p>"
+    });
+    if (!confirmed) return;
+    for (const token of this._partyTokens()) {
+      const actor = token.actor;
+      if (!actor) continue;
+      try {
+        await actor.update({ 'system.attributes.hp.value': actor.system.attributes.hp.max });
+        console.log("PF2ETokenBar | healAll", `healed ${actor.id}`);
+      } catch (err) {
+        console.error("PF2ETokenBar | healAll", `failed to heal ${actor?.id}` , err);
+      }
+    }
   }
 
   static requestRoll() {
