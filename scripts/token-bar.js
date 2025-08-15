@@ -28,12 +28,35 @@ class PF2ETokenBar {
       bar.style.right = "0px";
     }
     tokens.forEach(t => {
+      const wrapper = document.createElement("div");
+      wrapper.classList.add("pf2e-token-wrapper");
+
       const img = document.createElement("img");
       img.src = t.document.texture.src;
       img.title = t.document.name;
       img.classList.add("pf2e-token-bar-token");
       img.addEventListener("click", () => t.actor?.sheet.render(true));
-      bar.appendChild(img);
+      wrapper.appendChild(img);
+
+      const hp = t.actor?.system?.attributes?.hp ?? {};
+      const hpValue = Number(hp.value) || 0;
+      const hpMax = Number(hp.max) || 0;
+
+      const hpText = document.createElement("div");
+      hpText.classList.add("pf2e-hp-text");
+      hpText.innerText = `${hpValue}`;
+      wrapper.appendChild(hpText);
+
+      const barOuter = document.createElement("div");
+      barOuter.classList.add("pf2e-hp-bar");
+      const barInner = document.createElement("div");
+      barInner.classList.add("pf2e-hp-bar-inner");
+      const pct = hpMax > 0 ? Math.min(Math.max((hpValue / hpMax) * 100, 0), 100) : 0;
+      barInner.style.width = `${pct}%`;
+      barOuter.appendChild(barInner);
+      wrapper.appendChild(barOuter);
+
+      bar.appendChild(wrapper);
     });
     const btn = document.createElement("button");
     btn.innerText = game.i18n?.localize("PF2E.Roll") || "Request Roll";
@@ -156,6 +179,9 @@ Hooks.on("canvasReady", () => PF2ETokenBar.render());
 Hooks.on("updateToken", () => PF2ETokenBar.render());
 Hooks.on("createToken", () => PF2ETokenBar.render());
 Hooks.on("deleteToken", () => PF2ETokenBar.render());
+Hooks.on("updateActor", (_actor, data) => {
+  if (data.system?.attributes?.hp) PF2ETokenBar.render();
+});
 Hooks.on("renderChatMessage", (_message, html) => {
   const links = html[0]?.querySelectorAll("a.pf2e-token-bar-roll") ?? [];
   for (const link of links) {
