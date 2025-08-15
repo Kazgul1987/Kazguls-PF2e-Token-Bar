@@ -40,6 +40,12 @@ class PF2ETokenBar {
     btn.addEventListener("click", () => this.requestRoll());
     bar.appendChild(btn);
 
+    const restBtn = document.createElement("button");
+    restBtn.innerHTML = '<i class="fas fa-bed"></i>';
+    restBtn.title = game.i18n?.localize("PF2E.RestAll") || "Rest All";
+    restBtn.addEventListener("click", () => this.restAll());
+    bar.appendChild(restBtn);
+
     let dragging = false;
     let offsetX = 0;
     let offsetY = 0;
@@ -85,6 +91,13 @@ class PF2ETokenBar {
     const tokens = canvas.tokens.placeables.filter(t => t.actor?.hasPlayerOwner);
     console.log(`PF2ETokenBar | _activePlayerTokens filtered ${tokens.length} tokens`, tokens.map(t => t.actor?.id));
     return tokens;
+  }
+
+  static async restAll() {
+    const actors = this._partyTokens().map(t => t.actor).filter(a => a);
+    if (!actors.length) return;
+    await game.pf2e.actions.restForTheNight({ actors });
+    this.render();
   }
 
   static requestRoll() {
