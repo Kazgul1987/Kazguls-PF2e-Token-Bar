@@ -27,6 +27,10 @@ class PF2ETokenBar {
       bar.style.top = "0px";
       bar.style.right = "0px";
     }
+    const content = document.createElement("div");
+    content.classList.add("pf2e-token-bar-content");
+    bar.appendChild(content);
+
     tokens.forEach(t => {
       const wrapper = document.createElement("div");
       wrapper.classList.add("pf2e-token-wrapper");
@@ -56,22 +60,30 @@ class PF2ETokenBar {
       barOuter.appendChild(barInner);
       wrapper.appendChild(barOuter);
 
-      bar.appendChild(wrapper);
+      content.appendChild(wrapper);
     });
     const healBtn = document.createElement("button");
     healBtn.innerText = "Heal All";
     healBtn.addEventListener("click", () => this.healAll());
-    bar.appendChild(healBtn);
+    content.appendChild(healBtn);
     const btn = document.createElement("button");
     btn.innerText = game.i18n?.localize("PF2E.Roll") || "Request Roll";
     btn.addEventListener("click", () => this.requestRoll());
-    bar.appendChild(btn);
+    content.appendChild(btn);
 
     const restBtn = document.createElement("button");
     restBtn.innerHTML = '<i class="fas fa-bed"></i>';
     restBtn.title = game.i18n?.localize("PF2E.RestAll") || "Rest All";
     restBtn.addEventListener("click", () => this.restAll());
-    bar.appendChild(restBtn);
+    content.appendChild(restBtn);
+
+    const toggleBtn = document.createElement("button");
+    toggleBtn.innerText = "Hide";
+    toggleBtn.addEventListener("click", () => {
+      bar.classList.toggle("collapsed");
+      toggleBtn.innerText = bar.classList.contains("collapsed") ? "Show" : "Hide";
+    });
+    bar.appendChild(toggleBtn);
 
     let dragging = false;
     let offsetX = 0;
@@ -92,7 +104,7 @@ class PF2ETokenBar {
     };
 
     bar.addEventListener("mousedown", event => {
-      if (event.target !== bar) return;
+      if (event.target !== bar && event.target !== content) return;
       dragging = true;
       offsetX = event.clientX - bar.offsetLeft;
       offsetY = event.clientY - bar.offsetTop;
