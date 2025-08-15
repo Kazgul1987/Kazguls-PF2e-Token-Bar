@@ -125,6 +125,8 @@ class PF2ETokenBar {
     if (!actors.length) return;
     await game.pf2e.actions.restForTheNight({ actors });
     this.render();
+  }
+
   static async healAll() {
     const confirmed = await Dialog.confirm({
       title: "Heal All",
