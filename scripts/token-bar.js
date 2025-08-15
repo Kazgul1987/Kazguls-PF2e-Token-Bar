@@ -60,6 +60,20 @@ class PF2ETokenBar {
       barOuter.appendChild(barInner);
       wrapper.appendChild(barOuter);
 
+      const effectBar = document.createElement("div");
+      effectBar.classList.add("pf2e-effect-bar");
+      const effects = t.actor?.itemTypes?.effect || [];
+      for (const effect of effects.filter(e => !e.disabled && !e.isExpired)) {
+        const icon = document.createElement("img");
+        icon.classList.add("pf2e-effect-icon");
+        icon.src = effect.img;
+        icon.title = effect.name;
+        const desc = effect.system?.description?.value || effect.system?.description || "";
+        icon.addEventListener("mouseenter", event => ui.tooltip?.activate(event.currentTarget, { html: desc }));
+        effectBar.appendChild(icon);
+      }
+      wrapper.appendChild(effectBar);
+
       content.appendChild(wrapper);
     });
     const healBtn = document.createElement("button");

@@ -49,6 +49,20 @@
   background: red;
 }
 
+.pf2e-effect-bar {
+  display: flex;
+  gap: 2px;
+}
+
+.pf2e-effect-icon {
+  width: 16px;
+  height: 16px;
+}
+
+#pf2e-token-bar.collapsed .pf2e-effect-bar {
+  display: none;
+}
+
 .chat-message a.pf2e-token-bar-roll {
   padding: 2px 4px;
   border: 1px solid var(--color-border-light-primary);
