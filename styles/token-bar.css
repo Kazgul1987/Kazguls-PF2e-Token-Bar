@@ -8,6 +8,19 @@
   cursor: move;
 }
 
+#pf2e-token-bar .pf2e-token-bar-content {
+  display: flex;
+  gap: 8px;
+}
+
+#pf2e-token-bar.collapsed .pf2e-token-bar-content {
+  display: none;
+}
+
+#pf2e-token-bar.collapsed {
+  gap: 0;
+}
+
 #pf2e-token-bar img.pf2e-token-bar-token {
   width: 64px;
   height: 64px;
