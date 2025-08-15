@@ -73,6 +73,11 @@ class PF2ETokenBar {
         icon.src = effect.img;
         icon.title = effect.name;
         const desc = effect.system?.description?.value || effect.system?.description || "";
+        icon.addEventListener("mouseenter", async event => {
+          const html = await TextEditor.enrichHTML(desc, { async: true });
+          ui.tooltip?.activate(event.currentTarget, { html });
+        });
+        icon.addEventListener("mouseleave", () => ui.tooltip?.deactivate());
         icon.addEventListener("mouseenter", event => ui.tooltip?.activate(event.currentTarget, { html: desc }));
         icon.addEventListener("contextmenu", async event => {
           event.preventDefault();
