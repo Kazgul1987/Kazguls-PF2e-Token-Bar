@@ -334,13 +334,19 @@ Hooks.on("updateActor", (_actor, data) => {
   if (data.system?.attributes?.hp) PF2ETokenBar.render();
 });
 Hooks.on("createItem", item => {
-  if (item.isOfType?.("effect") || item.type === "effect") PF2ETokenBar.render();
+  const isEffect = item.isOfType?.("effect") || item.type === "effect";
+  const isCondition = item.isOfType?.("condition") || item.type === "condition";
+  if (isEffect || isCondition) PF2ETokenBar.render();
 });
 Hooks.on("deleteItem", item => {
-  if (item.isOfType?.("effect") || item.type === "effect") PF2ETokenBar.render();
+  const isEffect = item.isOfType?.("effect") || item.type === "effect";
+  const isCondition = item.isOfType?.("condition") || item.type === "condition";
+  if (isEffect || isCondition) PF2ETokenBar.render();
 });
 Hooks.on("updateItem", item => {
-  if (item.isOfType?.("effect") || item.type === "effect") PF2ETokenBar.render();
+  const isEffect = item.isOfType?.("effect") || item.type === "effect";
+  const isCondition = item.isOfType?.("condition") || item.type === "condition";
+  if (isEffect || isCondition) PF2ETokenBar.render();
 });
 Hooks.on("renderChatMessage", (_message, html) => {
   const links = html[0]?.querySelectorAll("a.pf2e-token-bar-roll") ?? [];
