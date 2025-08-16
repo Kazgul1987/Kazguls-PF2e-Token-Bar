@@ -17,6 +17,8 @@ Hooks.once("init", () => {
 });
 
 class PF2ETokenBar {
+  static hoveredToken = null;
+
   static render() {
     if (!canvas?.ready) return;
     if (!game.user.isGM) return;
@@ -28,7 +30,9 @@ class PF2ETokenBar {
     console.log("PF2ETokenBar | fetching party actors");
     const actors = this._partyTokens();
     console.log("PF2ETokenBar | found actors", actors.map(a => a.id));
-    if (!actors.length) return;
+    const tokens = actors.map(a => a.getActiveTokens(true, true)[0]).filter(t => t);
+    console.log("PF2ETokenBar | found tokens", tokens.map(t => t.id));
+    if (!tokens.length) return;
     let bar = document.getElementById("pf2e-token-bar");
     if (bar) bar.remove();
     bar = document.createElement("div");
@@ -49,12 +53,22 @@ class PF2ETokenBar {
     content.classList.add("pf2e-token-bar-content");
     bar.appendChild(content);
 
-    actors.forEach(actor => {
+    tokens.forEach(token => {
+      const actor = token.actor;
       const wrapper = document.createElement("div");
       wrapper.classList.add("pf2e-token-wrapper");
+      wrapper.addEventListener("mouseenter", () => PF2ETokenBar.hoveredToken = token);
+      wrapper.addEventListener("mouseleave", () => {
+        if (PF2ETokenBar.hoveredToken === token) PF2ETokenBar.hoveredToken = null;
+      });
+
+      const indicator = document.createElement("i");
+      indicator.classList.add("fas", "fa-crosshairs", "target-indicator");
+      indicator.style.display = game.user.targets.has(token) ? "block" : "none";
+      wrapper.appendChild(indicator);
 
       const img = document.createElement("img");
-      img.src = actor.prototypeToken?.texture?.src || "";
+      img.src = token.document.texture.src || "";
       img.title = actor.name;
       img.classList.add("pf2e-token-bar-token");
       img.addEventListener("click", () => actor.sheet.render(true));
@@ -261,6 +275,13 @@ class PF2ETokenBar {
   }
 }
 
+document.addEventListener("keydown", event => {
+  if (event.code === "KeyT" && PF2ETokenBar.hoveredToken) {
+    const token = PF2ETokenBar.hoveredToken;
+    token.setTarget(!token.isTargeted, { user: game.user });
+  }
+});
+
 Hooks.on("canvasReady", () => PF2ETokenBar.render());
 Hooks.on("updateToken", () => PF2ETokenBar.render());
 Hooks.on("createToken", () => PF2ETokenBar.render());
@@ -280,4 +301,5 @@ Hooks.on("renderChatMessage", (_message, html) => {
     link.addEventListener("click", PF2ETokenBar._handleRollClick);
   }
 });
+Hooks.on("targetToken", () => PF2ETokenBar.render());
 
