@@ -107,7 +107,7 @@ class PF2ETokenBar {
 
       const effectBar = document.createElement("div");
       effectBar.classList.add("pf2e-effect-bar");
-      const effects = actor.itemTypes?.effect || [];
+      const effects = actor.itemTypes?.effect ?? actor.effects?.contents ?? [];
       for (const effect of effects.filter(e => !e.disabled && !e.isExpired)) {
         const icon = document.createElement("img");
         icon.classList.add("pf2e-effect-icon");
