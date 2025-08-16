@@ -85,13 +85,13 @@ class PF2ETokenBar {
         const icon = document.createElement("img");
         icon.classList.add("pf2e-effect-icon");
         icon.src = effect.img;
-        icon.title = effect.name;
-        const desc = effect.system?.description?.value || effect.system?.description || "";
+        icon.dataset.uuid = effect.uuid;
         icon.addEventListener("mouseenter", async event => {
-          const html = await TextEditor.enrichHTML(desc, { async: true });
+          const html = await TextEditor.enrichHTML(`@UUID[${effect.uuid}]{${effect.name}}`, { async: true, documents: true });
           ui.tooltip?.activate(event.currentTarget, { html });
         });
         icon.addEventListener("mouseleave", () => ui.tooltip?.deactivate());
+        icon.addEventListener("click", () => fromUuid(icon.dataset.uuid)?.sheet.render(true));
         icon.addEventListener("contextmenu", async event => {
           event.preventDefault();
           event.stopPropagation();
