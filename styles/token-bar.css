@@ -50,12 +50,12 @@
 
 .pf2e-effect-bar {
   display: flex;
-  gap: 2px;
+  gap: 3px;
 }
 
 .pf2e-effect-icon {
-  width: 16px;
-  height: 16px;
+  width: 24px;
+  height: 24px;
 }
 
 #pf2e-token-bar .pf2e-bar-handle {
