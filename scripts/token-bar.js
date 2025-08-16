@@ -107,7 +107,10 @@ class PF2ETokenBar {
 
       const effectBar = document.createElement("div");
       effectBar.classList.add("pf2e-effect-bar");
-      const effects = actor.itemTypes?.effect ?? actor.effects?.contents ?? [];
+      const effects = [
+        ...(actor.itemTypes?.effect ?? []),
+        ...(actor.conditions?.active ?? [])
+      ];
       for (const effect of effects.filter(e => !e.disabled && !e.isExpired)) {
         const icon = document.createElement("img");
         icon.classList.add("pf2e-effect-icon");
@@ -301,6 +304,9 @@ Hooks.on("createToken", () => PF2ETokenBar.render());
 Hooks.on("deleteToken", () => PF2ETokenBar.render());
 Hooks.on("updateActor", (_actor, data) => {
   if (data.system?.attributes?.hp) PF2ETokenBar.render();
+});
+Hooks.on("createItem", item => {
+  if (item.isOfType?.("effect") || item.type === "effect") PF2ETokenBar.render();
 });
 Hooks.on("deleteItem", item => {
   if (item.isOfType?.("effect") || item.type === "effect") PF2ETokenBar.render();
