@@ -96,6 +96,7 @@ class PF2ETokenBar {
           event.preventDefault();
           event.stopPropagation();
           await t.actor.deleteEmbeddedDocuments("Item", [effect.id]);
+          PF2ETokenBar.render();
         });
         effectBar.appendChild(icon);
       }
@@ -269,6 +270,12 @@ Hooks.on("createToken", () => PF2ETokenBar.render());
 Hooks.on("deleteToken", () => PF2ETokenBar.render());
 Hooks.on("updateActor", (_actor, data) => {
   if (data.system?.attributes?.hp) PF2ETokenBar.render();
+});
+Hooks.on("deleteItem", item => {
+  if (item.isOfType?.("effect") || item.type === "effect") PF2ETokenBar.render();
+});
+Hooks.on("updateItem", item => {
+  if (item.isOfType?.("effect") || item.type === "effect") PF2ETokenBar.render();
 });
 Hooks.on("renderChatMessage", (_message, html) => {
   const links = html[0]?.querySelectorAll("a.pf2e-token-bar-roll") ?? [];
