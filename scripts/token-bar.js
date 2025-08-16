@@ -71,8 +71,10 @@ class PF2ETokenBar {
       wrapper.appendChild(indicator);
 
       const img = document.createElement("img");
-      // Token has its texture directly; no `.document` needed
-      img.src = token.texture?.src || "";
+      // Attempt to get the token's texture, falling back to the document's texture
+      const imgSrc = token.texture?.src ?? token.document?.texture?.src ?? "";
+      img.src = imgSrc;
+      if (!imgSrc) console.warn("PF2ETokenBar | token has no texture src", token);
       img.title = actor.name;
       img.classList.add("pf2e-token-bar-token");
       img.addEventListener("click", () => actor.sheet.render(true));
