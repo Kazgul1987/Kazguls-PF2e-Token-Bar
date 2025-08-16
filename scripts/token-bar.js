@@ -130,10 +130,12 @@ class PF2ETokenBar {
         const icon = document.createElement("img");
         icon.classList.add("pf2e-effect-icon");
         icon.src = effect.img;
-        icon.dataset.uuid = effect.uuid;
+        const uuid = effect.uuid ?? effect.sourceId; // Fallback to sourceId when uuid is missing
+        icon.dataset.uuid = uuid;
         icon.title = effect.name;
         icon.addEventListener("mouseenter", async event => {
           const doc = await fromUuid(icon.dataset.uuid);
+          if (!doc) return;
           const description = doc.system?.description?.value ?? "";
           const html = await TextEditor.enrichHTML(description, { async: true, documents: true, rollData: doc.actor?.getRollData?.() });
           if (TooltipManager?.shared) {
