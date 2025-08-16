@@ -81,9 +81,16 @@ class PF2ETokenBar {
       img.addEventListener("contextmenu", event => {
         event.preventDefault();
         event.stopPropagation();
-        if (token?.hud?.render) token.hud.render(true); // zeigt das übliche Token-HUD
-        else if (canvas.tokens?.hud?.bind) canvas.tokens.hud.bind(token);
-        else canvas.hud?.token?.bind(token);
+        if (token?.hud?.render) {
+          token.hud.render(true); // zeigt das übliche Token-HUD
+          token.hud.element.css({ left: event.clientX, top: event.clientY });
+        } else if (canvas.tokens?.hud?.bind) {
+          canvas.tokens.hud.bind(token);
+          canvas.tokens.hud.element.css({ left: event.clientX, top: event.clientY });
+        } else {
+          canvas.hud?.token?.bind(token);
+          canvas.hud?.token?.element?.css({ left: event.clientX, top: event.clientY });
+        }
       });
       wrapper.appendChild(img);
 
