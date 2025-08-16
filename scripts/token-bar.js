@@ -130,6 +130,7 @@ class PF2ETokenBar {
         const icon = document.createElement("img");
         icon.classList.add("pf2e-effect-icon");
         icon.src = effect.img;
+        const uuid = effect.uuid ?? effect.sourceId; // Fallback to sourceId when uuid is missing
         const uuid = effect.uuid ?? effect.sourceId;
         icon.dataset.uuid = uuid;
         icon.title = effect.name;
