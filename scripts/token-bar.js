@@ -5,11 +5,25 @@ Hooks.once("init", () => {
     type: Object,
     default: {}
   });
+  game.settings.register("pf2e-token-bar", "enabled", {
+    name: "PF2E Token Bar",
+    hint: "Show the PF2E Token Bar",
+    scope: "client",
+    config: true,
+    type: Boolean,
+    default: true,
+    onChange: () => PF2ETokenBar.render()
+  });
 });
 
 class PF2ETokenBar {
   static render() {
     if (!canvas?.ready) return;
+    if (!game.user.isGM) return;
+    if (!game.settings.get("pf2e-token-bar", "enabled")) {
+      document.getElementById("pf2e-token-bar")?.remove();
+      return;
+    }
 
     console.log("PF2ETokenBar | fetching party tokens");
     const tokens = this._partyTokens();
