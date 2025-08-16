@@ -123,11 +123,13 @@ class PF2ETokenBar {
         icon.classList.add("pf2e-effect-icon");
         icon.src = effect.img;
         icon.dataset.uuid = effect.uuid;
+        icon.title = effect.name;
         icon.addEventListener("mouseenter", async event => {
-          const html = await TextEditor.enrichHTML(`@UUID[${effect.uuid}]{${effect.name}}`, { async: true, documents: true });
-          ui.tooltip?.activate(event.currentTarget, { html });
+          const doc = await fromUuid(icon.dataset.uuid);
+          const html = await TextEditor.enrichHTML(doc.description, { async: true, documents: true, rollData: doc.actor?.getRollData?.() });
+          TooltipManager.shared.show(event.currentTarget, { html });
         });
-        icon.addEventListener("mouseleave", () => ui.tooltip?.deactivate());
+        icon.addEventListener("mouseleave", event => TooltipManager.shared.hide(event.currentTarget));
         icon.addEventListener("click", () => fromUuid(icon.dataset.uuid)?.sheet.render(true));
         icon.addEventListener("contextmenu", async event => {
           event.preventDefault();
