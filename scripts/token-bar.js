@@ -92,7 +92,6 @@ class PF2ETokenBar {
           ui.tooltip?.activate(event.currentTarget, { html });
         });
         icon.addEventListener("mouseleave", () => ui.tooltip?.deactivate());
-        icon.addEventListener("mouseenter", event => ui.tooltip?.activate(event.currentTarget, { html: desc }));
         icon.addEventListener("contextmenu", async event => {
           event.preventDefault();
           event.stopPropagation();
