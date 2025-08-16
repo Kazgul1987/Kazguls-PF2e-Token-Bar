@@ -130,12 +130,8 @@ class PF2ETokenBar {
         const icon = document.createElement("img");
         icon.classList.add("pf2e-effect-icon");
         icon.src = effect.img;
-        const uuid = effect.uuid ?? effect.sourceId; // Fallback to sourceId when uuid is missing
-        icon.dataset.uuid = uuid;
+        icon.dataset.uuid = effect.uuid ?? effect.sourceId; // Fallback to sourceId when uuid is missing
         icon.title = effect.name;
-        const slug = document.createElement("span");
-        slug.classList.add("pf2e-effect-slug");
-        slug.textContent = effect.slug;
         icon.addEventListener("mouseenter", async event => {
           const doc = await fromUuid(icon.dataset.uuid);
           if (!doc) return;
@@ -154,24 +150,6 @@ class PF2ETokenBar {
             game.tooltip.deactivate();
           }
         });
-        slug.addEventListener("mouseenter", async event => {
-          const doc = await fromUuid(uuid);
-          if (!doc) return;
-          const description = doc.system?.description?.value ?? "";
-          const html = await TextEditor.enrichHTML(description, { async: true, documents: true, rollData: doc.actor?.getRollData?.() });
-          if (TooltipManager?.shared) {
-            TooltipManager.shared.show(event.currentTarget, { html });
-          } else {
-            game.tooltip.activate(event.currentTarget, html);
-          }
-        });
-        slug.addEventListener("mouseleave", event => {
-          if (TooltipManager?.shared) {
-            TooltipManager.shared.hide(event.currentTarget);
-          } else {
-            game.tooltip.deactivate();
-          }
-        });
         icon.addEventListener("click", () => fromUuid(icon.dataset.uuid)?.sheet.render(true));
         icon.addEventListener("contextmenu", async event => {
           event.preventDefault();
@@ -180,7 +158,6 @@ class PF2ETokenBar {
           PF2ETokenBar.render();
         });
         effectBar.appendChild(icon);
-        effectBar.appendChild(slug);
       }
       wrapper.appendChild(effectBar);
 
