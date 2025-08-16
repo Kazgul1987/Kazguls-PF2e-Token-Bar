@@ -79,7 +79,9 @@ class PF2ETokenBar {
       img.addEventListener("contextmenu", event => {
         event.preventDefault();
         event.stopPropagation();
-        canvas.hud.token.bind(token); // zeigt das übliche Token-HUD
+        if (token?.hud?.render) token.hud.render(true); // zeigt das übliche Token-HUD
+        else if (canvas.tokens?.hud?.bind) canvas.tokens.hud.bind(token);
+        else canvas.hud?.token?.bind(token);
       });
       wrapper.appendChild(img);
 
