@@ -78,18 +78,21 @@ class PF2ETokenBar {
       img.title = actor.name;
       img.classList.add("pf2e-token-bar-token");
       img.addEventListener("click", () => actor.sheet.render(true));
-      img.addEventListener("contextmenu", event => {
+      img.addEventListener("contextmenu", async event => {
         event.preventDefault();
         event.stopPropagation();
         if (token?.hud?.render) {
-          token.hud.render(true); // zeigt das übliche Token-HUD
-          token.hud.element.css({ left: event.clientX, top: event.clientY });
+          await token.hud.render(true); // zeigt das übliche Token-HUD
+          const elem = token.hud.element;
+          elem.css({ left: event.clientX, top: event.clientY });
         } else if (canvas.tokens?.hud?.bind) {
-          canvas.tokens.hud.bind(token);
-          canvas.tokens.hud.element.css({ left: event.clientX, top: event.clientY });
+          await canvas.tokens.hud.bind(token);
+          const elem = canvas.tokens.hud.element;
+          elem.css({ left: event.clientX, top: event.clientY });
         } else {
-          canvas.hud?.token?.bind(token);
-          canvas.hud?.token?.element?.css({ left: event.clientX, top: event.clientY });
+          await canvas.hud?.token?.bind(token);
+          const elem = canvas.hud?.token?.element;
+          elem?.css({ left: event.clientX, top: event.clientY });
         }
       });
       wrapper.appendChild(img);
