@@ -30,7 +30,10 @@ class PF2ETokenBar {
     console.log("PF2ETokenBar | fetching party actors");
     const actors = this._partyTokens();
     console.log("PF2ETokenBar | found actors", actors.map(a => a.id));
-    const tokens = actors.map(a => a.getActiveTokens(true, true)[0]).filter(t => t);
+    // getActiveTokens(true) returns Token objects (not TokenDocuments)
+    const tokens = actors
+      .map(a => a.getActiveTokens(true)[0])
+      .filter(t => t);
     console.log("PF2ETokenBar | found tokens", tokens.map(t => t.id));
     if (!tokens.length) return;
     let bar = document.getElementById("pf2e-token-bar");
@@ -68,7 +71,8 @@ class PF2ETokenBar {
       wrapper.appendChild(indicator);
 
       const img = document.createElement("img");
-      img.src = token.document.texture.src || "";
+      // Token has its texture directly; no `.document` needed
+      img.src = token.texture?.src || "";
       img.title = actor.name;
       img.classList.add("pf2e-token-bar-token");
       img.addEventListener("click", () => actor.sheet.render(true));
@@ -252,7 +256,7 @@ class PF2ETokenBar {
               const skillLabelKey = CONFIG.PF2E?.skills[skill]?.label ?? skill;
               const skillLabel = game.i18n?.localize(skillLabelKey) ?? skillLabelKey;
               const link = `<a class="pf2e-token-bar-roll" data-token-id="${id}" data-skill="${skill}" data-dc="${dc ?? ""}">${skillLabel}</a>`;
-              const img = `<img class="pf2e-token-bar-chat-token" src="${token.document.texture.src}"/>`;
+              const img = `<img class="pf2e-token-bar-chat-token" src="${token.texture?.src ?? ""}"/>`;
               const content = `${token.name ? token.name + ": " : ""}${img}${link}`;
               ChatMessage.create({ content });
             });
