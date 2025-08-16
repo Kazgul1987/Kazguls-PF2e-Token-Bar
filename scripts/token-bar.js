@@ -25,10 +25,10 @@ class PF2ETokenBar {
       return;
     }
 
-    console.log("PF2ETokenBar | fetching party tokens");
-    const tokens = this._partyTokens();
-    console.log("PF2ETokenBar | found tokens", tokens.map(t => t.id));
-    if (!tokens.length) return;
+    console.log("PF2ETokenBar | fetching party actors");
+    const actors = this._partyTokens();
+    console.log("PF2ETokenBar | found actors", actors.map(a => a.id));
+    if (!actors.length) return;
     let bar = document.getElementById("pf2e-token-bar");
     if (bar) bar.remove();
     bar = document.createElement("div");
@@ -49,18 +49,18 @@ class PF2ETokenBar {
     content.classList.add("pf2e-token-bar-content");
     bar.appendChild(content);
 
-    tokens.forEach(t => {
+    actors.forEach(actor => {
       const wrapper = document.createElement("div");
       wrapper.classList.add("pf2e-token-wrapper");
 
       const img = document.createElement("img");
-      img.src = t.document.texture.src;
-      img.title = t.document.name;
+      img.src = actor.prototypeToken?.texture?.src || "";
+      img.title = actor.name;
       img.classList.add("pf2e-token-bar-token");
-      img.addEventListener("click", () => t.actor?.sheet.render(true));
+      img.addEventListener("click", () => actor.sheet.render(true));
       wrapper.appendChild(img);
 
-      const hp = t.actor?.system?.attributes?.hp ?? {};
+      const hp = actor.system?.attributes?.hp ?? {};
       const hpValue = Number(hp.value) || 0;
       const hpMax = Number(hp.max) || 0;
 
@@ -80,7 +80,7 @@ class PF2ETokenBar {
 
       const effectBar = document.createElement("div");
       effectBar.classList.add("pf2e-effect-bar");
-      const effects = t.actor?.itemTypes?.effect || [];
+      const effects = actor.itemTypes?.effect || [];
       for (const effect of effects.filter(e => !e.disabled && !e.isExpired)) {
         const icon = document.createElement("img");
         icon.classList.add("pf2e-effect-icon");
@@ -95,7 +95,7 @@ class PF2ETokenBar {
         icon.addEventListener("contextmenu", async event => {
           event.preventDefault();
           event.stopPropagation();
-          await t.actor.deleteEmbeddedDocuments("Item", [effect.id]);
+          await actor.deleteEmbeddedDocuments("Item", [effect.id]);
           PF2ETokenBar.render();
         });
         effectBar.appendChild(icon);
@@ -159,13 +159,12 @@ class PF2ETokenBar {
   }
 
   static _partyTokens() {
-    const partyMembers = game.actors.party?.members || [];
-    const tokens = canvas.tokens.placeables.filter(t => t.actor && partyMembers.includes(t.actor));
+    const actors = game.actors.party?.members || [];
     console.log(
-      `PF2ETokenBar | _partyTokens filtered ${tokens.length} tokens`,
-      tokens.map(t => t.id)
+      `PF2ETokenBar | _partyTokens found ${actors.length} actors`,
+      actors.map(a => a.id)
     );
-    return tokens;
+    return actors;
   }
 
   static _activePlayerTokens() {
@@ -175,7 +174,7 @@ class PF2ETokenBar {
   }
 
   static async restAll() {
-    const actors = this._partyTokens().map(t => t.actor).filter(a => a);
+    const actors = this._partyTokens();
     if (!actors.length) return;
     await game.pf2e.actions.restForTheNight({ actors });
     this.render();
@@ -187,9 +186,7 @@ class PF2ETokenBar {
       content: "<p>Alle auf volle HP setzen?</p>"
     });
     if (!confirmed) return;
-    for (const token of this._partyTokens()) {
-      const actor = token.actor;
-      if (!actor) continue;
+    for (const actor of this._partyTokens()) {
       try {
         await actor.update({ 'system.attributes.hp.value': actor.system.attributes.hp.max });
         console.log("PF2ETokenBar | healAll", `healed ${actor.id}`);
