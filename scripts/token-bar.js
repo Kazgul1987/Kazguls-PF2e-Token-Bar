@@ -72,6 +72,11 @@ class PF2ETokenBar {
       img.title = actor.name;
       img.classList.add("pf2e-token-bar-token");
       img.addEventListener("click", () => actor.sheet.render(true));
+      img.addEventListener("contextmenu", event => {
+        event.preventDefault();
+        event.stopPropagation();
+        canvas.hud.token.bind(token); // zeigt das übliche Token-HUD
+      });
       wrapper.appendChild(img);
 
       const hp = actor.system?.attributes?.hp ?? {};
