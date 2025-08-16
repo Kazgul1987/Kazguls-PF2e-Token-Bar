@@ -81,41 +81,23 @@ class PF2ETokenBar {
       img.addEventListener("contextmenu", async event => {
         event.preventDefault();
         event.stopPropagation();
+        let elem;
         if (token?.hud?.render) {
-
-          await token.hud.render(true); // zeigt das übliche Token-HUD
-          const elem = token.hud.element;
-          elem.css({ left: event.clientX, top: event.clientY });
+          await token.hud.render(true); // shows the standard Token HUD
+          elem = token.hud.element;
         } else if (canvas.tokens?.hud?.bind) {
           await canvas.tokens.hud.bind(token);
-          const elem = canvas.tokens.hud.element;
-          elem.css({ left: event.clientX, top: event.clientY });
+          elem = canvas.tokens.hud.element;
         } else {
           await canvas.hud?.token?.bind(token);
-          const elem = canvas.hud?.token?.element;
-          elem?.css({ left: event.clientX, top: event.clientY });
+          elem = canvas.hud?.token?.element;
+        }
 
-          token.hud.render(true); // zeigt das übliche Token-HUD
-          const elem = token.hud.element;
-          if (elem) {
-            elem.style.left = `${event.clientX}px`;
-            elem.style.top = `${event.clientY}px`;
-          }
-        } else if (canvas.tokens?.hud?.bind) {
-          canvas.tokens.hud.bind(token);
-          const elem = canvas.tokens.hud.element;
-          if (elem) {
-            elem.style.left = `${event.clientX}px`;
-            elem.style.top = `${event.clientY}px`;
-          }
-        } else {
-          canvas.hud?.token?.bind(token);
-          const elem = canvas.hud?.token?.element;
-          if (elem) {
-            elem.style.left = `${event.clientX}px`;
-            elem.style.top = `${event.clientY}px`;
-          }
-
+        if (elem?.css) {
+          elem.css({ left: event.clientX, top: event.clientY });
+        } else if (elem?.style) {
+          elem.style.left = `${event.clientX}px`;
+          elem.style.top = `${event.clientY}px`;
         }
       });
       wrapper.appendChild(img);
