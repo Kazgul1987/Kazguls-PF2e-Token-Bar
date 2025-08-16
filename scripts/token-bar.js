@@ -126,10 +126,21 @@ class PF2ETokenBar {
         icon.title = effect.name;
         icon.addEventListener("mouseenter", async event => {
           const doc = await fromUuid(icon.dataset.uuid);
-          const html = await TextEditor.enrichHTML(doc.description, { async: true, documents: true, rollData: doc.actor?.getRollData?.() });
-          TooltipManager.shared.show(event.currentTarget, { html });
+          const description = doc.system?.description?.value ?? "";
+          const html = await TextEditor.enrichHTML(description, { async: true, documents: true, rollData: doc.actor?.getRollData?.() });
+          if (TooltipManager?.shared) {
+            TooltipManager.shared.show(event.currentTarget, { html });
+          } else {
+            game.tooltip.activate(event.currentTarget, html);
+          }
         });
-        icon.addEventListener("mouseleave", event => TooltipManager.shared.hide(event.currentTarget));
+        icon.addEventListener("mouseleave", event => {
+          if (TooltipManager?.shared) {
+            TooltipManager.shared.hide(event.currentTarget);
+          } else {
+            game.tooltip.deactivate();
+          }
+        });
         icon.addEventListener("click", () => fromUuid(icon.dataset.uuid)?.sheet.render(true));
         icon.addEventListener("contextmenu", async event => {
           event.preventDefault();
