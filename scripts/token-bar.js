@@ -14,10 +14,22 @@ Hooks.once("init", () => {
     default: true,
     onChange: () => PF2ETokenBar.render()
   });
+  game.settings.register("pf2e-token-bar", "debug", {
+    name: "Debug Logging",
+    hint: "Output additional debug information to the console",
+    scope: "client",
+    config: true,
+    type: Boolean,
+    default: false
+  });
 });
 
 class PF2ETokenBar {
   static hoveredToken = null;
+
+  static debug(...args) {
+    if (game.settings.get("pf2e-token-bar", "debug")) console.debug(...args);
+  }
 
   static render() {
     if (!canvas?.ready) return;
@@ -29,19 +41,19 @@ class PF2ETokenBar {
 
     let tokens = [];
     if (game.combat?.combatants.size > 0) {
-      console.log("PF2ETokenBar | fetching combat tokens");
+      this.debug("PF2ETokenBar | fetching combat tokens");
       tokens = this._combatTokens();
     } else {
-      console.log("PF2ETokenBar | fetching party actors");
+      this.debug("PF2ETokenBar | fetching party actors");
       const actors = this._partyTokens();
-      console.log("PF2ETokenBar | found actors", actors.map(a => a.id));
+      this.debug("PF2ETokenBar | found actors", actors.map(a => a.id));
       // getActiveTokens(true) returns Token objects (not TokenDocuments)
       tokens = actors
         .map(a => a.getActiveTokens(true)[0])
         .filter(t => t);
     }
 
-    console.log("PF2ETokenBar | found tokens", tokens.map(t => t.id));
+    this.debug("PF2ETokenBar | found tokens", tokens.map(t => t.id));
     if (!tokens.length) return;
     let bar = document.getElementById("pf2e-token-bar");
     if (bar) bar.remove();
@@ -285,30 +297,30 @@ class PF2ETokenBar {
     document.body.appendChild(bar);
   }
 
-  static _partyTokens() {
-    if (game.combat?.started) return [];
-    const actors = game.actors.party?.members || [];
-    console.log(
-      `PF2ETokenBar | _partyTokens found ${actors.length} actors`,
-      actors.map(a => a.id)
-    );
-    return actors;
-  }
+    static _partyTokens() {
+      if (game.combat?.started) return [];
+      const actors = game.actors.party?.members || [];
+      this.debug(
+        `PF2ETokenBar | _partyTokens found ${actors.length} actors`,
+        actors.map(a => a.id)
+      );
+      return actors;
+    }
 
-  static _combatTokens() {
-    const combatants = Array.from(game.combat?.combatants ?? []);
-    combatants.sort((a, b) => (b.initiative ?? 0) - (a.initiative ?? 0));
-    const tokens = combatants.map(c => canvas.tokens.get(c.tokenId)).filter(t => t);
-    console.log(
-      `PF2ETokenBar | _combatTokens found ${tokens.length} tokens`,
-      tokens.map(t => t.id)
-    );
-    return tokens;
-  }
+    static _combatTokens() {
+      const combatants = Array.from(game.combat?.combatants ?? []);
+      combatants.sort((a, b) => (b.initiative ?? 0) - (a.initiative ?? 0));
+      const tokens = combatants.map(c => canvas.tokens.get(c.tokenId)).filter(t => t);
+      this.debug(
+        `PF2ETokenBar | _combatTokens found ${tokens.length} tokens`,
+        tokens.map(t => t.id)
+      );
+      return tokens;
+    }
 
   static _activePlayerTokens() {
     const tokens = canvas.tokens.placeables.filter(t => t.actor?.hasPlayerOwner);
-    console.log(`PF2ETokenBar | _activePlayerTokens filtered ${tokens.length} tokens`, tokens.map(t => t.actor?.id));
+    this.debug(`PF2ETokenBar | _activePlayerTokens filtered ${tokens.length} tokens`, tokens.map(t => t.actor?.id));
     return tokens;
   }
 
@@ -328,7 +340,7 @@ class PF2ETokenBar {
     for (const actor of this._partyTokens()) {
       try {
         await actor.update({ 'system.attributes.hp.value': actor.system.attributes.hp.max });
-        console.log("PF2ETokenBar | healAll", `healed ${actor.id}`);
+        this.debug("PF2ETokenBar | healAll", `healed ${actor.id}`);
       } catch (err) {
         console.error("PF2ETokenBar | healAll", `failed to heal ${actor?.id}` , err);
       }
@@ -365,7 +377,7 @@ class PF2ETokenBar {
             const dc = Number(form.querySelector('input[name="dc"]').value) || undefined;
             const skill = form.querySelector('select[name="skill"]').value;
             const selected = Array.from(form.querySelectorAll('input[name="token"]:checked')).map(i => i.value);
-            console.log("PF2ETokenBar | requestRoll selection", { tokens: selected, skill, dc });
+            this.debug("PF2ETokenBar | requestRoll selection", { tokens: selected, skill, dc });
             selected.forEach(id => {
               const token = canvas.tokens.get(id);
               if (!token?.actor) return;
