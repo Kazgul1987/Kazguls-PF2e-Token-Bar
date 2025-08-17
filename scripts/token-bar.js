@@ -255,7 +255,7 @@ class PF2ETokenBar {
       if (game.combat?.started) {
         await game.combat.endCombat();
       } else {
-        await game.combat?.startCombat();
+        await game.combat.startCombat();
       }
       PF2ETokenBar.render();
     });
@@ -425,7 +425,8 @@ class PF2ETokenBar {
       }
     }
 
-    if (!combat.started) await combat.startCombat();
+    // Removed auto-starting combat; combat should be started manually via the Start Encounter button
+    // if (!combat.started) await combat.startCombat();
     this.render();
   }
 
