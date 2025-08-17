@@ -130,10 +130,11 @@ class PF2ETokenBar {
         const icon = document.createElement("img");
         icon.classList.add("pf2e-effect-icon");
         icon.src = effect.img;
-        icon.dataset.uuid = effect.uuid ?? effect.sourceId; // Fallback to sourceId when uuid is missing
+        const uuid = effect.sourceId || effect.uuid;
+        icon.dataset.uuid = uuid; // Fallback to effect.uuid when sourceId is missing
         icon.title = effect.name;
         icon.addEventListener("mouseenter", async event => {
-          const doc = await fromUuid(icon.dataset.uuid);
+          const doc = await fromUuid(uuid);
           if (!doc) return;
           const description = doc.system?.description?.value ?? "";
           const html = await TextEditor.enrichHTML(description, { async: true, documents: true, rollData: doc.actor?.getRollData?.() });
@@ -150,7 +151,7 @@ class PF2ETokenBar {
             game.tooltip.deactivate();
           }
         });
-        icon.addEventListener("click", () => fromUuid(icon.dataset.uuid)?.sheet.render(true));
+        icon.addEventListener("click", () => fromUuid(uuid)?.sheet.render(true));
         icon.addEventListener("contextmenu", async event => {
           event.preventDefault();
           event.stopPropagation();
