@@ -74,6 +74,12 @@ class PF2ETokenBar {
     const content = document.createElement("div");
     content.classList.add("pf2e-token-bar-content");
     bar.appendChild(content);
+    if (game.combat?.round > 0) {
+      const roundDisplay = document.createElement("div");
+      roundDisplay.classList.add("pf2e-round-display");
+      roundDisplay.innerText = game.i18n.format("PF2ETokenBar.Round", { round: game.combat.round });
+      content.prepend(roundDisplay);
+    }
 
     tokens.forEach(token => {
       const actor = token.actor;

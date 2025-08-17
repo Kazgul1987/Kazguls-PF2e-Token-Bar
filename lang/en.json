@@ -22,6 +22,7 @@
     "Saves": "Saves",
     "Fortitude": "Fortitude",
     "Reflex": "Reflex",
-    "Will": "Will"
+    "Will": "Will",
+    "Round": "Round {round}"
   }
 }
