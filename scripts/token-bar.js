@@ -94,7 +94,10 @@ class PF2ETokenBar {
       if (combatant) {
         const rollIcon = document.createElement("i");
         rollIcon.classList.add("fas", "fa-dice-d20", "pf2e-d20-icon");
-        rollIcon.addEventListener("click", () => combatant.rollInitiative({ createMessage: true }));
+        rollIcon.addEventListener(
+          "click",
+          () => combatant.actor.initiative?.roll({ createMessage: true, dialog: true })
+        );
         wrapper.appendChild(rollIcon);
       }
 
