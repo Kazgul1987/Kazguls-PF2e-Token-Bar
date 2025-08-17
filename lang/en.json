@@ -1,0 +1,27 @@
+{
+  "PF2ETokenBar": {
+    "Settings": {
+      "Enabled": {
+        "Name": "PF2E Token Bar",
+        "Hint": "Show the PF2E Token Bar"
+      }
+    },
+    "HealAll": "Heal All",
+    "HealAllConfirm": "Set everyone to full HP?",
+    "RequestRoll": "Request Roll",
+    "Roll": "Roll",
+    "Cancel": "Cancel",
+    "StartEncounter": "Start Encounter",
+    "EndEncounter": "End Encounter",
+    "NPCInit": "NPC Init",
+    "Prev": "Prev",
+    "Next": "Next",
+    "Hide": "Hide",
+    "Show": "Show",
+    "DC": "DC",
+    "Saves": "Saves",
+    "Fortitude": "Fortitude",
+    "Reflex": "Reflex",
+    "Will": "Will"
+  }
+}
