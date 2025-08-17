@@ -219,29 +219,34 @@ class PF2ETokenBar {
 
       content.appendChild(wrapper);
     });
+
+    const controls = document.createElement("div");
+    controls.classList.add("pf2e-token-bar-controls");
+    content.appendChild(controls);
+
       if (!game.combat?.started) {
         const addBtn = document.createElement("button");
         addBtn.innerHTML = '<i class="fas fa-swords"></i>';
         addBtn.title = game.i18n.localize("PF2ETokenBar.AddPartyToEncounter");
         addBtn.addEventListener("click", () => this.addPartyToEncounter());
-        content.appendChild(addBtn);
+        controls.appendChild(addBtn);
 
         const healBtn = document.createElement("button");
         healBtn.innerText = game.i18n.localize("PF2ETokenBar.HealAll");
         healBtn.addEventListener("click", () => this.healAll());
-        content.appendChild(healBtn);
+        controls.appendChild(healBtn);
 
         const restBtn = document.createElement("button");
         restBtn.innerHTML = '<i class="fas fa-bed"></i>';
         restBtn.title = game.i18n.localize("PF2E.RestAll");
         restBtn.addEventListener("click", () => this.restAll());
-        content.appendChild(restBtn);
+        controls.appendChild(restBtn);
       }
 
       const btn = document.createElement("button");
       btn.innerText = game.i18n.localize("PF2ETokenBar.RequestRoll");
       btn.addEventListener("click", () => this.requestRoll());
-      content.appendChild(btn);
+      controls.appendChild(btn);
 
     const encounterBtn = document.createElement("button");
     const encounterKey = game.combat?.started ? "PF2ETokenBar.EndEncounter" : "PF2ETokenBar.StartEncounter";
@@ -254,7 +259,7 @@ class PF2ETokenBar {
       }
       PF2ETokenBar.render();
     });
-    content.appendChild(encounterBtn);
+    controls.appendChild(encounterBtn);
 
     if (game.combat) {
       const npcCombatants = game.combat.combatants.filter(c => !c.actor?.hasPlayerOwner);
@@ -276,7 +281,7 @@ class PF2ETokenBar {
           if (ids.length) await game.combat.rollInitiative(ids);
           PF2ETokenBar.render();
         });
-        content.appendChild(npcInitBtn);
+        controls.appendChild(npcInitBtn);
       }
     }
 
@@ -288,7 +293,7 @@ class PF2ETokenBar {
       prevBtn.title = prevTitle;
       prevBtn.setAttribute("aria-label", prevTitle);
       prevBtn.addEventListener("click", () => game.combat.previousTurn());
-      content.appendChild(prevBtn);
+      controls.appendChild(prevBtn);
 
       const nextBtn = document.createElement("button");
       nextBtn.classList.add("pf2e-next-turn");
@@ -297,7 +302,7 @@ class PF2ETokenBar {
       nextBtn.title = nextTitle;
       nextBtn.setAttribute("aria-label", nextTitle);
       nextBtn.addEventListener("click", () => game.combat.nextTurn());
-      content.appendChild(nextBtn);
+      controls.appendChild(nextBtn);
     }
 
     const toggleBtn = document.createElement("button");
