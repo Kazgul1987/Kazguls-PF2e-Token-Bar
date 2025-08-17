@@ -101,8 +101,8 @@ class PF2ETokenBar {
         wrapper.appendChild(rollIcon);
       }
 
-      if (game.combat?.started && combatant) {
-        if (combatant.id === game.combat.combatant?.id) {
+      if (combatant) {
+        if (game.combat?.started && combatant.id === game.combat.combatant?.id) {
           wrapper.classList.add("active-turn");
         }
         const init = document.createElement("div");
@@ -543,6 +543,7 @@ Hooks.on("updateCombat", () => PF2ETokenBar.render());
 Hooks.on("combatStart", () => PF2ETokenBar.render());
 Hooks.on("combatEnd", () => PF2ETokenBar.render());
 Hooks.on("combatTurn", () => PF2ETokenBar.render());
+Hooks.on("updateCombatant", () => PF2ETokenBar.render());
 Hooks.on("renderChatMessage", (_message, html) => {
   const links = html[0]?.querySelectorAll("a.pf2e-token-bar-roll") ?? [];
   for (const link of links) {
