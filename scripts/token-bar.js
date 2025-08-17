@@ -84,19 +84,24 @@ class PF2ETokenBar {
         if (PF2ETokenBar.hoveredToken === token) PF2ETokenBar.hoveredToken = null;
       });
 
-      if (game.combat?.started) {
-        const combatant = game.combat.combatants.find(c => c.tokenId === token.id);
-        if (combatant) {
-          if (combatant.id === game.combat.combatant?.id) {
-            wrapper.classList.add("active-turn");
-          }
-          const init = document.createElement("div");
-          init.classList.add("pf2e-initiative");
-          if (combatant.initiative !== undefined && combatant.initiative !== null) {
-            init.innerText = `${combatant.initiative}`;
-          }
-          wrapper.appendChild(init);
+      const combatant = game.combat?.combatants.find(c => c.tokenId === token.id);
+      if (combatant) {
+        const rollIcon = document.createElement("i");
+        rollIcon.classList.add("fas", "fa-dice-d20", "pf2e-d20-icon");
+        rollIcon.addEventListener("click", () => combatant.rollInitiative({ createMessage: true }));
+        wrapper.appendChild(rollIcon);
+      }
+
+      if (game.combat?.started && combatant) {
+        if (combatant.id === game.combat.combatant?.id) {
+          wrapper.classList.add("active-turn");
         }
+        const init = document.createElement("div");
+        init.classList.add("pf2e-initiative");
+        if (combatant.initiative !== undefined && combatant.initiative !== null) {
+          init.innerText = `${combatant.initiative}`;
+        }
+        wrapper.appendChild(init);
       }
 
       const indicator = document.createElement("i");
