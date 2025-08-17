@@ -386,14 +386,16 @@ class PF2ETokenBar {
       content: `<p>${game.i18n.localize("PF2ETokenBar.HealAllConfirm")}</p>`
     });
     if (!confirmed) return;
+    const updates = [];
     for (const actor of this._partyTokens()) {
-      try {
-        await actor.update({ 'system.attributes.hp.value': actor.system.attributes.hp.max });
-        this.debug("PF2ETokenBar | healAll", `healed ${actor.id}`);
-      } catch (err) {
-        console.error("PF2ETokenBar | healAll", `failed to heal ${actor?.id}` , err);
-      }
+      updates.push(
+        actor.update({ 'system.attributes.hp.value': actor.system.attributes.hp.max })
+          .then(() => this.debug("PF2ETokenBar | healAll", `healed ${actor.id}`))
+          .catch(err => console.error("PF2ETokenBar | healAll", `failed to heal ${actor?.id}` , err))
+      );
     }
+    await Promise.all(updates);
+    PF2ETokenBar.render();
   }
 
   static async addPartyToEncounter() {
