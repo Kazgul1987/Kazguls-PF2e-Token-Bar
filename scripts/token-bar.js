@@ -27,13 +27,20 @@ class PF2ETokenBar {
       return;
     }
 
-    console.log("PF2ETokenBar | fetching party actors");
-    const actors = this._partyTokens();
-    console.log("PF2ETokenBar | found actors", actors.map(a => a.id));
-    // getActiveTokens(true) returns Token objects (not TokenDocuments)
-    const tokens = actors
-      .map(a => a.getActiveTokens(true)[0])
-      .filter(t => t);
+    let tokens = [];
+    if (game.combat?.started) {
+      console.log("PF2ETokenBar | fetching combat tokens");
+      tokens = this._combatTokens();
+    } else {
+      console.log("PF2ETokenBar | fetching party actors");
+      const actors = this._partyTokens();
+      console.log("PF2ETokenBar | found actors", actors.map(a => a.id));
+      // getActiveTokens(true) returns Token objects (not TokenDocuments)
+      tokens = actors
+        .map(a => a.getActiveTokens(true)[0])
+        .filter(t => t);
+    }
+
     console.log("PF2ETokenBar | found tokens", tokens.map(t => t.id));
     if (!tokens.length) return;
     let bar = document.getElementById("pf2e-token-bar");
@@ -64,6 +71,21 @@ class PF2ETokenBar {
       wrapper.addEventListener("mouseleave", () => {
         if (PF2ETokenBar.hoveredToken === token) PF2ETokenBar.hoveredToken = null;
       });
+
+      if (game.combat?.started) {
+        const combatant = game.combat.combatants.find(c => c.tokenId === token.id);
+        if (combatant) {
+          if (combatant.id === game.combat.combatant?.id) {
+            wrapper.classList.add("active-turn");
+          }
+          const init = document.createElement("div");
+          init.classList.add("pf2e-initiative");
+          if (combatant.initiative !== undefined && combatant.initiative !== null) {
+            init.innerText = `${combatant.initiative}`;
+          }
+          wrapper.appendChild(init);
+        }
+      }
 
       const indicator = document.createElement("i");
       indicator.classList.add("fas", "fa-crosshairs", "target-indicator");
@@ -179,6 +201,18 @@ class PF2ETokenBar {
     restBtn.addEventListener("click", () => this.restAll());
     content.appendChild(restBtn);
 
+    if (game.combat?.started) {
+      const prevBtn = document.createElement("button");
+      prevBtn.innerText = "Prev";
+      prevBtn.addEventListener("click", () => game.combat.previousTurn());
+      content.appendChild(prevBtn);
+
+      const nextBtn = document.createElement("button");
+      nextBtn.innerText = "Next";
+      nextBtn.addEventListener("click", () => game.combat.nextTurn());
+      content.appendChild(nextBtn);
+    }
+
     const toggleBtn = document.createElement("button");
     toggleBtn.innerText = "Hide";
     toggleBtn.addEventListener("click", () => {
@@ -219,12 +253,24 @@ class PF2ETokenBar {
   }
 
   static _partyTokens() {
+    if (game.combat?.started) return [];
     const actors = game.actors.party?.members || [];
     console.log(
       `PF2ETokenBar | _partyTokens found ${actors.length} actors`,
       actors.map(a => a.id)
     );
     return actors;
+  }
+
+  static _combatTokens() {
+    const combatants = Array.from(game.combat?.combatants ?? []);
+    combatants.sort((a, b) => (b.initiative ?? 0) - (a.initiative ?? 0));
+    const tokens = combatants.map(c => canvas.tokens.get(c.tokenId)).filter(t => t);
+    console.log(
+      `PF2ETokenBar | _combatTokens found ${tokens.length} tokens`,
+      tokens.map(t => t.id)
+    );
+    return tokens;
   }
 
   static _activePlayerTokens() {
@@ -350,6 +396,10 @@ Hooks.on("updateItem", item => {
   const isCondition = item.isOfType?.("condition") || item.type === "condition";
   if (isEffect || isCondition) PF2ETokenBar.render();
 });
+Hooks.on("updateCombat", () => PF2ETokenBar.render());
+Hooks.on("combatStart", () => PF2ETokenBar.render());
+Hooks.on("combatEnd", () => PF2ETokenBar.render());
+Hooks.on("combatTurn", () => PF2ETokenBar.render());
 Hooks.on("renderChatMessage", (_message, html) => {
   const links = html[0]?.querySelectorAll("a.pf2e-token-bar-roll") ?? [];
   for (const link of links) {
