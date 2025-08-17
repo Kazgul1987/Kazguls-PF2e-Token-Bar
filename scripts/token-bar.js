@@ -421,6 +421,13 @@ class PF2ETokenBar {
 }
 
 document.addEventListener("keydown", event => {
+  const target = event.target;
+  const isEditable =
+    target instanceof HTMLInputElement ||
+    target instanceof HTMLTextAreaElement ||
+    (target instanceof HTMLElement && target.isContentEditable);
+  if (event.defaultPrevented || isEditable) return;
+
   if (event.code === "KeyT" && PF2ETokenBar.hoveredToken) {
     const token = PF2ETokenBar.hoveredToken;
     token.setTarget(!token.isTargeted, { user: game.user });
