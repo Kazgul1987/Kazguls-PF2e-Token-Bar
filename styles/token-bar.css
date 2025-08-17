@@ -172,3 +172,7 @@
 #pf2e-token-bar button.npc-initiative:active {
   filter: brightness(0.9);
 }
+
+#pf2e-token-bar button i {
+  pointer-events: none;
+}

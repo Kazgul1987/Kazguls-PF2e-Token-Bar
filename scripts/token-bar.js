@@ -220,6 +220,12 @@ class PF2ETokenBar {
       content.appendChild(wrapper);
     });
       if (!game.combat?.started) {
+        const addBtn = document.createElement("button");
+        addBtn.innerHTML = '<i class="fas fa-swords"></i>';
+        addBtn.title = game.i18n.localize("PF2ETokenBar.AddPartyToEncounter");
+        addBtn.addEventListener("click", () => this.addPartyToEncounter());
+        content.appendChild(addBtn);
+
         const healBtn = document.createElement("button");
         healBtn.innerText = game.i18n.localize("PF2ETokenBar.HealAll");
         healBtn.addEventListener("click", () => this.healAll());
@@ -380,6 +386,36 @@ class PF2ETokenBar {
         console.error("PF2ETokenBar | healAll", `failed to heal ${actor?.id}` , err);
       }
     }
+  }
+
+  static async addPartyToEncounter() {
+    const actors = this._partyTokens();
+    if (!actors.length) return;
+
+    let combat = game.combat;
+    if (!combat) {
+      try {
+        combat = await Combat.create({ scene: canvas.scene });
+      } catch (err) {
+        console.error("PF2ETokenBar | addPartyToEncounter", "failed to create combat", err);
+        return;
+      }
+    }
+
+    for (const actor of actors) {
+      const token = actor.getActiveTokens(true)[0];
+      if (!token) continue;
+      const exists = combat.combatants.find(c => c.tokenId === token.id);
+      if (exists) continue;
+      try {
+        await combat.createCombatant({ tokenId: token.id, sceneId: token.scene.id });
+      } catch (err) {
+        console.error("PF2ETokenBar | addPartyToEncounter", `failed to add ${actor.id}`, err);
+      }
+    }
+
+    if (!combat.started) await combat.startCombat();
+    this.render();
   }
 
   static requestRoll() {
