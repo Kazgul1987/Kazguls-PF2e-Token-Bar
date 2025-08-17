@@ -201,6 +201,24 @@ class PF2ETokenBar {
     restBtn.addEventListener("click", () => this.restAll());
     content.appendChild(restBtn);
 
+    const encounterBtn = document.createElement("button");
+    encounterBtn.innerText = game.combat?.started ? "End Encounter" : "Start Encounter";
+    encounterBtn.addEventListener("click", async () => {
+      if (game.combat?.started) {
+        await game.combat.endCombat();
+        const party = new Set((game.actors.party?.members ?? []).map(a => a.id));
+        for (const token of canvas.tokens.placeables) {
+          if (!party.has(token.actor?.id)) {
+            await token.document.delete();
+          }
+        }
+      } else {
+        await game.combat?.startCombat();
+      }
+      PF2ETokenBar.render();
+    });
+    content.appendChild(encounterBtn);
+
     if (game.combat?.started) {
       const prevBtn = document.createElement("button");
       prevBtn.innerText = "Prev";
