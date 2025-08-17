@@ -108,3 +108,62 @@
   padding: 0 2px;
   border-radius: 3px;
 }
+
+/* Dice icon positioning */
+#pf2e-token-bar .pf2e-d20-icon {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 16px;
+  color: var(--color-text-light-highlight);
+  cursor: pointer;
+  transition: transform 0.1s ease, filter 0.1s ease;
+}
+
+#pf2e-token-bar .pf2e-d20-icon:hover {
+  transform: translateX(-50%) scale(1.1);
+}
+
+#pf2e-token-bar .pf2e-d20-icon:active {
+  transform: translateX(-50%) scale(0.95);
+  filter: brightness(0.8);
+}
+
+/* Initiative control buttons */
+#pf2e-token-bar button.start-initiative,
+#pf2e-token-bar button.end-initiative,
+#pf2e-token-bar button.npc-initiative {
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: 1px solid var(--color-border-dark-primary);
+  cursor: pointer;
+  transition: background 0.1s ease, filter 0.1s ease;
+}
+
+#pf2e-token-bar button.start-initiative {
+  background: rgba(0, 128, 0, 0.7);
+  color: white;
+}
+
+#pf2e-token-bar button.end-initiative {
+  background: rgba(128, 0, 0, 0.7);
+  color: white;
+}
+
+#pf2e-token-bar button.npc-initiative {
+  background: rgba(0, 0, 128, 0.7);
+  color: white;
+}
+
+#pf2e-token-bar button.start-initiative:hover,
+#pf2e-token-bar button.end-initiative:hover,
+#pf2e-token-bar button.npc-initiative:hover {
+  filter: brightness(1.2);
+}
+
+#pf2e-token-bar button.start-initiative:active,
+#pf2e-token-bar button.end-initiative:active,
+#pf2e-token-bar button.npc-initiative:active {
+  filter: brightness(0.9);
+}
