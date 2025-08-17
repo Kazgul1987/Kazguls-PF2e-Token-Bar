@@ -141,6 +141,29 @@
   filter: brightness(0.8);
 }
 
+#pf2e-token-bar .pf2e-delay-icon,
+#pf2e-token-bar .pf2e-play-icon {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 16px;
+  color: var(--color-text-light-highlight);
+  cursor: pointer;
+  transition: transform 0.1s ease, filter 0.1s ease;
+}
+
+#pf2e-token-bar .pf2e-delay-icon:hover,
+#pf2e-token-bar .pf2e-play-icon:hover {
+  transform: translateX(-50%) scale(1.1);
+}
+
+#pf2e-token-bar .pf2e-delay-icon:active,
+#pf2e-token-bar .pf2e-play-icon:active {
+  transform: translateX(-50%) scale(0.95);
+  filter: brightness(0.8);
+}
+
 /* Initiative control buttons */
 #pf2e-token-bar button.start-initiative,
 #pf2e-token-bar button.end-initiative,
