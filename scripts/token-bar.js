@@ -216,20 +216,23 @@ class PF2ETokenBar {
 
       content.appendChild(wrapper);
     });
-    const healBtn = document.createElement("button");
-    healBtn.innerText = game.i18n.localize("PF2ETokenBar.HealAll");
-    healBtn.addEventListener("click", () => this.healAll());
-    content.appendChild(healBtn);
-    const btn = document.createElement("button");
-    btn.innerText = game.i18n.localize("PF2ETokenBar.RequestRoll");
-    btn.addEventListener("click", () => this.requestRoll());
-    content.appendChild(btn);
+      if (!game.combat?.started) {
+        const healBtn = document.createElement("button");
+        healBtn.innerText = game.i18n.localize("PF2ETokenBar.HealAll");
+        healBtn.addEventListener("click", () => this.healAll());
+        content.appendChild(healBtn);
 
-    const restBtn = document.createElement("button");
-    restBtn.innerHTML = '<i class="fas fa-bed"></i>';
-    restBtn.title = game.i18n.localize("PF2E.RestAll");
-    restBtn.addEventListener("click", () => this.restAll());
-    content.appendChild(restBtn);
+        const restBtn = document.createElement("button");
+        restBtn.innerHTML = '<i class="fas fa-bed"></i>';
+        restBtn.title = game.i18n.localize("PF2E.RestAll");
+        restBtn.addEventListener("click", () => this.restAll());
+        content.appendChild(restBtn);
+      }
+
+      const btn = document.createElement("button");
+      btn.innerText = game.i18n.localize("PF2ETokenBar.RequestRoll");
+      btn.addEventListener("click", () => this.requestRoll());
+      content.appendChild(btn);
 
     const encounterBtn = document.createElement("button");
     const encounterKey = game.combat?.started ? "PF2ETokenBar.EndEncounter" : "PF2ETokenBar.StartEncounter";
