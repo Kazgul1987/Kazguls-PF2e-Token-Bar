@@ -102,9 +102,28 @@ class PF2ETokenBar {
       }
 
       if (combatant) {
-        if (game.combat?.started && combatant.id === game.combat.combatant?.id) {
-          wrapper.classList.add("active-turn");
+        const delayed = combatant.getFlag("pf2e-token-bar", "delayed");
+        const isActive = game.combat?.started && combatant.id === game.combat.combatant?.id;
+        if (isActive) wrapper.classList.add("active-turn");
+
+        if (delayed) {
+          const playIcon = document.createElement("i");
+          playIcon.classList.add("fas", "fa-play", "pf2e-play-icon");
+          const playTitle = game.i18n.localize("PF2ETokenBar.Play");
+          playIcon.title = playTitle;
+          playIcon.setAttribute("aria-label", playTitle);
+          playIcon.addEventListener("click", () => PF2ETokenBar.resumeTurn(combatant));
+          wrapper.appendChild(playIcon);
+        } else if (isActive) {
+          const delayIcon = document.createElement("i");
+          delayIcon.classList.add("fas", "fa-hourglass", "pf2e-delay-icon");
+          const delayTitle = game.i18n.localize("PF2ETokenBar.Delay");
+          delayIcon.title = delayTitle;
+          delayIcon.setAttribute("aria-label", delayTitle);
+          delayIcon.addEventListener("click", () => PF2ETokenBar.delayTurn(combatant));
+          wrapper.appendChild(delayIcon);
         }
+
         const init = document.createElement("div");
         init.classList.add("pf2e-initiative");
         if (combatant.initiative !== undefined && combatant.initiative !== null) {
@@ -426,6 +445,32 @@ class PF2ETokenBar {
 
     // Removed auto-starting combat; combat should be started manually via the Start Encounter button
     // if (!combat.started) await combat.startCombat();
+    this.render();
+  }
+
+  static async delayTurn(combatant) {
+    if (!combatant || !game.combat) return;
+    try {
+      await combatant.setFlag("pf2e-token-bar", "delayed", true);
+      await game.combat.nextTurn();
+    } catch (err) {
+      console.error("PF2ETokenBar | delayTurn", err);
+    }
+    this.render();
+  }
+
+  static async resumeTurn(combatant) {
+    if (!combatant || !game.combat) return;
+    try {
+      const current = game.combat.combatant;
+      const init = current?.initiative;
+      if (init !== undefined) await game.combat.setInitiative(combatant.id, init);
+      await combatant.unsetFlag("pf2e-token-bar", "delayed");
+      const index = game.combat.turns.findIndex(c => c.id === combatant.id);
+      if (index >= 0) await game.combat.update({ turn: index });
+    } catch (err) {
+      console.error("PF2ETokenBar | resumeTurn", err);
+    }
     this.render();
   }
 
