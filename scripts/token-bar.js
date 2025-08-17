@@ -28,7 +28,7 @@ class PF2ETokenBar {
     }
 
     let tokens = [];
-    if (game.combat?.started) {
+    if (game.combat?.combatants.size > 0) {
       console.log("PF2ETokenBar | fetching combat tokens");
       tokens = this._combatTokens();
     } else {
@@ -378,6 +378,8 @@ Hooks.on("canvasReady", () => PF2ETokenBar.render());
 Hooks.on("updateToken", () => PF2ETokenBar.render());
 Hooks.on("createToken", () => PF2ETokenBar.render());
 Hooks.on("deleteToken", () => PF2ETokenBar.render());
+Hooks.on("createCombatant", () => PF2ETokenBar.render());
+Hooks.on("deleteCombatant", () => PF2ETokenBar.render());
 Hooks.on("updateActor", (_actor, data) => {
   if (data.system?.attributes?.hp) PF2ETokenBar.render();
 });
