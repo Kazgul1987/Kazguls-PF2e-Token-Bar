@@ -198,4 +198,8 @@
 #pf2e-token-bar button.pf2e-prev-turn:active,
 #pf2e-token-bar button.pf2e-next-turn:active {
   filter: brightness(0.9);
+
+#pf2e-token-bar button i {
+  pointer-events: none;
+
 }
