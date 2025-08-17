@@ -288,12 +288,20 @@ class PF2ETokenBar {
 
     if (game.combat?.started) {
       const prevBtn = document.createElement("button");
-      prevBtn.innerText = game.i18n.localize("PF2ETokenBar.Prev");
+      prevBtn.classList.add("pf2e-prev-turn");
+      prevBtn.innerHTML = '<i class="fas fa-arrow-left"></i>';
+      const prevTitle = game.i18n.localize("PF2ETokenBar.Prev");
+      prevBtn.title = prevTitle;
+      prevBtn.setAttribute("aria-label", prevTitle);
       prevBtn.addEventListener("click", () => game.combat.previousTurn());
       content.appendChild(prevBtn);
 
       const nextBtn = document.createElement("button");
-      nextBtn.innerText = game.i18n.localize("PF2ETokenBar.Next");
+      nextBtn.classList.add("pf2e-next-turn");
+      nextBtn.innerHTML = '<i class="fas fa-arrow-right"></i>';
+      const nextTitle = game.i18n.localize("PF2ETokenBar.Next");
+      nextBtn.title = nextTitle;
+      nextBtn.setAttribute("aria-label", nextTitle);
       nextBtn.addEventListener("click", () => game.combat.nextTurn());
       content.appendChild(nextBtn);
     }
