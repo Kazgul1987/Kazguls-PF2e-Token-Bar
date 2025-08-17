@@ -6,8 +6,8 @@ Hooks.once("init", () => {
     default: {}
   });
   game.settings.register("pf2e-token-bar", "enabled", {
-    name: "PF2E Token Bar",
-    hint: "Show the PF2E Token Bar",
+    name: game.i18n.localize("PF2ETokenBar.Settings.Enabled.Name"),
+    hint: game.i18n.localize("PF2ETokenBar.Settings.Enabled.Hint"),
     scope: "client",
     config: true,
     type: Boolean,
@@ -187,22 +187,23 @@ class PF2ETokenBar {
       content.appendChild(wrapper);
     });
     const healBtn = document.createElement("button");
-    healBtn.innerText = "Heal All";
+    healBtn.innerText = game.i18n.localize("PF2ETokenBar.HealAll");
     healBtn.addEventListener("click", () => this.healAll());
     content.appendChild(healBtn);
     const btn = document.createElement("button");
-    btn.innerText = game.i18n?.localize("PF2E.Roll") || "Request Roll";
+    btn.innerText = game.i18n.localize("PF2ETokenBar.RequestRoll");
     btn.addEventListener("click", () => this.requestRoll());
     content.appendChild(btn);
 
     const restBtn = document.createElement("button");
     restBtn.innerHTML = '<i class="fas fa-bed"></i>';
-    restBtn.title = game.i18n?.localize("PF2E.RestAll") || "Rest All";
+    restBtn.title = game.i18n.localize("PF2E.RestAll");
     restBtn.addEventListener("click", () => this.restAll());
     content.appendChild(restBtn);
 
     const encounterBtn = document.createElement("button");
-    encounterBtn.innerText = game.combat?.started ? "End Encounter" : "Start Encounter";
+    const encounterKey = game.combat?.started ? "PF2ETokenBar.EndEncounter" : "PF2ETokenBar.StartEncounter";
+    encounterBtn.innerText = game.i18n.localize(encounterKey);
     encounterBtn.addEventListener("click", async () => {
       if (game.combat?.started) {
         await game.combat.endCombat();
@@ -221,7 +222,7 @@ class PF2ETokenBar {
 
     if (game.combat?.started) {
       const npcInitBtn = document.createElement("button");
-      npcInitBtn.innerText = "NPC Init";
+      npcInitBtn.innerText = game.i18n.localize("PF2ETokenBar.NPCInit");
       npcInitBtn.addEventListener("click", () => {
         const ids = game.combat.combatants
           .filter(c => !c.actor?.hasPlayerOwner && (c.initiative === undefined || c.initiative === null))
@@ -236,21 +237,22 @@ class PF2ETokenBar {
       }
 
       const prevBtn = document.createElement("button");
-      prevBtn.innerText = "Prev";
+      prevBtn.innerText = game.i18n.localize("PF2ETokenBar.Prev");
       prevBtn.addEventListener("click", () => game.combat.previousTurn());
       content.appendChild(prevBtn);
 
       const nextBtn = document.createElement("button");
-      nextBtn.innerText = "Next";
+      nextBtn.innerText = game.i18n.localize("PF2ETokenBar.Next");
       nextBtn.addEventListener("click", () => game.combat.nextTurn());
       content.appendChild(nextBtn);
     }
 
     const toggleBtn = document.createElement("button");
-    toggleBtn.innerText = "Hide";
+    toggleBtn.innerText = game.i18n.localize("PF2ETokenBar.Hide");
     toggleBtn.addEventListener("click", () => {
       bar.classList.toggle("collapsed");
-      toggleBtn.innerText = bar.classList.contains("collapsed") ? "Show" : "Hide";
+      const key = bar.classList.contains("collapsed") ? "PF2ETokenBar.Show" : "PF2ETokenBar.Hide";
+      toggleBtn.innerText = game.i18n.localize(key);
     });
     bar.appendChild(toggleBtn);
 
@@ -321,8 +323,8 @@ class PF2ETokenBar {
 
   static async healAll() {
     const confirmed = await Dialog.confirm({
-      title: "Heal All",
-      content: "<p>Alle auf volle HP setzen?</p>"
+      title: game.i18n.localize("PF2ETokenBar.HealAll"),
+      content: `<p>${game.i18n.localize("PF2ETokenBar.HealAllConfirm")}</p>`
     });
     if (!confirmed) return;
     for (const actor of this._partyTokens()) {
@@ -346,20 +348,26 @@ class PF2ETokenBar {
         return `<option value="${k}">${localized}</option>`;
       })
       .join("");
-    const saveOptions = ["fortitude","reflex","will"].map(s => `<option value="${s}">${s}</option>`).join("");
-    const content = `<div><label>DC <input type="number" name="dc"/></label></div>
+    const saves = ["fortitude", "reflex", "will"];
+    const saveOptions = saves
+      .map(s => {
+        const label = game.i18n.localize(`PF2ETokenBar.${s.charAt(0).toUpperCase() + s.slice(1)}`);
+        return `<option value="${s}">${label}</option>`;
+      })
+      .join("");
+    const content = `<div><label>${game.i18n.localize("PF2ETokenBar.DC")} <input type="number" name="dc"/></label></div>
     <div class="flexrow">
       <div class="token-select">${tokenOptions}</div>
       <div class="skill-select">
-        <select name="skill">${skillOptions}<optgroup label="Saves">${saveOptions}</optgroup></select>
+        <select name="skill">${skillOptions}<optgroup label="${game.i18n.localize("PF2ETokenBar.Saves")}">${saveOptions}</optgroup></select>
       </div>
     </div>`;
     new Dialog({
-      title: "Request Roll",
+      title: game.i18n.localize("PF2ETokenBar.RequestRoll"),
       content,
       buttons: {
         roll: {
-          label: "Roll",
+          label: game.i18n.localize("PF2ETokenBar.Roll"),
           callback: html => {
             const form = html[0].querySelector("form") || html[0];
             const dc = Number(form.querySelector('input[name="dc"]').value) || undefined;
@@ -378,7 +386,7 @@ class PF2ETokenBar {
             });
           }
         },
-        cancel: { label: "Cancel" }
+        cancel: { label: game.i18n.localize("PF2ETokenBar.Cancel") }
       },
       default: "roll"
     }).render(true);

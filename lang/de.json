@@ -1,0 +1,27 @@
+{
+  "PF2ETokenBar": {
+    "Settings": {
+      "Enabled": {
+        "Name": "PF2E Token-Leiste",
+        "Hint": "Zeigt die PF2E Token-Leiste an"
+      }
+    },
+    "HealAll": "Alle heilen",
+    "HealAllConfirm": "Alle auf volle HP setzen?",
+    "RequestRoll": "Wurf anfordern",
+    "Roll": "Würfeln",
+    "Cancel": "Abbrechen",
+    "StartEncounter": "Begegnung starten",
+    "EndEncounter": "Begegnung beenden",
+    "NPCInit": "NSC-Ini",
+    "Prev": "Zurück",
+    "Next": "Weiter",
+    "Hide": "Verbergen",
+    "Show": "Anzeigen",
+    "DC": "SG",
+    "Saves": "Rettungswürfe",
+    "Fortitude": "Zähigkeit",
+    "Reflex": "Reflexe",
+    "Will": "Willen"
+  }
+}
