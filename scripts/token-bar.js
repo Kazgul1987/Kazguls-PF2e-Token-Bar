@@ -256,22 +256,31 @@ class PF2ETokenBar {
     });
     content.appendChild(encounterBtn);
 
-    if (game.combat?.started) {
-      const npcInitBtn = document.createElement("button");
-      npcInitBtn.innerText = game.i18n.localize("PF2ETokenBar.NPCInit");
-      npcInitBtn.addEventListener("click", () => {
-        const ids = game.combat.combatants
-          .filter(c => !c.actor?.hasPlayerOwner && (c.initiative === undefined || c.initiative === null))
-          .map(c => c.id);
-        if (ids.length) game.combat.rollInitiative(ids);
-        npcInitBtn.disabled = true;
-      });
+    if (game.combat) {
       const npcCombatants = game.combat.combatants.filter(c => !c.actor?.hasPlayerOwner);
-      if (npcCombatants.length) {
-        npcInitBtn.disabled = npcCombatants.every(c => c.initiative !== undefined && c.initiative !== null);
+      const needsInit = npcCombatants.some(
+        c => c.initiative === undefined || c.initiative === null
+      );
+      if (needsInit) {
+        const npcInitBtn = document.createElement("button");
+        npcInitBtn.innerText = game.i18n.localize("PF2ETokenBar.NPCInit");
+        npcInitBtn.addEventListener("click", async () => {
+          npcInitBtn.disabled = true;
+          const ids = game.combat.combatants
+            .filter(
+              c =>
+                !c.actor?.hasPlayerOwner &&
+                (c.initiative === undefined || c.initiative === null)
+            )
+            .map(c => c.id);
+          if (ids.length) await game.combat.rollInitiative(ids);
+          PF2ETokenBar.render();
+        });
         content.appendChild(npcInitBtn);
       }
+    }
 
+    if (game.combat?.started) {
       const prevBtn = document.createElement("button");
       prevBtn.innerText = game.i18n.localize("PF2ETokenBar.Prev");
       prevBtn.addEventListener("click", () => game.combat.previousTurn());
