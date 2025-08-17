@@ -220,6 +220,21 @@ class PF2ETokenBar {
     content.appendChild(encounterBtn);
 
     if (game.combat?.started) {
+      const npcInitBtn = document.createElement("button");
+      npcInitBtn.innerText = "NPC Init";
+      npcInitBtn.addEventListener("click", () => {
+        const ids = game.combat.combatants
+          .filter(c => !c.actor?.hasPlayerOwner && (c.initiative === undefined || c.initiative === null))
+          .map(c => c.id);
+        if (ids.length) game.combat.rollInitiative(ids);
+        npcInitBtn.disabled = true;
+      });
+      const npcCombatants = game.combat.combatants.filter(c => !c.actor?.hasPlayerOwner);
+      if (npcCombatants.length) {
+        npcInitBtn.disabled = npcCombatants.every(c => c.initiative !== undefined && c.initiative !== null);
+        content.appendChild(npcInitBtn);
+      }
+
       const prevBtn = document.createElement("button");
       prevBtn.innerText = "Prev";
       prevBtn.addEventListener("click", () => game.combat.previousTurn());
