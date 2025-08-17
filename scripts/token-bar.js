@@ -91,13 +91,13 @@ class PF2ETokenBar {
       });
 
       const combatant = game.combat?.combatants.find(c => c.tokenId === token.id);
-      if (combatant) {
+      if (combatant && combatant.initiative == null) {
         const rollIcon = document.createElement("i");
         rollIcon.classList.add("fas", "fa-dice-d20", "pf2e-d20-icon");
-        rollIcon.addEventListener(
-          "click",
-          () => combatant.actor.initiative?.roll({ createMessage: true, dialog: true })
-        );
+        rollIcon.addEventListener("click", async () => {
+          await combatant.actor.initiative?.roll({ createMessage: true, dialog: true });
+          PF2ETokenBar.render();
+        });
         wrapper.appendChild(rollIcon);
       }
 
