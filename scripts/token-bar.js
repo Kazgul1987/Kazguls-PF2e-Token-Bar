@@ -185,7 +185,14 @@ class PF2ETokenBar {
             game.tooltip.deactivate();
           }
         });
-        icon.addEventListener("click", () => fromUuid(uuid)?.sheet.render(true));
+        icon.addEventListener("click", async () => {
+          try {
+            const doc = await fromUuid(uuid);
+            doc?.sheet.render(true);
+          } catch (err) {
+            console.error("PF2ETokenBar | failed to open effect sheet", err);
+          }
+        });
         icon.addEventListener("contextmenu", async event => {
           event.preventDefault();
           event.stopPropagation();
