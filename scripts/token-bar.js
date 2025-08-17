@@ -418,7 +418,9 @@ class PF2ETokenBar {
       const exists = combat.combatants.find(c => c.tokenId === token.id);
       if (exists) continue;
       try {
-        await combat.createCombatant({ tokenId: token.id, sceneId: token.scene.id });
+        await combat.createEmbeddedDocuments("Combatant", [
+          { tokenId: token.id, scene: token.scene }
+        ]);
       } catch (err) {
         console.error("PF2ETokenBar | addPartyToEncounter", `failed to add ${actor.id}`, err);
       }
