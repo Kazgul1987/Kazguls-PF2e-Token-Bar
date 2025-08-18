@@ -178,8 +178,8 @@
 #pf2e-token-bar .pf2e-initiative {
   position: absolute;
   top: -6px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  transform: none;
   font-size: 12px;
   background: rgba(0, 0, 0, 0.7);
   padding: 0 2px;
