@@ -37,6 +37,8 @@
     "Loot": "Beute",
     "Sell": "Verkaufen",
     "Ping": "Ping",
+    "Vertical": "Vertikal",
+    "Horizontal": "Horizontal",
     "HeroPoints": "Heldenpunkte",
     "TokenMissing": "Token '{name}' nicht gefunden",
     "EncounterDifficulty": "Begegnungsschwierigkeit",

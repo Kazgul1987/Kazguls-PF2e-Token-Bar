@@ -7,6 +7,13 @@ Hooks.once("init", () => {
     type: Object,
     default: {}
   });
+  game.settings.register("pf2e-token-bar", "orientation", {
+    scope: "client",
+    config: false,
+    type: String,
+    default: "horizontal",
+    onChange: () => PF2ETokenBar.render(),
+  });
   game.settings.register("pf2e-token-bar", "enabled", {
     name: game.i18n.localize("PF2ETokenBar.Settings.Enabled.Name"),
     hint: game.i18n.localize("PF2ETokenBar.Settings.Enabled.Hint"),
@@ -70,6 +77,8 @@ class PF2ETokenBar {
     if (bar) bar.remove();
     bar = document.createElement("div");
     bar.id = "pf2e-token-bar";
+    const orientation = game.settings.get("pf2e-token-bar", "orientation");
+    if (orientation === "vertical") bar.classList.add("pf2e-token-bar-vertical");
     const pos = game.settings.get("pf2e-token-bar", "position");
     if (pos?.top !== undefined && pos?.left !== undefined) {
       bar.style.top = `${pos.top}px`;
@@ -306,6 +315,26 @@ class PF2ETokenBar {
     const controls = document.createElement("div");
     controls.classList.add("pf2e-token-bar-controls");
     content.appendChild(controls);
+
+    const orientationBtn = document.createElement("button");
+    const updateOrientationBtn = () => {
+      const current = game.settings.get("pf2e-token-bar", "orientation");
+      orientationBtn.innerHTML =
+        current === "vertical"
+          ? '<i class="fas fa-arrows-alt-h"></i>'
+          : '<i class="fas fa-arrows-alt-v"></i>';
+      const key = current === "vertical" ? "PF2ETokenBar.Horizontal" : "PF2ETokenBar.Vertical";
+      orientationBtn.title = game.i18n.localize(key);
+      orientationBtn.setAttribute("aria-label", orientationBtn.title);
+    };
+    updateOrientationBtn();
+    orientationBtn.addEventListener("click", async () => {
+      const current = game.settings.get("pf2e-token-bar", "orientation");
+      const next = current === "vertical" ? "horizontal" : "vertical";
+      await game.settings.set("pf2e-token-bar", "orientation", next);
+      PF2ETokenBar.render();
+    });
+    controls.appendChild(orientationBtn);
 
       if (!game.combat?.started) {
         const addBtn = document.createElement("button");
