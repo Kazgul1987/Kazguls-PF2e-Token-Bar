@@ -39,6 +39,7 @@
     "Ping": "Ping",
     "Vertical": "Vertical",
     "Horizontal": "Horizontal",
+    "HeroPoints": "Hero Points",
     "TokenMissing": "Token '{name}' not found",
     "EncounterDifficulty": "Encounter Difficulty",
     "Difficulties": {
