@@ -1,3 +1,5 @@
+import { PF2ERingMenu } from "./ring-menu.js";
+
 Hooks.once("init", () => {
   game.settings.register("pf2e-token-bar", "position", {
     scope: "client",
@@ -40,6 +42,7 @@ class PF2ETokenBar {
   }
 
   static render() {
+    PF2ERingMenu.close();
     if (!canvas?.ready) return;
     if (!game.user.isGM) return;
     if (!game.settings.get("pf2e-token-bar", "enabled")) {
@@ -189,27 +192,10 @@ class PF2ETokenBar {
       img.title = actor.name;
       img.classList.add("pf2e-token-bar-token");
       img.addEventListener("click", () => actor.sheet.render(true));
-      img.addEventListener("contextmenu", async event => {
+      img.addEventListener("contextmenu", event => {
         event.preventDefault();
         event.stopPropagation();
-        let elem;
-        if (token?.hud?.render) {
-          await token.hud.render(true); // shows the standard Token HUD
-          elem = token.hud.element;
-        } else if (canvas.tokens?.hud?.bind) {
-          await canvas.tokens.hud.bind(token);
-          elem = canvas.tokens.hud.element;
-        } else {
-          await canvas.hud?.token?.bind(token);
-          elem = canvas.hud?.token?.element;
-        }
-
-        if (elem?.css) {
-          elem.css({ left: event.clientX, top: event.clientY });
-        } else if (elem?.style) {
-          elem.style.left = `${event.clientX}px`;
-          elem.style.top = `${event.clientY}px`;
-        }
+        PF2ERingMenu.open(token, { x: event.clientX, y: event.clientY });
       });
       wrapper.appendChild(img);
 

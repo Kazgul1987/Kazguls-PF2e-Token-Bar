@@ -278,3 +278,31 @@
 #pf2e-token-bar button i {
   pointer-events: none;
 }
+
+#pf2e-ring-menu {
+  position: absolute;
+  width: 0;
+  height: 0;
+  z-index: 1000;
+}
+
+#pf2e-ring-menu .pf2e-ring-item {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+#pf2e-ring-menu .pf2e-ring-item:hover {
+  filter: brightness(1.2);
+}
+
+#pf2e-ring-menu .pf2e-ring-item i {
+  pointer-events: none;
+}
