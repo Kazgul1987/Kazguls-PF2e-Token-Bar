@@ -368,7 +368,7 @@ class PF2ETokenBar {
 
         const partyStashBtn = document.createElement("button");
         partyStashBtn.innerText = game.i18n.localize("PF2ETokenBar.PartyStash");
-        partyStashBtn.addEventListener("click", () => PF2ETokenBar.openLootActor("Party Stash"));
+        partyStashBtn.addEventListener("click", () => PF2ETokenBar.openPartyStash());
         controls.appendChild(partyStashBtn);
 
         const lootBtn = document.createElement("button");
@@ -519,6 +519,16 @@ class PF2ETokenBar {
     const tokens = canvas.tokens.placeables.filter(t => t.actor?.hasPlayerOwner);
     this.debug(`PF2ETokenBar | _activePlayerTokens filtered ${tokens.length} tokens`, tokens.map(t => t.actor?.id));
     return tokens;
+  }
+
+  static openPartyStash() {
+    const sheet = game.pf2e.apps.partySheet;
+    if (sheet) {
+      sheet.render(true);
+      sheet.setTab("stash");
+    } else {
+      ui.notifications.error(game.i18n.localize("PF2ETokenBar.PartySheetMissing"));
+    }
   }
 
   static openLootActor(name) {

@@ -48,6 +48,7 @@
     "Unlock": "Entsperren",
     "HeroPoints": "Heldenpunkte",
     "TokenMissing": "Token '{name}' nicht gefunden",
+    "PartySheetMissing": "Gruppenblatt nicht gefunden",
     "EncounterDifficulty": "Begegnungsschwierigkeit",
     "Difficulties": {
       "Trivial": "Trivial",
