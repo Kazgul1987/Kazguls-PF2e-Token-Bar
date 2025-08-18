@@ -74,7 +74,7 @@ class PF2ETokenBar {
     }
 
     let tokens = [];
-    if (game.combat?.combatants.size > 0) {
+    if (game.combat?.started && game.combat.combatants.size > 0) {
       this.debug("PF2ETokenBar | fetching combat tokens");
       tokens = this._combatTokens();
     } else {
