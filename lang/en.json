@@ -26,6 +26,10 @@
     "Fortitude": "Fortitude",
     "Reflex": "Reflex",
     "Will": "Will",
-    "Round": "Round {round}"
+    "Round": "Round {round}",
+    "PartyStash": "Party Stash",
+    "Loot": "Loot",
+    "Sell": "Sell",
+    "TokenMissing": "Token '{name}' not found"
   }
 }

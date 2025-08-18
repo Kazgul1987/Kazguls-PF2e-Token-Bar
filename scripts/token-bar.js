@@ -260,6 +260,21 @@ class PF2ETokenBar {
         restBtn.title = game.i18n.localize("PF2E.RestAll");
         restBtn.addEventListener("click", () => this.restAll());
         controls.appendChild(restBtn);
+
+        const partyStashBtn = document.createElement("button");
+        partyStashBtn.innerText = game.i18n.localize("PF2ETokenBar.PartyStash");
+        partyStashBtn.addEventListener("click", () => PF2ETokenBar.openLootActor("Party Stash"));
+        controls.appendChild(partyStashBtn);
+
+        const lootBtn = document.createElement("button");
+        lootBtn.innerText = game.i18n.localize("PF2ETokenBar.Loot");
+        lootBtn.addEventListener("click", () => PF2ETokenBar.openLootActor("Loot"));
+        controls.appendChild(lootBtn);
+
+        const sellBtn = document.createElement("button");
+        sellBtn.innerText = game.i18n.localize("PF2ETokenBar.Sell");
+        sellBtn.addEventListener("click", () => PF2ETokenBar.openLootActor("Sell"));
+        controls.appendChild(sellBtn);
       }
 
       const btn = document.createElement("button");
@@ -389,6 +404,15 @@ class PF2ETokenBar {
     const tokens = canvas.tokens.placeables.filter(t => t.actor?.hasPlayerOwner);
     this.debug(`PF2ETokenBar | _activePlayerTokens filtered ${tokens.length} tokens`, tokens.map(t => t.actor?.id));
     return tokens;
+  }
+
+  static openLootActor(name) {
+    const actor = game.actors.getName(name);
+    if (actor) {
+      actor.sheet.render(true);
+    } else {
+      ui.notifications.error(game.i18n.format("PF2ETokenBar.TokenMissing", { name }));
+    }
   }
 
   static async restAll() {
