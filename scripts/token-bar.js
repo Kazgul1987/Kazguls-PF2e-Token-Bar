@@ -217,6 +217,40 @@ class PF2ETokenBar {
       barOuter.appendChild(barInner);
       wrapper.appendChild(barOuter);
 
+      const heroPoints = actor.system?.resources?.heroPoints ?? {};
+      const heroValue = Number(heroPoints.value) || 0;
+      const heroMax = Number(heroPoints.max) || 0;
+
+      const heroWrapper = document.createElement("div");
+      heroWrapper.classList.add("pf2e-hero-points");
+      heroWrapper.title = game.i18n.localize("PF2ETokenBar.HeroPoints");
+
+      const heroMinus = document.createElement("button");
+      heroMinus.innerHTML = '<i class="fas fa-minus"></i>';
+      heroMinus.addEventListener("click", async () => {
+        const current = Number(actor.system?.resources?.heroPoints?.value) || 0;
+        const newValue = Math.max(current - 1, 0);
+        await actor.update({ 'system.resources.heroPoints.value': newValue });
+      });
+      heroWrapper.appendChild(heroMinus);
+
+      const heroText = document.createElement("span");
+      heroText.classList.add("pf2e-hero-points-value");
+      heroText.innerText = heroMax ? `${heroValue}/${heroMax}` : `${heroValue}`;
+      heroWrapper.appendChild(heroText);
+
+      const heroPlus = document.createElement("button");
+      heroPlus.innerHTML = '<i class="fas fa-plus"></i>';
+      heroPlus.addEventListener("click", async () => {
+        const current = Number(actor.system?.resources?.heroPoints?.value) || 0;
+        const max = Number(actor.system?.resources?.heroPoints?.max ?? 3);
+        const newValue = Math.min(current + 1, max);
+        await actor.update({ 'system.resources.heroPoints.value': newValue });
+      });
+      heroWrapper.appendChild(heroPlus);
+
+      wrapper.appendChild(heroWrapper);
+
       const effectBar = document.createElement("div");
       effectBar.classList.add("pf2e-effect-bar");
       const effects = [
@@ -622,7 +656,7 @@ Hooks.on("deleteToken", () => PF2ETokenBar.render());
 Hooks.on("createCombatant", () => PF2ETokenBar.render());
 Hooks.on("deleteCombatant", () => PF2ETokenBar.render());
 Hooks.on("updateActor", (_actor, data) => {
-  if (data.system?.attributes?.hp) PF2ETokenBar.render();
+  if (data.system?.attributes?.hp || data.system?.resources?.heroPoints) PF2ETokenBar.render();
 });
 Hooks.on("createItem", item => {
   const isEffect = item.isOfType?.("effect") || item.type === "effect";

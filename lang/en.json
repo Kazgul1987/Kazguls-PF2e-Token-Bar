@@ -37,6 +37,7 @@
     "Loot": "Loot",
     "Sell": "Sell",
     "Ping": "Ping",
+    "HeroPoints": "Hero Points",
     "TokenMissing": "Token '{name}' not found",
     "EncounterDifficulty": "Encounter Difficulty",
     "Difficulties": {
