@@ -196,23 +196,6 @@ class PF2ETokenBar {
         wrapper.appendChild(init);
       }
 
-      const visibilityIcon = document.createElement("i");
-      visibilityIcon.classList.add(
-        "fas",
-        token.document.hidden ? "fa-eye-slash" : "fa-eye",
-        "pf2e-visibility-icon"
-      );
-      const visibilityTitle = game.i18n.localize("PF2ETokenBar.Visibility");
-      visibilityIcon.title = visibilityTitle;
-      visibilityIcon.setAttribute("aria-label", visibilityTitle);
-      visibilityIcon.addEventListener("click", async () => {
-        await token.document.update({ hidden: !token.document.hidden });
-        wrapper.classList.toggle("pf2e-token-hidden", token.document.hidden);
-        visibilityIcon.classList.toggle("fa-eye", !token.document.hidden);
-        visibilityIcon.classList.toggle("fa-eye-slash", token.document.hidden);
-      });
-      wrapper.appendChild(visibilityIcon);
-
       const indicator = document.createElement("i");
       indicator.classList.add("fas", "fa-crosshairs", "target-indicator");
       indicator.style.display = game.user.targets.has(token) ? "block" : "none";
@@ -240,6 +223,23 @@ class PF2ETokenBar {
         PF2ERingMenu.open(token, { x: event.clientX, y: event.clientY });
       });
       wrapper.appendChild(img);
+
+      const visibilityIcon = document.createElement("i");
+      visibilityIcon.classList.add(
+        "fas",
+        token.document.hidden ? "fa-eye-slash" : "fa-eye",
+        "pf2e-visibility-icon"
+      );
+      const visibilityTitle = game.i18n.localize("PF2ETokenBar.Visibility");
+      visibilityIcon.title = visibilityTitle;
+      visibilityIcon.setAttribute("aria-label", visibilityTitle);
+      visibilityIcon.addEventListener("click", async () => {
+        await token.document.update({ hidden: !token.document.hidden });
+        wrapper.classList.toggle("pf2e-token-hidden", token.document.hidden);
+        visibilityIcon.classList.toggle("fa-eye", !token.document.hidden);
+        visibilityIcon.classList.toggle("fa-eye-slash", token.document.hidden);
+      });
+      wrapper.appendChild(visibilityIcon);
 
       const hp = actor.system?.attributes?.hp ?? {};
       const hpValue = Number(hp.value) || 0;
