@@ -32,6 +32,14 @@
     "Loot": "Beute",
     "Sell": "Verkaufen",
     "Ping": "Ping",
-    "TokenMissing": "Token '{name}' nicht gefunden"
+    "TokenMissing": "Token '{name}' nicht gefunden",
+    "EncounterDifficulty": "Begegnungsschwierigkeit",
+    "Difficulties": {
+      "Trivial": "Trivial",
+      "Low": "Gering",
+      "Moderate": "Mittel",
+      "Severe": "Schwer",
+      "Extreme": "Extrem"
+    }
   }
 }
