@@ -26,6 +26,10 @@
     "Fortitude": "Zähigkeit",
     "Reflex": "Reflexe",
     "Will": "Willen",
-    "Round": "Runde {round}"
+    "Round": "Runde {round}",
+    "PartyStash": "Gruppenlager",
+    "Loot": "Beute",
+    "Sell": "Verkaufen",
+    "TokenMissing": "Token '{name}' nicht gefunden"
   }
 }
