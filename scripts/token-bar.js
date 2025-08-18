@@ -155,15 +155,6 @@ class PF2ETokenBar {
       });
 
       const combatant = game.combat?.combatants.find(c => c.tokenId === token.id);
-      if (combatant && combatant.initiative == null) {
-        const rollIcon = document.createElement("i");
-        rollIcon.classList.add("fas", "fa-dice-d20", "pf2e-d20-icon");
-        rollIcon.addEventListener("click", async () => {
-          await combatant.actor.initiative?.roll({ createMessage: true, dialog: true });
-          PF2ETokenBar.render();
-        });
-        wrapper.appendChild(rollIcon);
-      }
 
       if (combatant) {
         const delayed = combatant.getFlag("pf2e-token-bar", "delayed");
@@ -201,14 +192,6 @@ class PF2ETokenBar {
       indicator.style.display = game.user.targets.has(token) ? "block" : "none";
       wrapper.appendChild(indicator);
 
-      const pingIcon = document.createElement("i");
-      pingIcon.classList.add("fas", "fa-bullseye", "pf2e-ping-icon");
-      const pingTitle = game.i18n.localize("PF2ETokenBar.Ping");
-      pingIcon.title = pingTitle;
-      pingIcon.setAttribute("aria-label", pingTitle);
-      pingIcon.addEventListener("click", () => canvas.ping(token.center, { user: game.user }));
-      wrapper.appendChild(pingIcon);
-
       const img = document.createElement("img");
       // Attempt to get the token's texture, falling back to the document's texture
       const imgSrc = token.texture?.src ?? token.document?.texture?.src ?? "";
@@ -223,23 +206,6 @@ class PF2ETokenBar {
         PF2ERingMenu.open(token, { x: event.clientX, y: event.clientY });
       });
       wrapper.appendChild(img);
-
-      const visibilityIcon = document.createElement("i");
-      visibilityIcon.classList.add(
-        "fas",
-        token.document.hidden ? "fa-eye-slash" : "fa-eye",
-        "pf2e-visibility-icon"
-      );
-      const visibilityTitle = game.i18n.localize("PF2ETokenBar.Visibility");
-      visibilityIcon.title = visibilityTitle;
-      visibilityIcon.setAttribute("aria-label", visibilityTitle);
-      visibilityIcon.addEventListener("click", async () => {
-        await token.document.update({ hidden: !token.document.hidden });
-        wrapper.classList.toggle("pf2e-token-hidden", token.document.hidden);
-        visibilityIcon.classList.toggle("fa-eye", !token.document.hidden);
-        visibilityIcon.classList.toggle("fa-eye-slash", token.document.hidden);
-      });
-      wrapper.appendChild(visibilityIcon);
 
       const hp = actor.system?.attributes?.hp ?? {};
       const hpValue = Number(hp.value) || 0;

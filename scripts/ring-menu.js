@@ -44,6 +44,33 @@ export class PF2ERingMenu {
     menu.appendChild(visibility);
     items.push(visibility);
 
+    // Ping icon
+    const ping = document.createElement('div');
+    ping.classList.add('pf2e-ring-item');
+    ping.title = game.i18n?.localize('PF2ETokenBar.Ping') || 'Ping';
+    ping.innerHTML = '<i class="fas fa-bullseye"></i>';
+    ping.addEventListener('click', evt => {
+      evt.stopPropagation();
+      canvas.ping(token.center, { user: game.user });
+    });
+    menu.appendChild(ping);
+    items.push(ping);
+
+    // Initiative icon
+    const combatant = game.combat?.combatants.find(c => c.tokenId === token.id);
+    if (combatant && combatant.initiative == null) {
+      const initiative = document.createElement('div');
+      initiative.classList.add('pf2e-ring-item');
+      initiative.title = game.i18n?.localize('PF2ETokenBar.Initiative') || 'Initiative';
+      initiative.innerHTML = '<i class="fas fa-dice-d20"></i>';
+      initiative.addEventListener('click', async evt => {
+        evt.stopPropagation();
+        await combatant.actor.initiative.roll({ createMessage: true, dialog: true });
+      });
+      menu.appendChild(initiative);
+      items.push(initiative);
+    }
+
     document.body.appendChild(menu);
 
     // radial placement
