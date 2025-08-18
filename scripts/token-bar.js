@@ -522,7 +522,7 @@ class PF2ETokenBar {
   }
 
   static openPartyStash() {
-    const sheet = game.pf2e.apps.partySheet;
+    const sheet = game.pf2e.party?.sheet ?? game.pf2e.apps?.partySheet;
     if (sheet) {
       sheet.render(true);
       sheet.setTab("stash");
