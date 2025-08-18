@@ -107,6 +107,16 @@ class PF2ETokenBar {
     }
     bar.appendChild(tokenContainer);
 
+    const handle = document.createElement("div");
+    handle.classList.add("pf2e-token-bar-handle");
+    handle.style.position = "absolute";
+    handle.style.top = "0";
+    handle.style.left = "0";
+    handle.style.width = "20px";
+    handle.style.height = "20px";
+    handle.style.cursor = "move";
+    bar.appendChild(handle);
+
     const threat = game.combat?.metrics?.threat ?? game.combat?.analyze()?.threat;
     if (threat) {
       const difficultyDisplay = document.createElement("div");
@@ -358,6 +368,7 @@ class PF2ETokenBar {
       lockBtn.title = game.i18n.localize(key);
       lockBtn.setAttribute("aria-label", lockBtn.title);
       handle.style.pointerEvents = locked ? "none" : "auto";
+      bar.classList.toggle("locked", locked);
     };
     updateLockBtn();
     lockBtn.addEventListener("click", async () => {
@@ -492,8 +503,6 @@ class PF2ETokenBar {
     };
     handle.addEventListener("mousedown", event => {
       if (game.settings.get("pf2e-token-bar", "locked")) return;
-    bar.addEventListener("mousedown", event => {
-      if (bar.classList.contains("locked")) return;
       event.preventDefault();
       dragging = true;
       offsetX = event.clientX - bar.offsetLeft;
