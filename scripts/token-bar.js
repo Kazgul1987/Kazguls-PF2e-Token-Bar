@@ -86,7 +86,7 @@ class PF2ETokenBar {
         .map(a => a.getActiveTokens(true)[0])
         .filter(t => t);
 
-      if (game.combat?.combatants.size > 0) {
+      if (game.combat?.started && game.combat.combatants.size > 0) {
         this.debug("PF2ETokenBar | fetching combat tokens");
         tokens = tokens.concat(this._combatTokens());
       }
@@ -784,4 +784,5 @@ Hooks.on("renderChatMessage", (_message, html) => {
   }
 });
 Hooks.on("targetToken", () => PF2ETokenBar.render());
+Hooks.on("deleteCombat", () => PF2ETokenBar.render());
 
