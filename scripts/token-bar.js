@@ -348,14 +348,7 @@ class PF2ETokenBar {
     });
     controls.appendChild(lockBtn);
 
-    const compendiumBtn = document.createElement("button");
-    compendiumBtn.innerHTML = '<i class="fas fa-book"></i>';
-    compendiumBtn.title = game.i18n.localize("PF2ETokenBar.Compendium");
-    compendiumBtn.setAttribute("aria-label", compendiumBtn.title);
-    compendiumBtn.addEventListener("click", () => ui.sidebar.activateTab("compendium"));
-    controls.appendChild(compendiumBtn);
-
-      if (!game.combat?.started) {
+    if (!game.combat?.started) {
         const addBtn = document.createElement("button");
         addBtn.innerHTML = '<i class="fas fa-swords"></i>';
         addBtn.title = game.i18n.localize("PF2ETokenBar.AddPartyToEncounter");
