@@ -375,7 +375,8 @@ class PF2ETokenBar {
     }
 
     static _combatTokens() {
-      const combatants = Array.from(game.combat?.turns ?? []);
+      let combatants = Array.from(game.combat?.combatants ?? []);
+      combatants.sort((a, b) => (b.initiative ?? -Infinity) - (a.initiative ?? -Infinity));
       const tokens = combatants.map(c => canvas.tokens.get(c.tokenId)).filter(t => t);
       this.debug(
         `PF2ETokenBar | _combatTokens found ${tokens.length} tokens`,
