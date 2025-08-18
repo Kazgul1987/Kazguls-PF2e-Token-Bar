@@ -137,6 +137,14 @@ class PF2ETokenBar {
       indicator.style.display = game.user.targets.has(token) ? "block" : "none";
       wrapper.appendChild(indicator);
 
+      const pingIcon = document.createElement("i");
+      pingIcon.classList.add("fas", "fa-bullseye", "pf2e-ping-icon");
+      const pingTitle = game.i18n.localize("PF2ETokenBar.Ping");
+      pingIcon.title = pingTitle;
+      pingIcon.setAttribute("aria-label", pingTitle);
+      pingIcon.addEventListener("click", () => canvas.ping(token.center, { user: game.user }));
+      wrapper.appendChild(pingIcon);
+
       const img = document.createElement("img");
       // Attempt to get the token's texture, falling back to the document's texture
       const imgSrc = token.texture?.src ?? token.document?.texture?.src ?? "";

@@ -30,6 +30,7 @@
     "PartyStash": "Party Stash",
     "Loot": "Loot",
     "Sell": "Sell",
+    "Ping": "Ping",
     "TokenMissing": "Token '{name}' not found"
   }
 }
