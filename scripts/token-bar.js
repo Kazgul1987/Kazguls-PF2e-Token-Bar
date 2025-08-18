@@ -37,6 +37,16 @@ Hooks.once("init", () => {
     type: Boolean,
     default: false
   });
+  game.settings.register("pf2e-token-bar", "scale", {
+    name: game.i18n.localize("PF2ETokenBar.Settings.Scale.Name"),
+    hint: game.i18n.localize("PF2ETokenBar.Settings.Scale.Hint"),
+    scope: "client",
+    config: true,
+    type: Number,
+    range: { min: 0.5, max: 2, step: 0.1 },
+    default: 1,
+    onChange: () => PF2ETokenBar.render(),
+  });
   game.settings.register("pf2e-token-bar", "debug", {
     name: "Debug Logging",
     hint: "Output additional debug information to the console",
@@ -83,6 +93,9 @@ class PF2ETokenBar {
     if (bar) bar.remove();
     bar = document.createElement("div");
     bar.id = "pf2e-token-bar";
+    const scale = game.settings.get("pf2e-token-bar", "scale");
+    bar.style.transform = `scale(${scale})`;
+    bar.style.transformOrigin = "top left";
     const orientation = game.settings.get("pf2e-token-bar", "orientation");
     if (orientation === "vertical") bar.classList.add("pf2e-token-bar-vertical");
     const pos = game.settings.get("pf2e-token-bar", "position");

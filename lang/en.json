@@ -8,6 +8,10 @@
       "CloseCombatTracker": {
         "Name": "Close Combat Tracker",
         "Hint": "Prevent the standard combat tracker from opening automatically"
+      },
+      "Scale": {
+        "Name": "Bar Size",
+        "Hint": "Adjust the size of the token bar"
       }
     },
     "HealAll": "Heal All",
