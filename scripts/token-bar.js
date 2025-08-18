@@ -588,7 +588,8 @@ class PF2ETokenBar {
         await combat.createEmbeddedDocuments("Combatant", [{
           tokenId: token.id,
           actorId: actor.id,
-          sceneId: token.scene.id
+          sceneId: token.scene.id,
+          alliance: "party"
         }]);
       } catch (err) {
         console.error("PF2ETokenBar | addPartyToEncounter", `failed to add ${actor.id}`, err);
