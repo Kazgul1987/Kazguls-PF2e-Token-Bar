@@ -169,10 +169,11 @@
 
 .pf2e-visibility-icon {
   position: absolute;
-  top: 2px;
-  left: 2px;
+  top: -20px;
+  left: -20px;
   font-size: 12px;
   cursor: pointer;
+  z-index: 3;
 }
 
 .pf2e-token-hidden img.pf2e-token-bar-token {
