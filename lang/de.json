@@ -37,6 +37,7 @@
     "Loot": "Beute",
     "Sell": "Verkaufen",
     "Ping": "Ping",
+    "HeroPoints": "Heldenpunkte",
     "TokenMissing": "Token '{name}' nicht gefunden",
     "EncounterDifficulty": "Begegnungsschwierigkeit",
     "Difficulties": {
