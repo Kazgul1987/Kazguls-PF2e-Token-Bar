@@ -708,6 +708,8 @@ class PF2ETokenBar {
   }
 }
 
+globalThis.PF2ETokenBar = PF2ETokenBar;
+
 let keydownListener;
 
 Hooks.once("ready", () => {
