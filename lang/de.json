@@ -4,6 +4,10 @@
       "Enabled": {
         "Name": "PF2E Token-Leiste",
         "Hint": "Zeigt die PF2E Token-Leiste an"
+      },
+      "CloseCombatTracker": {
+        "Name": "Standard Kampf-Tracker schließen",
+        "Hint": "Verhindert, dass sich der Standard Kampf-Tracker automatisch öffnet"
       }
     },
     "HealAll": "Alle heilen",

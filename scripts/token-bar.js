@@ -14,6 +14,14 @@ Hooks.once("init", () => {
     default: true,
     onChange: () => PF2ETokenBar.render()
   });
+  game.settings.register("pf2e-token-bar", "closeCombatTracker", {
+    name: game.i18n.localize("PF2ETokenBar.Settings.CloseCombatTracker.Name"),
+    hint: game.i18n.localize("PF2ETokenBar.Settings.CloseCombatTracker.Hint"),
+    scope: "client",
+    config: true,
+    type: Boolean,
+    default: false
+  });
   game.settings.register("pf2e-token-bar", "debug", {
     name: "Debug Logging",
     hint: "Output additional debug information to the console",
@@ -326,6 +334,7 @@ class PF2ETokenBar {
         await game.combat.endCombat();
       } else {
         await game.combat.startCombat();
+        if (game.settings.get("pf2e-token-bar", "closeCombatTracker")) ui.combat?.close(); // prevents automatic opening of the standard combat tracker
       }
       PF2ETokenBar.render();
     });
