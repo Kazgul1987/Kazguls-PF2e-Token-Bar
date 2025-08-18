@@ -93,10 +93,6 @@ class PF2ETokenBar {
       bar.style.top = "0px";
       bar.style.right = "0px";
     }
-    const handle = document.createElement("div");
-    handle.classList.add("pf2e-bar-handle");
-    handle.innerHTML = '<i class="fas fa-anchor"></i>';
-    bar.appendChild(handle);
 
     const tokenContainer = document.createElement("div");
     tokenContainer.classList.add("pf2e-token-bar-content");
@@ -494,9 +490,10 @@ class PF2ETokenBar {
       document.removeEventListener("mouseup", onMouseUp);
       game.settings.set("pf2e-token-bar", "position", { top: bar.offsetTop, left: bar.offsetLeft });
     };
-
     handle.addEventListener("mousedown", event => {
       if (game.settings.get("pf2e-token-bar", "locked")) return;
+    bar.addEventListener("mousedown", event => {
+      if (bar.classList.contains("locked")) return;
       event.preventDefault();
       dragging = true;
       offsetX = event.clientX - bar.offsetLeft;

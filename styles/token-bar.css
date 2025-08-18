@@ -7,6 +7,10 @@
   background: rgba(0, 0, 0, 0.5);
 }
 
+#pf2e-token-bar:not(.locked) {
+  cursor: move;
+}
+
 #pf2e-token-bar.pf2e-token-bar-vertical {
   flex-direction: column;
 }
@@ -131,17 +135,6 @@
   width: 24px;
   height: 24px;
 }
-
-#pf2e-token-bar .pf2e-bar-handle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  cursor: move;
-  margin-right: 4px;
-}
-
 #pf2e-token-bar.collapsed .pf2e-effect-bar {
   display: none;
 }
