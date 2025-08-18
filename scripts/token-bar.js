@@ -85,7 +85,14 @@ class PF2ETokenBar {
       tokens = actors
         .map(a => a.getActiveTokens(true)[0])
         .filter(t => t);
+
+      if (game.combat?.combatants.size > 0) {
+        this.debug("PF2ETokenBar | fetching combat tokens");
+        tokens = tokens.concat(this._combatTokens());
+      }
     }
+
+    tokens = [...new Map(tokens.map(t => [t.id, t])).values()];
 
     this.debug("PF2ETokenBar | found tokens", tokens.map(t => t.id));
     if (!tokens.length) return;
