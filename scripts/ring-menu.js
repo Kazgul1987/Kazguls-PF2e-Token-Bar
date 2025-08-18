@@ -128,11 +128,15 @@ export class PF2ERingMenu {
     try {
       const manager = game.pf2e?.ConditionManager;
       if (manager) {
-        const conditions = Array.from(manager.conditions.values())
-          .map(c => ({ slug: c.slug, name: game.i18n.localize(c.name) }))
+        const conditions = manager.conditionsSlugs
+          .map(slug => {
+            const condition = manager.conditions.get(slug);
+            const name = game.i18n.localize(condition?.name ?? slug);
+            return { slug, name };
+          })
           .sort((a, b) => a.name.localeCompare(b.name));
         const options = conditions
-          .map(c => `<option value="${c.slug}">${c.name}</option>`)
+          .map(({ slug, name }) => `<option value="${slug}">${name}</option>`)
           .join('');
         const content = `<form><select name="condition">${options}</select></form>`;
         const slug = await Dialog.prompt({
