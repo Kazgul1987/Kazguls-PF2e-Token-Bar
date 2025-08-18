@@ -23,6 +23,31 @@
   margin-right: 4px;
 }
 
+#pf2e-token-bar .pf2e-encounter-difficulty {
+  font-weight: bold;
+  margin-right: 4px;
+}
+
+#pf2e-token-bar .pf2e-encounter-trivial {
+  color: turquoise;
+}
+
+#pf2e-token-bar .pf2e-encounter-low {
+  color: green;
+}
+
+#pf2e-token-bar .pf2e-encounter-moderate {
+  color: yellow;
+}
+
+#pf2e-token-bar .pf2e-encounter-severe {
+  color: orange;
+}
+
+#pf2e-token-bar .pf2e-encounter-extreme {
+  color: red;
+}
+
 #pf2e-token-bar.collapsed .pf2e-token-bar-content {
   display: none;
 }

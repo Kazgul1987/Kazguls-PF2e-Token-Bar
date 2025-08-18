@@ -32,6 +32,14 @@
     "Loot": "Loot",
     "Sell": "Sell",
     "Ping": "Ping",
-    "TokenMissing": "Token '{name}' not found"
+    "TokenMissing": "Token '{name}' not found",
+    "EncounterDifficulty": "Encounter Difficulty",
+    "Difficulties": {
+      "Trivial": "Trivial",
+      "Low": "Low",
+      "Moderate": "Moderate",
+      "Severe": "Severe",
+      "Extreme": "Extreme"
+    }
   }
 }

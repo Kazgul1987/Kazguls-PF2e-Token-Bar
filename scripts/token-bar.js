@@ -74,6 +74,16 @@ class PF2ETokenBar {
     const content = document.createElement("div");
     content.classList.add("pf2e-token-bar-content");
     bar.appendChild(content);
+
+    const threat = game.combat?.metrics?.threat ?? game.combat?.analyze()?.threat;
+    if (threat) {
+      const difficultyDisplay = document.createElement("div");
+      const capThreat = threat.charAt(0).toUpperCase() + threat.slice(1);
+      difficultyDisplay.classList.add("pf2e-encounter-difficulty", `pf2e-encounter-${threat}`);
+      difficultyDisplay.innerText = game.i18n.localize(`PF2ETokenBar.Difficulties.${capThreat}`);
+      content.prepend(difficultyDisplay);
+    }
+
     if (game.combat?.round > 0) {
       const roundDisplay = document.createElement("div");
       roundDisplay.classList.add("pf2e-round-display");
