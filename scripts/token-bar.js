@@ -506,7 +506,13 @@ class PF2ETokenBar {
 
     static _combatTokens() {
       let combatants = Array.from(game.combat?.combatants ?? []);
-      combatants.sort((a, b) => (b.initiative ?? -Infinity) - (a.initiative ?? -Infinity));
+      combatants.sort((a, b) => {
+        const diff = (b.initiative ?? -Infinity) - (a.initiative ?? -Infinity);
+        if (diff !== 0) return diff;
+        const aIsPlayer = a.actor?.hasPlayerOwner ? 1 : 0;
+        const bIsPlayer = b.actor?.hasPlayerOwner ? 1 : 0;
+        return aIsPlayer - bIsPlayer;   // NPCs (0) vor PCs (1)
+      });
       const tokens = combatants.map(c => canvas.tokens.get(c.tokenId)).filter(t => t);
       this.debug(
         `PF2ETokenBar | _combatTokens found ${tokens.length} tokens`,
