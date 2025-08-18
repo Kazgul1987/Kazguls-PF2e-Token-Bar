@@ -106,6 +106,18 @@
   display: none;
 }
 
+.pf2e-visibility-icon {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.pf2e-token-hidden img.pf2e-token-bar-token {
+  opacity: 0.4;
+}
+
 #pf2e-token-bar .active-turn {
   outline: 2px solid yellow;
 }
