@@ -14,6 +14,12 @@ Hooks.once("init", () => {
     default: "horizontal",
     onChange: () => PF2ETokenBar.render(),
   });
+  game.settings.register("pf2e-token-bar", "locked", {
+    scope: "client",
+    config: false,
+    type: Boolean,
+    default: false,
+  });
   game.settings.register("pf2e-token-bar", "enabled", {
     name: game.i18n.localize("PF2ETokenBar.Settings.Enabled.Name"),
     hint: game.i18n.localize("PF2ETokenBar.Settings.Enabled.Hint"),
@@ -342,6 +348,25 @@ class PF2ETokenBar {
     });
     controls.appendChild(orientationBtn);
 
+    const lockBtn = document.createElement("button");
+    const updateLockBtn = () => {
+      const locked = game.settings.get("pf2e-token-bar", "locked");
+      lockBtn.innerHTML = locked
+        ? '<i class="fas fa-lock"></i>'
+        : '<i class="fas fa-lock-open"></i>';
+      const key = locked ? "PF2ETokenBar.Unlock" : "PF2ETokenBar.Lock";
+      lockBtn.title = game.i18n.localize(key);
+      lockBtn.setAttribute("aria-label", lockBtn.title);
+      handle.style.pointerEvents = locked ? "none" : "auto";
+    };
+    updateLockBtn();
+    lockBtn.addEventListener("click", async () => {
+      const current = game.settings.get("pf2e-token-bar", "locked");
+      await game.settings.set("pf2e-token-bar", "locked", !current);
+      updateLockBtn();
+    });
+    controls.appendChild(lockBtn);
+
       if (!game.combat?.started) {
         const addBtn = document.createElement("button");
         addBtn.innerHTML = '<i class="fas fa-swords"></i>';
@@ -465,7 +490,8 @@ class PF2ETokenBar {
       document.removeEventListener("mouseup", onMouseUp);
       game.settings.set("pf2e-token-bar", "position", { top: bar.offsetTop, left: bar.offsetLeft });
     };
-
+    handle.addEventListener("mousedown", event => {
+      if (game.settings.get("pf2e-token-bar", "locked")) return;
     bar.addEventListener("mousedown", event => {
       if (bar.classList.contains("locked")) return;
       event.preventDefault();
