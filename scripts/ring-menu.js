@@ -56,8 +56,27 @@ export class PF2ERingMenu {
     menu.appendChild(ping);
     items.push(ping);
 
-    // Initiative icon
     const combatant = game.combat?.combatants.find(c => c.tokenId === token.id);
+    if (combatant) {
+      const delayed = combatant.getFlag("pf2e-token-bar", "delayed");
+      const delay = document.createElement('div');
+      delay.classList.add('pf2e-ring-item');
+      const delayKey = delayed ? 'PF2ETokenBar.Play' : 'PF2ETokenBar.Delay';
+      delay.title = game.i18n?.localize(delayKey) || (delayed ? 'Play' : 'Delay');
+      delay.innerHTML = delayed ? '<i class="fas fa-play"></i>' : '<i class="fas fa-hourglass"></i>';
+      delay.addEventListener('click', async evt => {
+        evt.stopPropagation();
+        if (delayed) {
+          await PF2ETokenBar.resumeTurn(combatant);
+        } else {
+          await PF2ETokenBar.delayTurn(combatant);
+        }
+      });
+      menu.appendChild(delay);
+      items.push(delay);
+    }
+
+    // Initiative icon
     if (combatant && combatant.initiative == null) {
       const initiative = document.createElement('div');
       initiative.classList.add('pf2e-ring-item');

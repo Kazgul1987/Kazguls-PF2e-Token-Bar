@@ -592,6 +592,8 @@ class PF2ETokenBar {
     if (!combatant || !game.combat) return;
     try {
       await combatant.setFlag("pf2e-token-bar", "delayed", true);
+      const token = combatant.token?.object;
+      await token?.document.update({ overlayEffect: "icons/svg/hourglass.svg" });
       await game.combat.nextTurn();
     } catch (err) {
       console.error("PF2ETokenBar | delayTurn", err);
@@ -606,6 +608,8 @@ class PF2ETokenBar {
       const init = current?.initiative;
       if (init !== undefined) await game.combat.setInitiative(combatant.id, init);
       await combatant.unsetFlag("pf2e-token-bar", "delayed");
+      const token = combatant.token?.object;
+      await token?.document.update({ overlayEffect: null });
       const index = game.combat.turns.findIndex(c => c.id === combatant.id);
       if (index >= 0) await game.combat.update({ turn: index });
     } catch (err) {
