@@ -85,6 +85,7 @@ class PF2ETokenBar {
       const actor = token.actor;
       const wrapper = document.createElement("div");
       wrapper.classList.add("pf2e-token-wrapper");
+      if (token.document.hidden) wrapper.classList.add("pf2e-token-hidden");
       wrapper.addEventListener("mouseenter", () => PF2ETokenBar.hoveredToken = token);
       wrapper.addEventListener("mouseleave", () => {
         if (PF2ETokenBar.hoveredToken === token) PF2ETokenBar.hoveredToken = null;
@@ -131,6 +132,23 @@ class PF2ETokenBar {
         }
         wrapper.appendChild(init);
       }
+
+      const visibilityIcon = document.createElement("i");
+      visibilityIcon.classList.add(
+        "fas",
+        token.document.hidden ? "fa-eye-slash" : "fa-eye",
+        "pf2e-visibility-icon"
+      );
+      const visibilityTitle = game.i18n.localize("PF2ETokenBar.Visibility");
+      visibilityIcon.title = visibilityTitle;
+      visibilityIcon.setAttribute("aria-label", visibilityTitle);
+      visibilityIcon.addEventListener("click", async () => {
+        await token.document.update({ hidden: !token.document.hidden });
+        wrapper.classList.toggle("pf2e-token-hidden", token.document.hidden);
+        visibilityIcon.classList.toggle("fa-eye", !token.document.hidden);
+        visibilityIcon.classList.toggle("fa-eye-slash", token.document.hidden);
+      });
+      wrapper.appendChild(visibilityIcon);
 
       const indicator = document.createElement("i");
       indicator.classList.add("fas", "fa-crosshairs", "target-indicator");
