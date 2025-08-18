@@ -91,9 +91,19 @@ class PF2ETokenBar {
     handle.classList.add("pf2e-bar-handle");
     handle.innerHTML = '<i class="fas fa-anchor"></i>';
     bar.appendChild(handle);
-    const content = document.createElement("div");
-    content.classList.add("pf2e-token-bar-content");
-    bar.appendChild(content);
+
+    const tokenContainer = document.createElement("div");
+    tokenContainer.classList.add("pf2e-token-bar-content");
+    if (orientation === "vertical") {
+      tokenContainer.style.overflowY = "auto";
+      tokenContainer.style.overflowX = "hidden";
+      tokenContainer.style.maxHeight = "80vh";
+    } else {
+      tokenContainer.style.overflowX = "auto";
+      tokenContainer.style.overflowY = "hidden";
+      tokenContainer.style.maxWidth = "80vw";
+    }
+    bar.appendChild(tokenContainer);
 
     const threat = game.combat?.metrics?.threat ?? game.combat?.analyze()?.threat;
     if (threat) {
@@ -101,14 +111,14 @@ class PF2ETokenBar {
       const capThreat = threat.charAt(0).toUpperCase() + threat.slice(1);
       difficultyDisplay.classList.add("pf2e-encounter-difficulty", `pf2e-encounter-${threat}`);
       difficultyDisplay.innerText = game.i18n.localize(`PF2ETokenBar.Difficulties.${capThreat}`);
-      content.prepend(difficultyDisplay);
+      tokenContainer.prepend(difficultyDisplay);
     }
 
     if (game.combat?.round > 0) {
       const roundDisplay = document.createElement("div");
       roundDisplay.classList.add("pf2e-round-display");
       roundDisplay.innerText = game.i18n.format("PF2ETokenBar.Round", { round: game.combat.round });
-      content.prepend(roundDisplay);
+      tokenContainer.prepend(roundDisplay);
     }
 
     tokens.forEach(token => {
@@ -309,12 +319,12 @@ class PF2ETokenBar {
       }
       wrapper.appendChild(effectBar);
 
-      content.appendChild(wrapper);
+      tokenContainer.appendChild(wrapper);
     });
 
     const controls = document.createElement("div");
     controls.classList.add("pf2e-token-bar-controls");
-    content.appendChild(controls);
+    bar.appendChild(controls);
 
     const orientationBtn = document.createElement("button");
     const updateOrientationBtn = () => {
