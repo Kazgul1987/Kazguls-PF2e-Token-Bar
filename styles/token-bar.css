@@ -13,6 +13,10 @@
   cursor: move;
 }
 
+#pf2e-token-bar:not(.locked) .pf2e-token-bar-controls {
+  cursor: auto;
+}
+
 #pf2e-token-bar.pf2e-token-bar-vertical {
   flex-direction: column;
 }
