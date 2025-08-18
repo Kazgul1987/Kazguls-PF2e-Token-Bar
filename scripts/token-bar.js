@@ -73,23 +73,17 @@ class PF2ETokenBar {
       return;
     }
 
-    let tokens = [];
-    if (game.combat?.started && game.combat.combatants.size > 0) {
-      this.debug("PF2ETokenBar | fetching combat tokens");
-      tokens = this._combatTokens();
-    } else {
-      this.debug("PF2ETokenBar | fetching party actors");
-      const actors = this._partyTokens();
-      this.debug("PF2ETokenBar | found actors", actors.map(a => a.id));
-      // getActiveTokens(true) returns Token objects (not TokenDocuments)
-      tokens = actors
-        .map(a => a.getActiveTokens(true)[0])
-        .filter(t => t);
+    this.debug("PF2ETokenBar | fetching party actors");
+    const actors = this._partyTokens();
+    this.debug("PF2ETokenBar | found actors", actors.map(a => a.id));
+    // getActiveTokens(true) returns Token objects (not TokenDocuments)
+    let tokens = actors
+      .map(a => a.getActiveTokens(true)[0])
+      .filter(t => t);
 
-      if (game.combat?.started && game.combat.combatants.size > 0) {
-        this.debug("PF2ETokenBar | fetching combat tokens");
-        tokens = tokens.concat(this._combatTokens());
-      }
+    if (game.combat?.combatants.size > 0) {
+      this.debug("PF2ETokenBar | fetching combat tokens");
+      tokens = tokens.concat(this._combatTokens());
     }
 
     tokens = [...new Map(tokens.map(t => [t.id, t])).values()];
