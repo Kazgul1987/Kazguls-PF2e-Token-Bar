@@ -4,6 +4,10 @@
       "Enabled": {
         "Name": "PF2E Token Bar",
         "Hint": "Show the PF2E Token Bar"
+      },
+      "CloseCombatTracker": {
+        "Name": "Close Combat Tracker",
+        "Hint": "Prevent the standard combat tracker from opening automatically"
       }
     },
     "HealAll": "Heal All",
