@@ -39,6 +39,8 @@
     "Ping": "Ping",
     "Vertical": "Vertikal",
     "Horizontal": "Horizontal",
+    "Lock": "Sperren",
+    "Unlock": "Entsperren",
     "HeroPoints": "Heldenpunkte",
     "TokenMissing": "Token '{name}' nicht gefunden",
     "EncounterDifficulty": "Begegnungsschwierigkeit",
