@@ -37,6 +37,8 @@
     "Loot": "Beute",
     "Sell": "Verkaufen",
     "Ping": "Ping",
+    "Vertical": "Vertikal",
+    "Horizontal": "Horizontal",
     "TokenMissing": "Token '{name}' nicht gefunden",
     "EncounterDifficulty": "Begegnungsschwierigkeit",
     "Difficulties": {

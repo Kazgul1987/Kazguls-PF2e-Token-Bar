@@ -7,6 +7,18 @@
   background: rgba(0, 0, 0, 0.5);
 }
 
+#pf2e-token-bar.pf2e-token-bar-vertical {
+  flex-direction: column;
+}
+
+#pf2e-token-bar.pf2e-token-bar-vertical .pf2e-token-bar-content {
+  flex-direction: column;
+}
+
+#pf2e-token-bar.pf2e-token-bar-vertical .pf2e-token-bar-controls {
+  grid-template-columns: repeat(1, auto);
+}
+
 #pf2e-token-bar .pf2e-token-bar-content {
   display: flex;
   gap: 8px;
