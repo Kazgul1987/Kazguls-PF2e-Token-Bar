@@ -5,6 +5,8 @@
   gap: 8px;
   padding: 8px;
   background: rgba(0, 0, 0, 0.5);
+  /* ensure scaling originates from top left */
+  transform-origin: top left;
 }
 
 #pf2e-token-bar:not(.locked) {

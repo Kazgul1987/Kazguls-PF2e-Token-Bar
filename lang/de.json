@@ -8,6 +8,10 @@
       "CloseCombatTracker": {
         "Name": "Standard Kampf-Tracker schließen",
         "Hint": "Verhindert, dass sich der Standard Kampf-Tracker automatisch öffnet"
+      },
+      "Scale": {
+        "Name": "Balkengröße",
+        "Hint": "Größe der Token-Leiste anpassen"
       }
     },
     "HealAll": "Alle heilen",
