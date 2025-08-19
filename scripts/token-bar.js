@@ -177,7 +177,16 @@ class PF2ETokenBar {
 
         const init = document.createElement("div");
         init.classList.add("pf2e-initiative");
-        if (combatant.initiative !== undefined && combatant.initiative !== null) {
+        if (combatant?.initiative == null) {
+          init.innerHTML = "<strong>RFC!</strong>";
+          init.classList.add("pf2e-roll-initiative");
+          const rollTitle = game.i18n.localize("PF2ETokenBar.RollInitiative");
+          init.title = rollTitle;
+          init.setAttribute("aria-label", rollTitle);
+          init.addEventListener("click", async () => {
+            await combatant.actor?.initiative?.roll({ createMessage: true, dialog: true });
+          });
+        } else {
           init.innerText = `${combatant.initiative}`;
         }
         wrapper.appendChild(init);
