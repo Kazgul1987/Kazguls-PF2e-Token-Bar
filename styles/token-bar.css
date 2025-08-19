@@ -29,8 +29,9 @@
   display: flex;
   gap: 8px;
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: visible;
   max-width: 80vw;
+  padding-top: 8px;
 }
 
 #pf2e-token-bar.pf2e-token-bar-vertical .pf2e-token-bar-content {
@@ -38,6 +39,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   max-height: 80vh;
+  padding-top: 8px;
 }
 
 #pf2e-token-bar .pf2e-token-bar-controls {
