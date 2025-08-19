@@ -395,12 +395,14 @@ class PF2ETokenBar {
         if (game.combat?.started) {
           const combat = game.combat;
           await combat.endCombat();
-          const ids = combat.combatants.filter(c => !c.actor?.hasPlayerOwner).map(c => c.id);
-          if (ids.length) await combat.deleteEmbeddedDocuments("Combatant", ids);
 
           const combatants = Array.from(combat.combatants);
           await Promise.all(combatants.map(c => c.unsetFlag("pf2e-token-bar", "delayed")));
-          await combat.delete();
+
+          const ids = combatants.filter(c => !c.actor?.hasPlayerOwner).map(c => c.id);
+          if (ids.length) await combat.deleteEmbeddedDocuments("Combatant", ids);
+
+          if (game.combats.has(combat.id)) await combat.delete();
         } else {
           await game.combat.startCombat();
           if (game.settings.get("pf2e-token-bar", "closeCombatTracker")) ui.combat?.close(); // prevents automatic opening of the standard combat tracker
