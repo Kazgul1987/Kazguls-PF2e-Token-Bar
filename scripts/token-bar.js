@@ -527,11 +527,10 @@ class PF2ETokenBar {
     return tokens;
   }
 
-  static async openPartyStash() {
-    const sheet = game.pf2e.party?.sheet ?? game.pf2e.apps?.partySheet;
-    if (sheet) {
-      await sheet.render(true);
-      sheet._tabs[0]?.activate("stash");
+  static openPartyStash() {
+    const party = game.actors.party;
+    if (party?.sheet) {
+      party.sheet.render(true, { tab: "inventory" });
     } else {
       ui.notifications.error(game.i18n.localize("PF2ETokenBar.PartySheetMissing"));
     }
