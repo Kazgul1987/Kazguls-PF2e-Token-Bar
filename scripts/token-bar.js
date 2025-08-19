@@ -400,9 +400,7 @@ class PF2ETokenBar {
 
           const combatants = Array.from(combat.combatants);
           await Promise.all(combatants.map(c => c.unsetFlag("pf2e-token-bar", "delayed")));
-
-          const current = await fromUuid(combat.uuid);
-          if (current) await current.delete();
+          await combat.delete();
         } else {
           await game.combat.startCombat();
           if (game.settings.get("pf2e-token-bar", "closeCombatTracker")) ui.combat?.close(); // prevents automatic opening of the standard combat tracker
