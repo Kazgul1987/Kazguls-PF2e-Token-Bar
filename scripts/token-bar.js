@@ -575,7 +575,8 @@ class PF2ETokenBar {
   static async endEncounter() {
     const combat = game.combat;
     if (!combat) return;
-    await combat.delete();
+    await combat.endCombat();
+    game.combat = null;
     PF2ETokenBar.render();
   }
 
