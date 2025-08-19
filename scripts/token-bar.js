@@ -73,6 +73,8 @@ class PF2ETokenBar {
       return;
     }
 
+    const activeCombat = game.combat && game.combats.has(game.combat.id) ? game.combat : null;
+
     this.debug("PF2ETokenBar | fetching party actors");
     const actors = this._partyTokens();
     this.debug("PF2ETokenBar | found actors", actors.map(a => a.id));
@@ -81,7 +83,7 @@ class PF2ETokenBar {
       .map(a => a.getActiveTokens(true)[0])
       .filter(t => t);
 
-    if (game.combat?.started) {
+    if (activeCombat?.started) {
       this.debug("PF2ETokenBar | fetching combat tokens");
       tokens = tokens.concat(this._combatTokens());
     }
@@ -122,7 +124,7 @@ class PF2ETokenBar {
     bar.appendChild(tokenContainer);
 
 
-    const threat = game.combat?.metrics?.threat ?? game.combat?.analyze()?.threat;
+    const threat = activeCombat?.metrics?.threat ?? activeCombat?.analyze()?.threat;
     if (threat) {
       const difficultyDisplay = document.createElement("div");
       const capThreat = threat.charAt(0).toUpperCase() + threat.slice(1);
@@ -131,10 +133,10 @@ class PF2ETokenBar {
       tokenContainer.prepend(difficultyDisplay);
     }
 
-    if (game.combat?.round > 0) {
+    if (activeCombat?.round > 0) {
       const roundDisplay = document.createElement("div");
       roundDisplay.classList.add("pf2e-round-display");
-      roundDisplay.innerText = game.i18n.format("PF2ETokenBar.Round", { round: game.combat.round });
+      roundDisplay.innerText = game.i18n.format("PF2ETokenBar.Round", { round: activeCombat.round });
       tokenContainer.prepend(roundDisplay);
     }
 
@@ -148,11 +150,11 @@ class PF2ETokenBar {
         if (PF2ETokenBar.hoveredToken === token) PF2ETokenBar.hoveredToken = null;
       });
 
-      const combatant = game.combat?.combatants.find(c => c.tokenId === token.id);
+      const combatant = activeCombat?.combatants.find(c => c.tokenId === token.id);
 
       if (combatant) {
         const delayed = combatant.getFlag("pf2e-token-bar", "delayed");
-        const isActive = game.combat?.started && combatant.id === game.combat.combatant?.id;
+        const isActive = activeCombat?.started && combatant.id === activeCombat.combatant?.id;
         if (isActive) wrapper.classList.add("active-turn");
 
         if (delayed) {
@@ -348,7 +350,7 @@ class PF2ETokenBar {
     });
     controls.appendChild(lockBtn);
 
-    if (!game.combat?.started) {
+    if (!activeCombat?.started) {
         const addBtn = document.createElement("button");
         addBtn.innerHTML = '<i class="fas fa-swords"></i>';
         addBtn.title = game.i18n.localize("PF2ETokenBar.AddPartyToEncounter");
@@ -388,7 +390,7 @@ class PF2ETokenBar {
       controls.appendChild(btn);
 
     const encounterBtn = document.createElement("button");
-    const encounterKey = game.combat?.started ? "PF2ETokenBar.EndEncounter" : "PF2ETokenBar.StartEncounter";
+    const encounterKey = activeCombat?.started ? "PF2ETokenBar.EndEncounter" : "PF2ETokenBar.StartEncounter";
     encounterBtn.innerText = game.i18n.localize(encounterKey);
     encounterBtn.addEventListener("click", async () => {
       try {
@@ -411,8 +413,8 @@ class PF2ETokenBar {
     });
     controls.appendChild(encounterBtn);
 
-    if (game.combat) {
-      const npcCombatants = game.combat.combatants.filter(c => !c.actor?.hasPlayerOwner);
+    if (activeCombat) {
+      const npcCombatants = activeCombat.combatants.filter(c => !c.actor?.hasPlayerOwner);
       const needsInit = npcCombatants.some(
         c => c.initiative === undefined || c.initiative === null
       );
@@ -435,7 +437,7 @@ class PF2ETokenBar {
       }
     }
 
-    if (game.combat?.started) {
+    if (activeCombat?.started) {
       const prevBtn = document.createElement("button");
       prevBtn.classList.add("pf2e-prev-turn");
       prevBtn.innerHTML = '<i class="fas fa-arrow-left"></i>';
