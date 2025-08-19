@@ -580,7 +580,7 @@ class PF2ETokenBar {
     if (!actors.length) return;
 
     let combat = game.combat;
-    if (!combat) {
+    if (!combat || !game.combats.has(combat.id)) {
       try {
         combat = await Combat.create({ scene: canvas.scene });
       } catch (err) {
