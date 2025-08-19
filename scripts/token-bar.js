@@ -627,7 +627,7 @@ class PF2ETokenBar {
     try {
       const current = game.combat.combatant;
       const init = current?.initiative;
-      if (init !== undefined) await game.combat.setInitiative(combatant.id, init);
+      if (init !== undefined) await game.combat.setInitiative(combatant.id, init - 1);
       await combatant.unsetFlag("pf2e-token-bar", "delayed");
       const token = combatant.token?.object;
       await token?.document.update({ overlayEffect: null });
