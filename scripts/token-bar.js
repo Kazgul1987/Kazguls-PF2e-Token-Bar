@@ -83,9 +83,9 @@ class PF2ETokenBar {
       .map(a => a.getActiveTokens(true)[0])
       .filter(t => t);
 
-    if (activeCombat?.started) {
+    if (activeCombat?.combatants.size) {
       this.debug("PF2ETokenBar | fetching combat tokens");
-      tokens = tokens.concat(this._combatTokens());
+      tokens = this._combatTokens();
     }
 
     tokens = [...new Map(tokens.map(t => [t.id, t])).values()];
