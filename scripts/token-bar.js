@@ -395,7 +395,13 @@ class PF2ETokenBar {
         if (game.combat?.started) {
           await PF2ETokenBar.endEncounter();
         } else {
-          await game.combat.startCombat();
+          let combat = game.combat;
+          if (!combat || !game.combats.has(combat.id)) {
+            combat = await Combat.create({ scene: canvas.scene });
+            game.combat = combat;
+            await PF2ETokenBar.addPartyToEncounter();
+          }
+          await combat.startCombat();
           if (game.settings.get("pf2e-token-bar", "closeCombatTracker")) ui.combat?.close(); // prevents automatic opening of the standard combat tracker
           PF2ETokenBar.render();
         }
