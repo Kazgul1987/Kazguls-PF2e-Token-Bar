@@ -191,6 +191,15 @@
   z-index: 1;
 }
 
+#pf2e-token-bar .pf2e-initiative.pf2e-roll-initiative {
+  cursor: pointer;
+  color: var(--color-text-hyperlink);
+}
+
+#pf2e-token-bar .pf2e-initiative.pf2e-roll-initiative strong {
+  font-weight: bold;
+}
+
 #pf2e-token-bar .pf2e-delay-icon,
 #pf2e-token-bar .pf2e-play-icon {
   position: absolute;
