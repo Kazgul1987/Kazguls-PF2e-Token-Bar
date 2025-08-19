@@ -577,8 +577,9 @@ class PF2ETokenBar {
   static async endEncounter() {
     const combat = game.combat;
     if (!combat) return;
-    await combat.endCombat();
-    game.combat = null;
+    if (game.combats.has(combat.id)) {
+      await Combat.deleteDocuments([combat.id]);
+    }
     PF2ETokenBar.render();
   }
 
