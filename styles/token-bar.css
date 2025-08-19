@@ -36,7 +36,7 @@
 
 #pf2e-token-bar.pf2e-token-bar-vertical .pf2e-token-bar-content {
   flex-direction: column;
-  overflow-y: auto;
+  overflow-y: visible;
   overflow-x: hidden;
   max-height: 80vh;
   padding-top: 8px;
@@ -198,6 +198,7 @@
   left: 50%;
   transform: translateX(-50%);
   font-size: 16px;
+  z-index: 2;
   color: var(--color-text-light-highlight);
   cursor: pointer;
   transition: transform 0.1s ease, filter 0.1s ease;
