@@ -600,10 +600,10 @@ class PF2ETokenBar {
     for (const actor of actors) {
       const token = actor.getActiveTokens(true)[0];
       if (!token) continue;
-      const exists = game.combat.combatants.find(c => c.tokenId === token.id);
+      const exists = combat.combatants.find(c => c.tokenId === token.id);
       if (exists) continue;
       try {
-        await game.combat.createEmbeddedDocuments("Combatant", [{
+        await combat.createEmbeddedDocuments("Combatant", [{
           tokenId: token.id,
           actorId: actor.id,
           sceneId: token.scene.id,
