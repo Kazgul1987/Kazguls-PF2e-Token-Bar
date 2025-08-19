@@ -3,7 +3,7 @@
   top: 0;
   display: flex;
   gap: 8px;
-  padding: 8px;
+  padding: 20px 8px 8px 8px;
   background: rgba(0, 0, 0, 0.5);
   /* ensure scaling originates from top left */
   transform-origin: top left;
