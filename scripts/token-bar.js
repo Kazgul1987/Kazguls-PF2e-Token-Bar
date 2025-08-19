@@ -581,6 +581,7 @@ class PF2ETokenBar {
     if (!combat || !game.combats.has(combat.id)) {
       try {
         combat = await Combat.create({ scene: canvas.scene });
+        game.combat = combat;
       } catch (err) {
         console.error("PF2ETokenBar | addPartyToEncounter", "failed to create combat", err);
         return;
@@ -590,10 +591,10 @@ class PF2ETokenBar {
     for (const actor of actors) {
       const token = actor.getActiveTokens(true)[0];
       if (!token) continue;
-      const exists = combat.combatants.find(c => c.tokenId === token.id);
+      const exists = game.combat.combatants.find(c => c.tokenId === token.id);
       if (exists) continue;
       try {
-        await combat.createEmbeddedDocuments("Combatant", [{
+        await game.combat.createEmbeddedDocuments("Combatant", [{
           tokenId: token.id,
           actorId: actor.id,
           sceneId: token.scene.id,
