@@ -393,24 +393,14 @@ class PF2ETokenBar {
     encounterBtn.addEventListener("click", async () => {
       try {
         if (game.combat?.started) {
-          const combat = game.combat;
-          await combat.endCombat();
-
-          const combatants = Array.from(combat.combatants);
-          await Promise.all(combatants.map(c => c.unsetFlag("pf2e-token-bar", "delayed")));
-
-          const ids = combatants.filter(c => !c.actor?.hasPlayerOwner).map(c => c.id);
-          if (ids.length) await combat.deleteEmbeddedDocuments("Combatant", ids);
-
-          if (game.combats.has(combat.id)) await combat.delete();
+          await PF2ETokenBar.endEncounter();
         } else {
           await game.combat.startCombat();
           if (game.settings.get("pf2e-token-bar", "closeCombatTracker")) ui.combat?.close(); // prevents automatic opening of the standard combat tracker
+          PF2ETokenBar.render();
         }
       } catch (error) {
         console.error(error);
-      } finally {
-        PF2ETokenBar.render();
       }
     });
     controls.appendChild(encounterBtn);
@@ -573,6 +563,16 @@ class PF2ETokenBar {
       );
     }
     await Promise.all(updates);
+    PF2ETokenBar.render();
+  }
+
+  static async endEncounter() {
+    const combat = game.combat;
+    if (!combat) return;
+    await combat.endCombat();
+    const npcIds = combat.combatants.filter(c => !c.actor?.hasPlayerOwner).map(c => c.id);
+    if (npcIds.length) await combat.deleteEmbeddedDocuments("Combatant", npcIds);
+    if (game.combats.has(combat.id)) await combat.delete();
     PF2ETokenBar.render();
   }
 
