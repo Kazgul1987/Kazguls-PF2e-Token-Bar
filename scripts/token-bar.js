@@ -569,9 +569,7 @@ class PF2ETokenBar {
   static async endEncounter() {
     const combat = game.combat;
     if (!combat) return;
-    const npcIds = combat.combatants.filter(c => !c.actor?.hasPlayerOwner).map(c => c.id);
-    if (npcIds.length) await combat.deleteEmbeddedDocuments("Combatant", npcIds);
-    await combat.endCombat();
+    await combat.delete();
     PF2ETokenBar.render();
   }
 
