@@ -677,11 +677,26 @@ class PF2ETokenBar {
       const dead = actor.hasCondition?.("dead");
       if (hp > 0 && !dead) continue;
 
-      items.push(...actor.items.map(i => i.toObject()));
+      const actorItems = Array.from(actor.items.values());
+      items.push(...actorItems.map(i => i.toObject()));
+      if (actorItems.length) {
+        const ids = actorItems.map(i => i.id);
+        await actor.deleteEmbeddedDocuments("Item", ids);
+      }
+
       const actorCurrencies = actor.system?.currencies ?? {};
       for (const [type, data] of Object.entries(actorCurrencies)) {
         const value = Number(data.value ?? data) || 0;
         currencies[type] = (currencies[type] || 0) + value;
+      }
+
+      if (Object.keys(actorCurrencies).length) {
+        const emptyCurrencies = foundry.utils.deepClone(actorCurrencies);
+        for (const [type, data] of Object.entries(emptyCurrencies)) {
+          if (typeof data === "object") emptyCurrencies[type].value = 0;
+          else emptyCurrencies[type] = 0;
+        }
+        await actor.update({ "system.currencies": emptyCurrencies });
       }
     }
 
