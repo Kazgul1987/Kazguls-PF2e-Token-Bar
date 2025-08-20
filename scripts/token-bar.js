@@ -275,35 +275,30 @@ class PF2ETokenBar {
 
       const heroPoints = actor.system?.resources?.heroPoints ?? {};
       const heroValue = Number(heroPoints.value) || 0;
-      const heroMax = Number(heroPoints.max) || 0;
 
       const heroWrapper = document.createElement("div");
       heroWrapper.classList.add("pf2e-hero-points");
       heroWrapper.title = game.i18n.localize("PF2ETokenBar.HeroPoints");
 
-      const heroMinus = document.createElement("button");
-      heroMinus.innerHTML = '<i class="fas fa-minus"></i>';
-      heroMinus.addEventListener("click", async () => {
-        const current = Number(actor.system?.resources?.heroPoints?.value) || 0;
-        const newValue = Math.max(current - 1, 0);
-        await actor.update({ 'system.resources.heroPoints.value': newValue });
-      });
-      heroWrapper.appendChild(heroMinus);
+      for (let i = 1; i <= 3; i++) {
+        const heroPoint = document.createElement("span");
+        heroPoint.classList.add("pf2e-hero-point");
+        if (i <= heroValue) heroPoint.classList.add("full");
 
-      const heroText = document.createElement("span");
-      heroText.classList.add("pf2e-hero-points-value");
-      heroText.innerText = heroMax ? `${heroValue}/${heroMax}` : `${heroValue}`;
-      heroWrapper.appendChild(heroText);
+        heroPoint.addEventListener("click", async () => {
+          const current = Number(actor.system?.resources?.heroPoints?.value) || 0;
+          const max = Number(actor.system?.resources?.heroPoints?.max ?? 3);
+          await actor.update({ 'system.resources.heroPoints.value': Math.min(current + 1, max) });
+        });
 
-      const heroPlus = document.createElement("button");
-      heroPlus.innerHTML = '<i class="fas fa-plus"></i>';
-      heroPlus.addEventListener("click", async () => {
-        const current = Number(actor.system?.resources?.heroPoints?.value) || 0;
-        const max = Number(actor.system?.resources?.heroPoints?.max ?? 3);
-        const newValue = Math.min(current + 1, max);
-        await actor.update({ 'system.resources.heroPoints.value': newValue });
-      });
-      heroWrapper.appendChild(heroPlus);
+        heroPoint.addEventListener("contextmenu", async (event) => {
+          event.preventDefault();
+          const current = Number(actor.system?.resources?.heroPoints?.value) || 0;
+          await actor.update({ 'system.resources.heroPoints.value': Math.max(current - 1, 0) });
+        });
+
+        heroWrapper.appendChild(heroPoint);
+      }
 
       wrapper.appendChild(heroWrapper);
 
