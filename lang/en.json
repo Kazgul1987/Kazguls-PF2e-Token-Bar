@@ -12,6 +12,10 @@
       "Scale": {
         "Name": "Bar Size",
         "Hint": "Adjust the size of the token bar"
+      },
+      "PartyOnlySelf": {
+        "Name": "Show Only Owned Tokens",
+        "Hint": "When not a GM, show only tokens for actors you own"
       }
     },
     "HealAll": "Heal All",

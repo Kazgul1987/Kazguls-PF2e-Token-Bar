@@ -55,6 +55,15 @@ Hooks.once("init", () => {
     type: Boolean,
     default: false
   });
+  game.settings.register("pf2e-token-bar", "partyOnlySelf", {
+    name: game.i18n.localize("PF2ETokenBar.Settings.PartyOnlySelf.Name"),
+    hint: game.i18n.localize("PF2ETokenBar.Settings.PartyOnlySelf.Hint"),
+    scope: "client",
+    config: true,
+    type: Boolean,
+    default: false,
+    onChange: () => PF2ETokenBar.render(),
+  });
 });
 
 class PF2ETokenBar {
@@ -562,7 +571,11 @@ class PF2ETokenBar {
 
     static _partyTokens() {
       if (game.combat?.started) return [];
-      const actors = game.actors.party?.members || [];
+      let actors = game.actors.party?.members || [];
+      if (game.settings.get("pf2e-token-bar", "partyOnlySelf") && !game.user.isGM) {
+        const userChar = game.user.character;
+        actors = actors.filter(a => (userChar && a.id === userChar.id) || a.isOwner);
+      }
       this.debug(
         `PF2ETokenBar | _partyTokens found ${actors.length} actors`,
         actors.map(a => a.id)

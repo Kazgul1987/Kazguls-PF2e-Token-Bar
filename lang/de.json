@@ -12,6 +12,10 @@
       "Scale": {
         "Name": "Balkengröße",
         "Hint": "Größe der Token-Leiste anpassen"
+      },
+      "PartyOnlySelf": {
+        "Name": "Nur eigener Charakter",
+        "Hint": "Wenn du kein SL bist, werden nur Tokens von Charakteren angezeigt, die du besitzt"
       }
     },
     "HealAll": "Alle heilen",
