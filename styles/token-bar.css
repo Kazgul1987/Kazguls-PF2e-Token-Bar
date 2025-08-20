@@ -151,7 +151,7 @@
 #pf2e-token-bar .pf2e-hero-point {
   width: 16px;
   height: 16px;
-  border: 1px solid var(--color-border-dark-primary);
+  border: 1px solid gold;
   border-radius: 50%;
   cursor: pointer;
 }
