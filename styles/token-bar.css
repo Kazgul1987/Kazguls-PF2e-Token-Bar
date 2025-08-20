@@ -48,6 +48,13 @@
   gap: 4px;
 }
 
+.pf2e-token-bar-controls .pf2e-loot-controls {
+  display: flex;
+  gap: 4px;
+  grid-column: 1 / -1;
+  margin-top: 8px;
+}
+
 #pf2e-token-bar .pf2e-inventory-action {
   padding: 8px 12px;
   min-width: 80px;
