@@ -18,7 +18,8 @@
     }
   ],
   "esmodules": [
-    "scripts/token-bar.js"
+    "scripts/token-bar.js",
+    "scripts/rune-automation.js"
   ],
   "styles": [
     "styles/token-bar.css"
