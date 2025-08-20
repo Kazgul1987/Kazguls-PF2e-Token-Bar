@@ -436,8 +436,21 @@ class PF2ETokenBar {
     encounterBtn.innerText = game.i18n.localize(encounterKey);
     encounterBtn.addEventListener("click", async () => {
       try {
-        if (game.combat?.started) await game.combat.endCombat();
-        else await game.combat.startCombat();
+        if (game.combat?.started) {
+          if (game.user.isGM && game.settings.get("pf2e-token-bar", "quickLoot")) {
+            const confirmed = await Dialog.confirm({
+              title: game.i18n.localize("PF2ETokenBar.QuickLootConfirmTitle"),
+              content: `<p>${game.i18n.localize("PF2ETokenBar.QuickLootConfirmContent")}</p>`
+            });
+            if (confirmed) {
+              await PF2ETokenBar.transferDefeatedLoot();
+              PF2ETokenBar.openLootActor("Loot");
+            }
+          }
+          await game.combat.endCombat();
+        } else {
+          await game.combat.startCombat();
+        }
       } catch (error) {
         console.error(error);
       }
@@ -951,16 +964,6 @@ Hooks.on("updateCombat", () => PF2ETokenBar.render());
 Hooks.on("combatStart", () => PF2ETokenBar.render());
 Hooks.on("combatEnd", async () => {
   PF2ETokenBar.render();
-  if (game.user.isGM && game.settings.get("pf2e-token-bar", "quickLoot")) {
-    await Dialog.confirm({
-      title: game.i18n.localize("PF2ETokenBar.QuickLootConfirmTitle"),
-      content: `<p>${game.i18n.localize("PF2ETokenBar.QuickLootConfirmContent")}</p>`,
-      yes: async () => {
-        await PF2ETokenBar.transferDefeatedLoot();
-        PF2ETokenBar.openLootActor("Loot");
-      }
-    });
-  }
 });
 Hooks.on("combatTurn", () => {
   PF2ETokenBar.render();
