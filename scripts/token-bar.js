@@ -218,9 +218,10 @@ class PF2ETokenBar {
 
       const actionTab = document.createElement("div");
       actionTab.classList.add("pf2e-token-tab");
-      const actionImg = document.createElement("img");
-      actionImg.src = "systems/pf2e/icons/actions/SingleAction.webp";
-      actionTab.appendChild(actionImg);
+      const actionGlyph = document.createElement("span");
+      actionGlyph.classList.add("action-glyph");
+      actionGlyph.textContent = "1";
+      actionTab.appendChild(actionGlyph);
       const actionsTitle = game.i18n.localize("PF2ETokenBar.Actions");
       actionTab.title = actionsTitle;
       actionTab.setAttribute("aria-label", actionsTitle);

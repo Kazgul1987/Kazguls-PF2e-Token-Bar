@@ -358,6 +358,10 @@
   align-items:center;justify-content:center;
   cursor:pointer;
 }
+.pf2e-token-tab .action-glyph {
+  font-size: 16px;
+  line-height: 16px;
+}
 .pf2e-token-tab:hover{filter:brightness(1.2);}
 
 .pf2e-token-tabs {
