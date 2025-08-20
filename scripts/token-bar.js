@@ -635,6 +635,47 @@ class PF2ETokenBar {
     }
   }
 
+  static async transferDefeatedLoot() {
+    const lootActor = game.actors.getName("Loot");
+    if (!lootActor) {
+      ui.notifications.error(game.i18n.format("PF2ETokenBar.TokenMissing", { name: "Loot" }));
+      return;
+    }
+    if (!lootActor.isOwner) {
+      ui.notifications.error("You do not have permission to modify the Loot actor.");
+      return;
+    }
+
+    const items = [];
+    const currencies = {};
+
+    for (const combatant of game.combat?.combatants ?? []) {
+      const actor = combatant.actor;
+      if (!actor || actor.hasPlayerOwner) continue;
+      const hp = actor.system?.attributes?.hp?.value ?? 0;
+      const dead = actor.hasCondition?.("dead");
+      if (hp > 0 && !dead) continue;
+
+      items.push(...actor.items.map(i => i.toObject()));
+      const actorCurrencies = actor.system?.currencies ?? {};
+      for (const [type, data] of Object.entries(actorCurrencies)) {
+        const value = Number(data.value ?? data) || 0;
+        currencies[type] = (currencies[type] || 0) + value;
+      }
+    }
+
+    if (items.length) await lootActor.createEmbeddedDocuments("Item", items);
+
+    if (Object.keys(currencies).length) {
+      const lootCurrencies = foundry.utils.deepClone(lootActor.system?.currencies ?? {});
+      for (const [type, amount] of Object.entries(currencies)) {
+        if (!lootCurrencies[type]) lootCurrencies[type] = { value: 0 };
+        lootCurrencies[type].value = (lootCurrencies[type].value ?? lootCurrencies[type]) + amount;
+      }
+      await lootActor.update({ "system.currencies": lootCurrencies });
+    }
+  }
+
   static handleDragOver(event) {
     event.preventDefault();
     event.currentTarget.classList.add("pf2e-drop-hover");
@@ -900,7 +941,11 @@ Hooks.on("updateItem", item => {
 });
 Hooks.on("updateCombat", () => PF2ETokenBar.render());
 Hooks.on("combatStart", () => PF2ETokenBar.render());
-Hooks.on("combatEnd", () => PF2ETokenBar.render());
+Hooks.on("combatEnd", async () => {
+  PF2ETokenBar.render();
+  await PF2ETokenBar.transferDefeatedLoot();
+  PF2ETokenBar.openLootActor("Loot");
+});
 Hooks.on("combatTurn", () => {
   PF2ETokenBar.render();
   document
