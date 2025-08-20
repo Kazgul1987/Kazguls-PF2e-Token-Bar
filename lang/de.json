@@ -22,6 +22,8 @@
         "Hint": "Überträgt nach dem Kampf automatisch die Beute besiegter NSC und öffnet den Beute-Akteur."
       }
     },
+    "QuickLootConfirmTitle": "Schnellbeute",
+    "QuickLootConfirmContent": "Beute besiegter NSC übertragen und Beute-Akteur öffnen?",
     "HealAll": "Alle heilen",
     "HealAllConfirm": "Alle auf volle HP setzen?",
     "RequestRoll": "Wurf anfordern",

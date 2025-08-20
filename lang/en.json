@@ -22,6 +22,8 @@
         "Hint": "Automatically transfer defeated NPC loot and open the Loot actor on combat end."
       }
     },
+    "QuickLootConfirmTitle": "Quick Loot",
+    "QuickLootConfirmContent": "Transfer defeated NPC loot and open the Loot actor?",
     "HealAll": "Heal All",
     "HealAllConfirm": "Set everyone to full HP?",
     "RequestRoll": "Request Roll",
