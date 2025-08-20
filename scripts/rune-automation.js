@@ -53,14 +53,19 @@ Hooks.on("renderChatMessage", (message, html) => {
     const original = game.messages.get(msgId);
 
     const roll = await new Roll("1d20").evaluate({ async: true });
-    await roll.toMessage({ flavor: `Fortification (DC ${dc})` });
+    const success = roll.total >= dc;
+    await roll.toMessage({
+      flavor: `Fortification (DC ${dc}) – ${success ? game.i18n.localize("PF2E.Check.Success") : game.i18n.localize("PF2E.Check.Failure")}`,
+    });
 
-    if (roll.total >= dc) {
+    if (success) {
       await original.update({
         "flags.pf2e.context.outcome": "success",
         "flags.pf2e.damageRoll.outcome": "success",
       });
       ui.notifications.info("Critical downgraded to normal damage.");
+    } else {
+      ui.notifications.warn("Fortification failed.");
     }
   });
 });
