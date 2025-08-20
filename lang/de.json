@@ -16,6 +16,10 @@
       "PartyOnlySelf": {
         "Name": "Nur eigener Charakter",
         "Hint": "Wenn du kein SL bist, werden nur Tokens von Charakteren angezeigt, die du besitzt"
+      },
+      "QuickLoot": {
+        "Name": "Schnellbeute",
+        "Hint": "Überträgt nach dem Kampf automatisch die Beute besiegter NSC und öffnet den Beute-Akteur."
       }
     },
     "HealAll": "Alle heilen",
