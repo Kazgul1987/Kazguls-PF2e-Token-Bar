@@ -269,6 +269,12 @@ class PF2ETokenBar {
       const barInner = document.createElement("div");
       barInner.classList.add("pf2e-hp-bar-inner");
       const pct = hpMax > 0 ? Math.min(Math.max((hpValue / hpMax) * 100, 0), 100) : 0;
+      const color =
+        pct > 75 ? "green" :
+        pct > 50 ? "yellow" :
+        pct > 25 ? "orange" :
+        "red";
+      barInner.style.backgroundColor = color;
       barInner.style.width = `${pct}%`;
       barOuter.appendChild(barInner);
       wrapper.appendChild(barOuter);
