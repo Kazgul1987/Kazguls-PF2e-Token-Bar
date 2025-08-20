@@ -380,16 +380,25 @@ class PF2ETokenBar {
         const partyStashBtn = document.createElement("button");
         partyStashBtn.innerText = game.i18n.localize("PF2ETokenBar.PartyStash");
         partyStashBtn.addEventListener("click", () => PF2ETokenBar.openPartyStash());
+        partyStashBtn.addEventListener("dragover", PF2ETokenBar.handleDragOver);
+        partyStashBtn.addEventListener("dragleave", PF2ETokenBar.handleDragLeave);
+        partyStashBtn.addEventListener("drop", event => PF2ETokenBar.handleItemDrop(event, "party"));
         controls.appendChild(partyStashBtn);
 
         const lootBtn = document.createElement("button");
         lootBtn.innerText = game.i18n.localize("PF2ETokenBar.Loot");
         lootBtn.addEventListener("click", () => PF2ETokenBar.openLootActor("Loot"));
+        lootBtn.addEventListener("dragover", PF2ETokenBar.handleDragOver);
+        lootBtn.addEventListener("dragleave", PF2ETokenBar.handleDragLeave);
+        lootBtn.addEventListener("drop", event => PF2ETokenBar.handleItemDrop(event, "Loot"));
         controls.appendChild(lootBtn);
 
         const sellBtn = document.createElement("button");
         sellBtn.innerText = game.i18n.localize("PF2ETokenBar.Sell");
         sellBtn.addEventListener("click", () => PF2ETokenBar.openLootActor("Sell"));
+        sellBtn.addEventListener("dragover", PF2ETokenBar.handleDragOver);
+        sellBtn.addEventListener("dragleave", PF2ETokenBar.handleDragLeave);
+        sellBtn.addEventListener("drop", event => PF2ETokenBar.handleItemDrop(event, "Sell"));
         controls.appendChild(sellBtn);
       }
 
@@ -544,6 +553,38 @@ class PF2ETokenBar {
       actor.sheet.render(true);
     } else {
       ui.notifications.error(game.i18n.format("PF2ETokenBar.TokenMissing", { name }));
+    }
+  }
+
+  static handleDragOver(event) {
+    event.preventDefault();
+    event.currentTarget.classList.add("pf2e-drop-hover");
+  }
+
+  static handleDragLeave(event) {
+    event.currentTarget.classList.remove("pf2e-drop-hover");
+  }
+
+  static async handleItemDrop(event, target) {
+    event.preventDefault();
+    event.currentTarget.classList.remove("pf2e-drop-hover");
+    try {
+      const data = event.dataTransfer?.getData("text/plain");
+      if (!data) throw new Error("No data");
+      const parsed = JSON.parse(data);
+      if (parsed.type !== "Item" || !parsed.uuid) throw new Error("Invalid item data");
+
+      const item = await fromUuid(parsed.uuid);
+      if (!(item instanceof Item)) throw new Error("Item not found");
+
+      const actor = target === "party" ? game.actors.party : game.actors.getName(target);
+      if (!actor) throw new Error(game.i18n.format("PF2ETokenBar.TokenMissing", { name: target }));
+      if (!actor.isOwner) throw new Error("You do not have permission to modify this actor.");
+
+      await actor.createEmbeddedDocuments("Item", [item.toObject()]);
+    } catch (err) {
+      console.error(err);
+      ui.notifications.error(err.message || "Failed to drop item.");
     }
   }
 

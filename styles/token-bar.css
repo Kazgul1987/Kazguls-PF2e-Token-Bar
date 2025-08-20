@@ -297,6 +297,10 @@
   pointer-events: none;
 }
 
+#pf2e-token-bar button.pf2e-drop-hover {
+  filter: brightness(1.2);
+}
+
 #pf2e-ring-menu {
   position: absolute;
   width: 0;
