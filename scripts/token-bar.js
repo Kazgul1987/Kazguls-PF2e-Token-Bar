@@ -226,48 +226,51 @@ class PF2ETokenBar {
       });
       wrapper.appendChild(img);
 
-      const tabContainer = document.createElement("div");
-      tabContainer.classList.add("pf2e-token-tabs");
-      wrapper.appendChild(tabContainer);
+      const isCharacter = actor.isOfType?.("character") ?? actor.type === "character";
+      if (isCharacter) {
+        const tabContainer = document.createElement("div");
+        tabContainer.classList.add("pf2e-token-tabs");
+        wrapper.appendChild(tabContainer);
 
-      const actionTab = document.createElement("div");
-      actionTab.classList.add("pf2e-token-tab");
-      const actionGlyph = document.createElement("span");
-      actionGlyph.classList.add("action-glyph");
-      actionGlyph.textContent = "1";
-      actionTab.appendChild(actionGlyph);
-      const actionsTitle = game.i18n.localize("PF2ETokenBar.Actions");
-      actionTab.title = actionsTitle;
-      actionTab.setAttribute("aria-label", actionsTitle);
-      actionTab.addEventListener("click", () => actor.sheet.render(true, { tab: "actions" }));
-      tabContainer.appendChild(actionTab);
+        const actionTab = document.createElement("div");
+        actionTab.classList.add("pf2e-token-tab");
+        const actionGlyph = document.createElement("span");
+        actionGlyph.classList.add("action-glyph");
+        actionGlyph.textContent = "1";
+        actionTab.appendChild(actionGlyph);
+        const actionsTitle = game.i18n.localize("PF2ETokenBar.Actions");
+        actionTab.title = actionsTitle;
+        actionTab.setAttribute("aria-label", actionsTitle);
+        actionTab.addEventListener("click", () => actor.sheet.render(true, { tab: "actions" }));
+        tabContainer.appendChild(actionTab);
 
-      const spellTab = document.createElement("div");
-      spellTab.classList.add("pf2e-token-tab");
-      spellTab.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i>';
-      const spellsTitle = game.i18n.localize("PF2ETokenBar.Spells");
-      spellTab.title = spellsTitle;
-      spellTab.setAttribute("aria-label", spellsTitle);
-      spellTab.addEventListener("click", () => actor.sheet.render(true, { tab: "spellcasting" }));
-      tabContainer.appendChild(spellTab);
+        const spellTab = document.createElement("div");
+        spellTab.classList.add("pf2e-token-tab");
+        spellTab.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i>';
+        const spellsTitle = game.i18n.localize("PF2ETokenBar.Spells");
+        spellTab.title = spellsTitle;
+        spellTab.setAttribute("aria-label", spellsTitle);
+        spellTab.addEventListener("click", () => actor.sheet.render(true, { tab: "spellcasting" }));
+        tabContainer.appendChild(spellTab);
 
-      const inventoryTab = document.createElement("div");
-      inventoryTab.classList.add("pf2e-token-tab");
-      inventoryTab.innerHTML = '<i class="fas fa-treasure-chest"></i>';
-      const inventoryTitle = game.i18n.localize("PF2ETokenBar.Inventory");
-      inventoryTab.title = inventoryTitle;
-      inventoryTab.setAttribute("aria-label", inventoryTitle);
-      inventoryTab.addEventListener("click", () => actor.sheet.render(true, { tab: "inventory" }));
-      tabContainer.appendChild(inventoryTab);
+        const inventoryTab = document.createElement("div");
+        inventoryTab.classList.add("pf2e-token-tab");
+        inventoryTab.innerHTML = '<i class="fas fa-treasure-chest"></i>';
+        const inventoryTitle = game.i18n.localize("PF2ETokenBar.Inventory");
+        inventoryTab.title = inventoryTitle;
+        inventoryTab.setAttribute("aria-label", inventoryTitle);
+        inventoryTab.addEventListener("click", () => actor.sheet.render(true, { tab: "inventory" }));
+        tabContainer.appendChild(inventoryTab);
 
-      const proficiencyTab = document.createElement("div");
-      proficiencyTab.classList.add("pf2e-token-tab");
-      proficiencyTab.innerHTML = '<i class="fas fa-hand-paper"></i>';
-      const proficiencyTitle = game.i18n.localize("PF2ETokenBar.Proficiencies");
-      proficiencyTab.title = proficiencyTitle;
-      proficiencyTab.setAttribute("aria-label", proficiencyTitle);
-      proficiencyTab.addEventListener("click", () => actor.sheet.render(true, { tab: "proficiencies" }));
-      tabContainer.appendChild(proficiencyTab);
+        const proficiencyTab = document.createElement("div");
+        proficiencyTab.classList.add("pf2e-token-tab");
+        proficiencyTab.innerHTML = '<i class="fas fa-hand-paper"></i>';
+        const proficiencyTitle = game.i18n.localize("PF2ETokenBar.Proficiencies");
+        proficiencyTab.title = proficiencyTitle;
+        proficiencyTab.setAttribute("aria-label", proficiencyTitle);
+        proficiencyTab.addEventListener("click", () => actor.sheet.render(true, { tab: "proficiencies" }));
+        tabContainer.appendChild(proficiencyTab);
+      }
 
       const hp = actor.system?.attributes?.hp ?? {};
       const hpValue = Number(hp.value) || 0;
@@ -293,34 +296,36 @@ class PF2ETokenBar {
       barOuter.appendChild(barInner);
       wrapper.appendChild(barOuter);
 
-      const heroPoints = actor.system?.resources?.heroPoints ?? {};
-      const heroValue = Number(heroPoints.value) || 0;
+      if (isCharacter) {
+        const heroPoints = actor.system?.resources?.heroPoints ?? {};
+        const heroValue = Number(heroPoints.value) || 0;
 
-      const heroWrapper = document.createElement("div");
-      heroWrapper.classList.add("pf2e-hero-points");
-      heroWrapper.title = game.i18n.localize("PF2ETokenBar.HeroPoints");
+        const heroWrapper = document.createElement("div");
+        heroWrapper.classList.add("pf2e-hero-points");
+        heroWrapper.title = game.i18n.localize("PF2ETokenBar.HeroPoints");
 
-      for (let i = 1; i <= 3; i++) {
-        const heroPoint = document.createElement("span");
-        heroPoint.classList.add("pf2e-hero-point");
-        if (i <= heroValue) heroPoint.classList.add("full");
+        for (let i = 1; i <= 3; i++) {
+          const heroPoint = document.createElement("span");
+          heroPoint.classList.add("pf2e-hero-point");
+          if (i <= heroValue) heroPoint.classList.add("full");
 
-        heroPoint.addEventListener("click", async () => {
-          const current = Number(actor.system?.resources?.heroPoints?.value) || 0;
-          const max = Number(actor.system?.resources?.heroPoints?.max ?? 3);
-          await actor.update({ 'system.resources.heroPoints.value': Math.min(current + 1, max) });
-        });
+          heroPoint.addEventListener("click", async () => {
+            const current = Number(actor.system?.resources?.heroPoints?.value) || 0;
+            const max = Number(actor.system?.resources?.heroPoints?.max ?? 3);
+            await actor.update({ 'system.resources.heroPoints.value': Math.min(current + 1, max) });
+          });
 
-        heroPoint.addEventListener("contextmenu", async (event) => {
-          event.preventDefault();
-          const current = Number(actor.system?.resources?.heroPoints?.value) || 0;
-          await actor.update({ 'system.resources.heroPoints.value': Math.max(current - 1, 0) });
-        });
+          heroPoint.addEventListener("contextmenu", async (event) => {
+            event.preventDefault();
+            const current = Number(actor.system?.resources?.heroPoints?.value) || 0;
+            await actor.update({ 'system.resources.heroPoints.value': Math.max(current - 1, 0) });
+          });
 
-        heroWrapper.appendChild(heroPoint);
+          heroWrapper.appendChild(heroPoint);
+        }
+
+        wrapper.appendChild(heroWrapper);
       }
-
-      wrapper.appendChild(heroWrapper);
 
       const effectBar = document.createElement("div");
       effectBar.classList.add("pf2e-effect-bar");
