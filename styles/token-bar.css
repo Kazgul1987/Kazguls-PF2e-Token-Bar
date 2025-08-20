@@ -142,16 +142,16 @@
   margin-top: 2px;
 }
 
-#pf2e-token-bar .pf2e-hero-points button {
+#pf2e-token-bar .pf2e-hero-point {
   width: 16px;
   height: 16px;
-  line-height: 16px;
-  padding: 0;
+  border: 1px solid var(--color-border-dark-primary);
+  border-radius: 50%;
+  cursor: pointer;
 }
 
-#pf2e-token-bar .pf2e-hero-points-value {
-  font-size: 12px;
-  line-height: 1;
+#pf2e-token-bar .pf2e-hero-point.full {
+  background: gold;
 }
 
 .pf2e-effect-bar {
