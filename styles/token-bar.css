@@ -347,3 +347,14 @@
 #pf2e-ring-menu .pf2e-ring-item i {
   pointer-events: none;
 }
+
+.pf2e-token-tab{
+  position:absolute;
+  width:24px;height:24px;
+  border-radius:50%;
+  background:rgba(0,0,0,0.8);
+  color:white;display:flex;
+  align-items:center;justify-content:center;
+  cursor:pointer;
+}
+.pf2e-token-tab:hover{filter:brightness(1.2);}

@@ -212,6 +212,58 @@ class PF2ETokenBar {
       });
       wrapper.appendChild(img);
 
+      const icons = [];
+
+      const actionTab = document.createElement("div");
+      actionTab.classList.add("pf2e-token-tab");
+      const actionImg = document.createElement("img");
+      actionImg.src = "systems/pf2e/icons/actions/SingleAction.webp";
+      actionTab.appendChild(actionImg);
+      const actionsTitle = game.i18n.localize("PF2ETokenBar.Actions");
+      actionTab.title = actionsTitle;
+      actionTab.setAttribute("aria-label", actionsTitle);
+      actionTab.addEventListener("click", () => actor.sheet.render(true, { tab: "actions" }));
+      wrapper.appendChild(actionTab);
+      icons.push(actionTab);
+
+      const spellTab = document.createElement("div");
+      spellTab.classList.add("pf2e-token-tab");
+      spellTab.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i>';
+      const spellsTitle = game.i18n.localize("PF2ETokenBar.Spells");
+      spellTab.title = spellsTitle;
+      spellTab.setAttribute("aria-label", spellsTitle);
+      spellTab.addEventListener("click", () => actor.sheet.render(true, { tab: "spellcasting" }));
+      wrapper.appendChild(spellTab);
+      icons.push(spellTab);
+
+      const inventoryTab = document.createElement("div");
+      inventoryTab.classList.add("pf2e-token-tab");
+      inventoryTab.innerHTML = '<i class="fas fa-treasure-chest"></i>';
+      const inventoryTitle = game.i18n.localize("PF2ETokenBar.Inventory");
+      inventoryTab.title = inventoryTitle;
+      inventoryTab.setAttribute("aria-label", inventoryTitle);
+      inventoryTab.addEventListener("click", () => actor.sheet.render(true, { tab: "inventory" }));
+      wrapper.appendChild(inventoryTab);
+      icons.push(inventoryTab);
+
+      const proficiencyTab = document.createElement("div");
+      proficiencyTab.classList.add("pf2e-token-tab");
+      proficiencyTab.innerHTML = '<i class="fas fa-hand-paper"></i>';
+      const proficiencyTitle = game.i18n.localize("PF2ETokenBar.Proficiencies");
+      proficiencyTab.title = proficiencyTitle;
+      proficiencyTab.setAttribute("aria-label", proficiencyTitle);
+      proficiencyTab.addEventListener("click", () => actor.sheet.render(true, { tab: "proficiencies" }));
+      wrapper.appendChild(proficiencyTab);
+      icons.push(proficiencyTab);
+
+      const size = 24;
+      const radius = Math.max(40, size / (2 * Math.sin(Math.PI / icons.length)));
+      icons.forEach((icon, i) => {
+        const ang = (i / icons.length) * 2 * Math.PI;
+        icon.style.left = `${32 + Math.cos(ang) * radius - size / 2}px`;
+        icon.style.top = `${32 + Math.sin(ang) * radius - size / 2}px`;
+      });
+
       const hp = actor.system?.attributes?.hp ?? {};
       const hpValue = Number(hp.value) || 0;
       const hpMax = Number(hp.max) || 0;
