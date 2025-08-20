@@ -49,7 +49,9 @@
 }
 
 #pf2e-token-bar .pf2e-inventory-action {
-  padding: 4px 8px;
+  padding: 8px 12px;
+  min-width: 80px;
+  min-height: 60px;
   font-size: 14px;
   display: flex;
   flex-direction: column;
@@ -57,7 +59,12 @@
 }
 
 #pf2e-token-bar .pf2e-inventory-action i {
-  font-size: 1.5em;
+  font-size: 2em;
+}
+
+#pf2e-token-bar .pf2e-inventory-action span {
+  display: block;
+  margin-top: 4px;
 }
 
 #pf2e-token-bar .pf2e-round-display {
