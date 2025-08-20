@@ -733,6 +733,12 @@ class PF2ETokenBar {
       const item = await fromUuid(parsed.uuid);
       if (!(item instanceof Item)) throw new Error("Item not found");
 
+      const allowedTypes = CONFIG.PF2E?.physicalItemTypes ?? ["weapon", "armor", "shield", "equipment", "consumable", "treasure", "backpack"];
+      if (!allowedTypes.includes(item.type)) {
+        ui.notifications.warn(game.i18n.localize("PF2ETokenBar.InvalidItemType"));
+        return;
+      }
+
       const sourceActor = item.actor;
 
       const actor = target && typeof target === "object"
