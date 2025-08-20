@@ -677,7 +677,10 @@ class PF2ETokenBar {
       const dead = actor.hasCondition?.("dead");
       if (hp > 0 && !dead) continue;
 
-      const actorItems = Array.from(actor.items.values());
+      const actorItems = Array.from(actor.items.values()).filter(i =>
+        i.isOfType?.("physical") &&
+        !(i.type === "treasure" && i.system?.stackGroup === "coins")
+      );
       items.push(...actorItems.map(i => i.toObject()));
       if (actorItems.length) {
         const ids = actorItems.map(i => i.id);
@@ -700,7 +703,15 @@ class PF2ETokenBar {
       }
     }
 
-    if (items.length) await lootActor.createEmbeddedDocuments("Item", items);
+    if (items.length) {
+      for (const item of items) {
+        try {
+          await lootActor.createEmbeddedDocuments("Item", [item]);
+        } catch (error) {
+          console.error("PF2ETokenBar | Failed to create loot item", item, error);
+        }
+      }
+    }
 
     if (Object.keys(currencies).length) {
       const lootCurrencies = foundry.utils.deepClone(lootActor.system?.currencies ?? {});
