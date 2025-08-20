@@ -378,7 +378,9 @@ class PF2ETokenBar {
         controls.appendChild(restBtn);
 
         const partyStashBtn = document.createElement("button");
-        partyStashBtn.innerText = game.i18n.localize("PF2ETokenBar.PartyStash");
+        partyStashBtn.classList.add("pf2e-inventory-action");
+        partyStashBtn.style.gridColumn = "3";
+        partyStashBtn.innerHTML = `<i class="fas fa-people-group"></i><span>${game.i18n.localize("PF2ETokenBar.PartyStash")}</span>`;
         partyStashBtn.addEventListener("click", () => PF2ETokenBar.openPartyStash());
         partyStashBtn.addEventListener("dragover", PF2ETokenBar.handleDragOver);
         partyStashBtn.addEventListener("dragleave", PF2ETokenBar.handleDragLeave);
@@ -386,7 +388,9 @@ class PF2ETokenBar {
         controls.appendChild(partyStashBtn);
 
         const lootBtn = document.createElement("button");
-        lootBtn.innerText = game.i18n.localize("PF2ETokenBar.Loot");
+        lootBtn.classList.add("pf2e-inventory-action");
+        lootBtn.style.gridColumn = "3";
+        lootBtn.innerHTML = `<i class="fas fa-treasure-chest"></i><span>${game.i18n.localize("PF2ETokenBar.Loot")}</span>`;
         lootBtn.addEventListener("click", () => PF2ETokenBar.openLootActor("Loot"));
         lootBtn.addEventListener("dragover", PF2ETokenBar.handleDragOver);
         lootBtn.addEventListener("dragleave", PF2ETokenBar.handleDragLeave);
@@ -394,7 +398,9 @@ class PF2ETokenBar {
         controls.appendChild(lootBtn);
 
         const sellBtn = document.createElement("button");
-        sellBtn.innerText = game.i18n.localize("PF2ETokenBar.Sell");
+        sellBtn.classList.add("pf2e-inventory-action");
+        sellBtn.style.gridColumn = "3";
+        sellBtn.innerHTML = `<i class="fas fa-sack-dollar"></i><span>${game.i18n.localize("PF2ETokenBar.Sell")}</span>`;
         sellBtn.addEventListener("click", () => PF2ETokenBar.openLootActor("Sell"));
         sellBtn.addEventListener("dragover", PF2ETokenBar.handleDragOver);
         sellBtn.addEventListener("dragleave", PF2ETokenBar.handleDragLeave);
