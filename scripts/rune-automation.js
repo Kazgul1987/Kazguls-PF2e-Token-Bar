@@ -17,7 +17,7 @@ Hooks.on("createChatMessage", async (message) => {
 
   const targetUuid = context.target?.actor;
   const target = targetUuid ? await fromUuid(targetUuid) : null;
-  if (!(target instanceof ActorPF2e)) return;
+  if (!target?.isOfType?.("creature")) return;
 
   const options = target.rollOptions.all;
   const hasFort = options["armor:rune:property:fortification"];
