@@ -447,8 +447,8 @@ class PF2ETokenBar {
             controls.appendChild(restBtn);
 
             controls.appendChild(requestRollBtn);
+            controls.appendChild(encounterBtn);
         }
-        controls.appendChild(encounterBtn);
 
         const lootGroup = document.createElement("div");
         lootGroup.classList.add("pf2e-loot-controls");
@@ -481,8 +481,10 @@ class PF2ETokenBar {
         sellBtn.addEventListener("drop", event => PF2ETokenBar.handleItemDrop(event, "Sell"));
         lootGroup.appendChild(sellBtn);
       } else {
-        if (game.user.isGM) controls.appendChild(requestRollBtn);
-        controls.appendChild(encounterBtn);
+        if (game.user.isGM) {
+          controls.appendChild(requestRollBtn);
+          controls.appendChild(encounterBtn);
+        }
       }
 
     if (activeCombat) {
