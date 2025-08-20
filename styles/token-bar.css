@@ -127,6 +127,7 @@
   width: 100%;
   height: 4px;
   background: rgba(255, 255, 255, 0.2);
+  margin-top: 2px;
 }
 
 #pf2e-token-bar .pf2e-hp-bar-inner {
@@ -156,6 +157,7 @@
 .pf2e-effect-bar {
   display: flex;
   gap: 3px;
+  margin-top: 2px;
 }
 
 .pf2e-effect-icon {
@@ -349,7 +351,6 @@
 }
 
 .pf2e-token-tab{
-  position:absolute;
   width:16px;height:16px;
   border-radius:50%;
   background:rgba(0,0,0,0.8);
@@ -358,3 +359,10 @@
   cursor:pointer;
 }
 .pf2e-token-tab:hover{filter:brightness(1.2);}
+
+.pf2e-token-tabs {
+  display:flex;
+  gap:4px;
+  justify-content:center;
+  margin-top:4px;
+}

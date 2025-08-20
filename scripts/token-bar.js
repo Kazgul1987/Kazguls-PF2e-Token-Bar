@@ -212,7 +212,9 @@ class PF2ETokenBar {
       });
       wrapper.appendChild(img);
 
-      const icons = [];
+      const tabContainer = document.createElement("div");
+      tabContainer.classList.add("pf2e-token-tabs");
+      wrapper.appendChild(tabContainer);
 
       const actionTab = document.createElement("div");
       actionTab.classList.add("pf2e-token-tab");
@@ -223,8 +225,7 @@ class PF2ETokenBar {
       actionTab.title = actionsTitle;
       actionTab.setAttribute("aria-label", actionsTitle);
       actionTab.addEventListener("click", () => actor.sheet.render(true, { tab: "actions" }));
-      wrapper.appendChild(actionTab);
-      icons.push(actionTab);
+      tabContainer.appendChild(actionTab);
 
       const spellTab = document.createElement("div");
       spellTab.classList.add("pf2e-token-tab");
@@ -233,8 +234,7 @@ class PF2ETokenBar {
       spellTab.title = spellsTitle;
       spellTab.setAttribute("aria-label", spellsTitle);
       spellTab.addEventListener("click", () => actor.sheet.render(true, { tab: "spellcasting" }));
-      wrapper.appendChild(spellTab);
-      icons.push(spellTab);
+      tabContainer.appendChild(spellTab);
 
       const inventoryTab = document.createElement("div");
       inventoryTab.classList.add("pf2e-token-tab");
@@ -243,8 +243,7 @@ class PF2ETokenBar {
       inventoryTab.title = inventoryTitle;
       inventoryTab.setAttribute("aria-label", inventoryTitle);
       inventoryTab.addEventListener("click", () => actor.sheet.render(true, { tab: "inventory" }));
-      wrapper.appendChild(inventoryTab);
-      icons.push(inventoryTab);
+      tabContainer.appendChild(inventoryTab);
 
       const proficiencyTab = document.createElement("div");
       proficiencyTab.classList.add("pf2e-token-tab");
@@ -253,16 +252,7 @@ class PF2ETokenBar {
       proficiencyTab.title = proficiencyTitle;
       proficiencyTab.setAttribute("aria-label", proficiencyTitle);
       proficiencyTab.addEventListener("click", () => actor.sheet.render(true, { tab: "proficiencies" }));
-      wrapper.appendChild(proficiencyTab);
-      icons.push(proficiencyTab);
-
-      const size = 16;
-      const radius = 48;
-      icons.forEach((icon, i) => {
-        const ang = Math.PI + (i + 0.5) * Math.PI / icons.length;
-        icon.style.left = `${32 + Math.cos(ang) * radius - size / 2}px`;
-        icon.style.top = `${32 + Math.sin(ang) * radius - size / 2}px`;
-      });
+      tabContainer.appendChild(proficiencyTab);
 
       const hp = actor.system?.attributes?.hp ?? {};
       const hpValue = Number(hp.value) || 0;
