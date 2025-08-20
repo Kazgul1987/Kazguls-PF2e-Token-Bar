@@ -633,11 +633,17 @@ class PF2ETokenBar {
       const item = await fromUuid(parsed.uuid);
       if (!(item instanceof Item)) throw new Error("Item not found");
 
+      const sourceActor = item.actor;
+
       const actor = target === "party" ? game.actors.party : game.actors.getName(target);
       if (!actor) throw new Error(game.i18n.format("PF2ETokenBar.TokenMissing", { name: target }));
       if (!actor.isOwner) throw new Error("You do not have permission to modify this actor.");
 
+      if (sourceActor && sourceActor === actor) return;
+
       await actor.createEmbeddedDocuments("Item", [item.toObject()]);
+
+      if (sourceActor && sourceActor !== actor) await item.delete();
     } catch (err) {
       console.error(err);
       ui.notifications.error(err.message || "Failed to drop item.");
