@@ -405,6 +405,22 @@ class PF2ETokenBar {
     });
     controls.appendChild(lockBtn);
 
+    const requestRollBtn = document.createElement("button");
+    requestRollBtn.innerText = game.i18n.localize("PF2ETokenBar.RequestRoll");
+    requestRollBtn.addEventListener("click", () => this.requestRoll());
+
+    const encounterBtn = document.createElement("button");
+    const encounterKey = activeCombat?.started ? "PF2ETokenBar.EndEncounter" : "PF2ETokenBar.StartEncounter";
+    encounterBtn.innerText = game.i18n.localize(encounterKey);
+    encounterBtn.addEventListener("click", async () => {
+      try {
+        if (game.combat?.started) await game.combat.endCombat();
+        else await game.combat.startCombat();
+      } catch (error) {
+        console.error(error);
+      }
+    });
+
     if (!activeCombat?.started) {
         const addBtn = document.createElement("button");
         addBtn.innerHTML = '<i class="fas fa-swords"></i>';
@@ -422,6 +438,9 @@ class PF2ETokenBar {
         restBtn.title = game.i18n.localize("PF2E.RestAll");
         restBtn.addEventListener("click", () => this.restAll());
         controls.appendChild(restBtn);
+
+        controls.appendChild(requestRollBtn);
+        controls.appendChild(encounterBtn);
 
         const partyStashBtn = document.createElement("button");
         partyStashBtn.classList.add("pf2e-inventory-action");
@@ -452,25 +471,10 @@ class PF2ETokenBar {
         sellBtn.addEventListener("dragleave", PF2ETokenBar.handleDragLeave);
         sellBtn.addEventListener("drop", event => PF2ETokenBar.handleItemDrop(event, "Sell"));
         controls.appendChild(sellBtn);
+      } else {
+        controls.appendChild(requestRollBtn);
+        controls.appendChild(encounterBtn);
       }
-
-      const btn = document.createElement("button");
-      btn.innerText = game.i18n.localize("PF2ETokenBar.RequestRoll");
-      btn.addEventListener("click", () => this.requestRoll());
-      controls.appendChild(btn);
-
-    const encounterBtn = document.createElement("button");
-    const encounterKey = activeCombat?.started ? "PF2ETokenBar.EndEncounter" : "PF2ETokenBar.StartEncounter";
-    encounterBtn.innerText = game.i18n.localize(encounterKey);
-    encounterBtn.addEventListener("click", async () => {
-      try {
-        if (game.combat?.started) await game.combat.endCombat();
-        else await game.combat.startCombat();
-      } catch (error) {
-        console.error(error);
-      }
-    });
-    controls.appendChild(encounterBtn);
 
     if (activeCombat) {
       const npcCombatants = activeCombat.combatants.filter(c => !c.actor?.hasPlayerOwner);
