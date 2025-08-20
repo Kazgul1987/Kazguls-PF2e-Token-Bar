@@ -93,8 +93,9 @@ Under **Settings → Module Settings → PF2e Token-Bar**:
 - **Close default combat tracker** – prevents auto-opening of Foundry’s combat tracker.  
 - **Bar size** – scale between 50% and 200%.  
 - **Orientation** – horizontal or vertical (also via button on the bar).  
-- **Lock bar** – prevents accidental moving.  
+- **Lock bar** – prevents accidental moving.
 - **Position** – automatically saved after moving.
+- **Quick loot** – automatically transfer defeated NPC loot and open the Loot actor when combat ends.
 
 ---
 

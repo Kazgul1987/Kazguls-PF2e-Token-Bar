@@ -64,6 +64,14 @@ Hooks.once("init", () => {
     default: false,
     onChange: () => PF2ETokenBar.render(),
   });
+  game.settings.register("pf2e-token-bar", "quickLoot", {
+    name: game.i18n.localize("PF2ETokenBar.Settings.QuickLoot.Name"),
+    hint: game.i18n.localize("PF2ETokenBar.Settings.QuickLoot.Hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true,
+  });
 });
 
 class PF2ETokenBar {
@@ -943,8 +951,10 @@ Hooks.on("updateCombat", () => PF2ETokenBar.render());
 Hooks.on("combatStart", () => PF2ETokenBar.render());
 Hooks.on("combatEnd", async () => {
   PF2ETokenBar.render();
-  await PF2ETokenBar.transferDefeatedLoot();
-  PF2ETokenBar.openLootActor("Loot");
+  if (game.user.isGM && game.settings.get("pf2e-token-bar", "quickLoot")) {
+    await PF2ETokenBar.transferDefeatedLoot();
+    PF2ETokenBar.openLootActor("Loot");
+  }
 });
 Hooks.on("combatTurn", () => {
   PF2ETokenBar.render();

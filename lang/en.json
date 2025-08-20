@@ -16,6 +16,10 @@
       "PartyOnlySelf": {
         "Name": "Show Only Owned Tokens",
         "Hint": "When not a GM, show only tokens for actors you own"
+      },
+      "QuickLoot": {
+        "Name": "Quick Loot",
+        "Hint": "Automatically transfer defeated NPC loot and open the Loot actor on combat end."
       }
     },
     "HealAll": "Heal All",
