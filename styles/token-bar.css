@@ -125,6 +125,10 @@
   position: relative;
 }
 
+#pf2e-token-bar .pf2e-token-wrapper.pf2e-drop-hover {
+  filter: brightness(1.2);
+}
+
 #pf2e-token-bar .pf2e-hp-text {
   font-size: 12px;
   line-height: 1;

@@ -149,6 +149,12 @@ class PF2ETokenBar {
       wrapper.addEventListener("mouseleave", () => {
         if (PF2ETokenBar.hoveredToken === token) PF2ETokenBar.hoveredToken = null;
       });
+      wrapper.addEventListener("dragover", event => {
+        event.preventDefault();
+        wrapper.classList.add("pf2e-drop-hover");
+      });
+      wrapper.addEventListener("dragleave", () => wrapper.classList.remove("pf2e-drop-hover"));
+      wrapper.addEventListener("drop", event => PF2ETokenBar.handleItemDrop(event, actor));
 
       const combatant = activeCombat?.combatants.find(c => c.tokenId === token.id);
 
@@ -628,7 +634,11 @@ class PF2ETokenBar {
 
       const sourceActor = item.actor;
 
-      const actor = target === "party" ? game.actors.party : game.actors.getName(target);
+      const actor = target && typeof target === "object"
+        ? target
+        : target === "party"
+          ? game.actors.party
+          : game.actors.getName(target);
       if (!actor) throw new Error(game.i18n.format("PF2ETokenBar.TokenMissing", { name: target }));
       if (!actor.isOwner) throw new Error("You do not have permission to modify this actor.");
 
