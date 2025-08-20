@@ -44,8 +44,20 @@
 
 #pf2e-token-bar .pf2e-token-bar-controls {
   display: grid;
-  grid-template-columns: repeat(2, auto);
+  grid-template-columns: repeat(3, auto);
   gap: 4px;
+}
+
+#pf2e-token-bar .pf2e-inventory-action {
+  padding: 4px 8px;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#pf2e-token-bar .pf2e-inventory-action i {
+  font-size: 1.5em;
 }
 
 #pf2e-token-bar .pf2e-round-display {
