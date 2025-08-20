@@ -1,112 +1,117 @@
 # PF2e Token-Bar
 
-Die **PF2e Token-Bar** erweitert Foundry VTT um eine kompakte Anzeige aller relevanten Charaktere am oberen Bildschirmrand. Sie erlaubt schnelle Interaktionen mit Tokens, verknüpften Charakterbögen und diversen Gruppenaktionen – optimiert für Pathfinder 2e.
+The **PF2e Token-Bar** extends Foundry VTT with a compact display of all relevant characters at the top of the screen. It allows quick interactions with tokens, linked character sheets, and various party actions—optimized for Pathfinder 2e.
 
 ---
 
-## Inhaltsverzeichnis
+## Table of Contents
 
-1. [Funktionsübersicht](#funktionsübersicht)
-2. [Party-Modus](#party-modus)
-3. [Kampf-Modus](#kampf-modus)
-4. [Ring-Menü](#ring-menü)
-5. [Einstellungen & Steuerung](#einstellungen--steuerung)
-6. [Tastenkürzel](#tastenkürzel)
+1. [Feature Overview](#feature-overview)  
+2. [Party Mode](#party-mode)  
+3. [Combat Mode](#combat-mode)  
+4. [Ring Menu](#ring-menu)  
+5. [Settings & Controls](#settings--controls)  
+6. [Hotkeys](#hotkeys)  
 7. [Debugging](#debugging)
 
 ---
 
-## Funktionsübersicht
+## Feature Overview
 
-- **Token-Leiste** mit Porträts aller relevanten Akteure (Gruppe oder Kampfteilnehmer).
-- **HP-Balken & Wert** direkt unter dem Token.
-- **Heldenpunkte**: Plus/Minus-Buttons zur schnellen Anpassung.
-- **Effekt-Leiste**: Aktive Effekte und Zustände als Icons (Klick öffnet, Rechtsklick entfernt).
-- **Rollenanfragen**: Button *„Wurf anfordern“* erzeugt Chatlinks für Skills oder Rettungswürfe.
-- **Ausrichtung & Position**: Horizontal oder vertikal, frei verschiebbar, skalierbar.
-- **Ein-/Ausklappbar** und bei Bedarf *gesperrt*, um Verschieben zu verhindern.
-
----
-
-## Party-Modus
-
-Aktiv, wenn **kein Kampf läuft**.
-
-### Darstellung
-- Zeigt alle Gruppenmitglieder (Actors aus der Party).
-- HP-Balken, Heldenpunkte und Effekte wie oben beschrieben.
-
-### Zusätzliche Buttons
-- **Gruppe in Begegnung übernehmen** – erstellt bei Bedarf eine neue Begegnung und fügt alle Gruppen-Tokens hinzu.
-- **Alle heilen** – setzt HP aller Gruppenmitglieder auf das Maximum.
-- **Alle rasten** – ruft die PF2e-Funktion „Rest for the Night“ für die gesamte Gruppe auf.
-- **Gruppenlager** – öffnet das Party-Inventar; Gegenstände können per Drag&Drop hinzugefügt werden.
-- **Beute** / **Verkaufen** – öffnet benannte Loot-Akteure und akzeptiert Items via Drag&Drop.
-- **Wurf anfordern** – siehe oben.
-- **Begegnung starten** – beginnt eine neue Encounter-Runde (Start-Button ändert sich zu *„Begegnung beenden“*).
+- **Token bar** with portraits of relevant actors (party or combatants).  
+- **HP bar & value** directly under the token.  
+- **Hero Points:** plus/minus buttons for quick adjustment.  
+- **Effect bar:** active effects and conditions as icons (click to open, right-click to remove).  
+- **Roll requests:** “Request Roll” button creates chat links for skills or saving throws.  
+- **Orientation & position:** horizontal or vertical, freely movable, scalable.  
+- **Collapsible** and can be **locked** to prevent repositioning.
 
 ---
 
-## Kampf-Modus
+## Party Mode
 
-Aktiv, sobald eine **Begegnung läuft** oder Combatants existieren.
+Active when **no combat is running**.
 
-### Darstellung
-- Zeigt alle Combatants, sortiert nach Initiative (NPCs zuerst bei Gleichstand).
-- **Initiative-Werte** pro Token – fehlt der Wert, erscheint *„RFC!“* (Initiative würfeln).
-- **Aktueller Zug**: Token des aktiven Combatants wird hervorgehoben.
-- **Rundenzähler** und **Schwierigkeitsgrad** der Begegnung (Trivial bis Extrem).
-- **Delay/Play-Icons**: Zug verzögern oder wieder aufnehmen, inklusive Stundenglas/Play-Symbol.
+### Display
 
-### Zusätzliche Buttons
-- **Begegnung beenden** – beendet die aktuelle Combat.
-- **NSC-Initiative** – würfelt Initiative für alle NPCs ohne Wert.
-- **Vorheriger/Nächster Zug** – steuert den aktiven Combatant.
-- **Wurf anfordern** – steht auch im Kampf zur Verfügung.
-- **Verbergen/Anzeigen** – Token-Bar ausklappen oder minimieren.
+- Shows all party members (actors from the party).  
+- HP bar, hero points, and effects as described above.
 
----
+### Additional Buttons
 
-## Ring-Menü
-
-Rechtsklick auf einen Token öffnet ein radiales Menü:
-
-| Symbol | Funktion |
-|-------|-----------|
-| 📋 Liste | **Zustand hinzufügen/entfernen** (Condition Manager) |
-| 👁️ / 🚫 | **Sichtbarkeit umschalten** |
-| 🎯 | **Ping** auf die Token-Position |
-| ⌛ / ▶️ | **Zug verzögern** oder **fortsetzen** (nur im Kampf) |
-| 🎲 | **Initiative würfeln** (wenn noch nicht gesetzt) |
+- **Add party to encounter** – creates a new encounter and adds all party tokens.  
+- **Heal all** – sets HP of all party members to the maximum.  
+- **Rest all** – triggers “Rest for the Night” for the entire party.  
+- **Party stash** – opens the party inventory; items can be dragged & dropped.  
+- **Loot / Sell** – opens named loot actors and accepts items via drag & drop.  
+- **Request roll** – see above.  
+- **Start encounter** – begins a new encounter (button toggles to “End encounter”).
 
 ---
 
-## Einstellungen & Steuerung
+## Combat Mode
 
-Unter **Einstellungen → Moduleinstellungen → PF2E Token-Bar**:
+Active when an **encounter is running** or combatants exist.
 
-- **PF2E Token-Leiste aktivieren** – schaltet die Bar ein oder aus.
-- **Standard Kampf-Tracker schließen** – verhindert das automatische Öffnen des Foundry-Kampf-Trackers.
-- **Balkengröße** – Skalierung zwischen 50 % und 200 %.
-- **Ausrichtung** – horizontal oder vertikal (auch per Button in der Bar).
-- **Leiste sperren** – verhindert versehentliches Verschieben.
-- **Position** – wird nach Verschieben automatisch gespeichert.
+### Display
+
+- Shows all combatants, sorted by initiative (NPCs first on tie).  
+- **Initiative values** per token; missing values show “RFC!” (roll for initiative).  
+- **Current turn:** the active combatant’s token is highlighted.  
+- **Round counter** and **encounter difficulty** (Trivial to Extreme).  
+- **Delay/play icons:** delay a turn or resume it, including hourglass/play symbols.
+
+### Additional Buttons
+
+- **End encounter** – ends the current combat.  
+- **NPC initiative** – rolls initiative for all NPCs without a value.  
+- **Previous/Next turn** – navigate the active combatant.  
+- **Request roll** – also available during combat.  
+- **Toggle visibility** – expand or minimize the token bar.
 
 ---
 
-## Tastenkürzel
+## Ring Menu
 
-- **T** – Zielmarkierung für den aktuell angehoverten Token umschalten.
+Right-click a token to open a radial menu:
+
+| Icon | Function |
+|------|----------|
+| 📋 List | **Add/remove condition** (Condition Manager) |
+| 👁️ / 🚫 | **Toggle visibility** |
+| 🎯 | **Ping** the token’s position |
+| ⌛ / ▶️ | **Delay or resume** turn (combat only) |
+| 🎲 | **Roll initiative** (if unset) |
+
+---
+
+## Settings & Controls
+
+Under **Settings → Module Settings → PF2e Token-Bar**:
+
+- **Enable PF2e Token-Bar** – toggle the bar on or off.  
+- **Close default combat tracker** – prevents auto-opening of Foundry’s combat tracker.  
+- **Bar size** – scale between 50% and 200%.  
+- **Orientation** – horizontal or vertical (also via button on the bar).  
+- **Lock bar** – prevents accidental moving.  
+- **Position** – automatically saved after moving.
+
+---
+
+## Hotkeys
+
+- **T** – toggle targeting for the currently hovered token.
 
 ---
 
 ## Debugging
 
-Aktivieren Sie **„PF2E Token Bar: Debug Logging“** in den Moduleinstellungen, um zusätzliche Konsolenmeldungen zu erhalten.
+Enable **“PF2E Token Bar: Debug Logging”** in the module settings for additional console messages.
 
 ```javascript
-// Alternativ direkt über die Browserkonsole:
+// Alternatively via the browser console:
 game.settings.set("pf2e-token-bar", "debug", true);
 ```
 
-Viel Spaß mit der PF2e Token-Bar und dem schnellen Zugriff auf Party- und Kampffunktionen!
+Enjoy the PF2e Token-Bar and quick access to party and combat functions!
+
