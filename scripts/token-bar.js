@@ -277,23 +277,17 @@ class PF2ETokenBar {
         const uuid = effect.sourceId || effect.uuid;
         icon.dataset.uuid = uuid; // Fallback to effect.uuid when sourceId is missing
         icon.title = effect.name;
-        icon.addEventListener("mouseenter", async event => {
-          const doc = await fromUuid(uuid);
-          if (!doc) return;
-          const description = doc.system?.description?.value ?? "";
-          const html = await TextEditor.enrichHTML(description, { async: true, documents: true, rollData: doc.actor?.getRollData?.() });
-          if (TooltipManager?.shared) {
-            TooltipManager.shared.show(event.currentTarget, { html });
-          } else {
-            game.tooltip.activate(event.currentTarget, html);
-          }
-        });
-        icon.addEventListener("mouseleave", event => {
-          if (TooltipManager?.shared) {
-            TooltipManager.shared.hide(event.currentTarget);
-          } else {
-            game.tooltip.deactivate();
-          }
+        foundry?.applications?.tooltip?.createTooltipListener?.(icon, {
+          async render() {
+            const doc = await fromUuid(uuid);
+            if (!doc) return document.createElement("div");
+            const description = doc.system?.description?.value ?? "";
+            const html = await TextEditor.enrichHTML(description, { async: true, documents: true, rollData: doc.actor?.getRollData?.() });
+            const div = document.createElement("div");
+            div.innerHTML = html;
+            return div;
+          },
+          cssClass: "pf2e-token-bar-tooltip"
         });
         icon.addEventListener("click", async () => {
           try {
