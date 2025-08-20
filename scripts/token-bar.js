@@ -952,8 +952,14 @@ Hooks.on("combatStart", () => PF2ETokenBar.render());
 Hooks.on("combatEnd", async () => {
   PF2ETokenBar.render();
   if (game.user.isGM && game.settings.get("pf2e-token-bar", "quickLoot")) {
-    await PF2ETokenBar.transferDefeatedLoot();
-    PF2ETokenBar.openLootActor("Loot");
+    await Dialog.confirm({
+      title: game.i18n.localize("PF2ETokenBar.QuickLootConfirmTitle"),
+      content: `<p>${game.i18n.localize("PF2ETokenBar.QuickLootConfirmContent")}</p>`,
+      yes: async () => {
+        await PF2ETokenBar.transferDefeatedLoot();
+        PF2ETokenBar.openLootActor("Loot");
+      }
+    });
   }
 });
 Hooks.on("combatTurn", () => {
