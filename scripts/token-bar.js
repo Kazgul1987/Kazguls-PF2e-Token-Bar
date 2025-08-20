@@ -687,19 +687,16 @@ class PF2ETokenBar {
         await actor.deleteEmbeddedDocuments("Item", ids);
       }
 
-      const actorCurrencies = actor.system?.currencies ?? {};
+      const actorCurrencies = foundry.utils.deepClone(actor.system?.currencies ?? {});
       for (const [type, data] of Object.entries(actorCurrencies)) {
-        const value = Number(data.value ?? data) || 0;
-        currencies[type] = (currencies[type] || 0) + value;
+        const amount = Number(data?.value ?? data) || 0;
+        currencies[type] = (currencies[type] || 0) + amount;
+        if (typeof data === "object") actorCurrencies[type].value = 0;
+        else actorCurrencies[type] = 0;
       }
 
       if (Object.keys(actorCurrencies).length) {
-        const emptyCurrencies = foundry.utils.deepClone(actorCurrencies);
-        for (const [type, data] of Object.entries(emptyCurrencies)) {
-          if (typeof data === "object") emptyCurrencies[type].value = 0;
-          else emptyCurrencies[type] = 0;
-        }
-        await actor.update({ "system.currencies": emptyCurrencies });
+        await actor.update({ "system.currencies": actorCurrencies });
       }
     }
 
@@ -714,12 +711,18 @@ class PF2ETokenBar {
     }
 
     if (Object.keys(currencies).length) {
-      const lootCurrencies = foundry.utils.deepClone(lootActor.system?.currencies ?? {});
+      const updatedCurrencies = foundry.utils.deepClone(lootActor.system?.currencies ?? {});
       for (const [type, amount] of Object.entries(currencies)) {
-        if (!lootCurrencies[type]) lootCurrencies[type] = { value: 0 };
-        lootCurrencies[type].value = (lootCurrencies[type].value ?? lootCurrencies[type]) + amount;
+        const existing = updatedCurrencies[type];
+        if (existing === undefined) {
+          updatedCurrencies[type] = { value: amount };
+        } else if (typeof existing === "object") {
+          updatedCurrencies[type].value = (existing.value ?? 0) + amount;
+        } else {
+          updatedCurrencies[type] = (existing ?? 0) + amount;
+        }
       }
-      await lootActor.update({ "system.currencies": lootCurrencies });
+      await lootActor.update({ "system.currencies": updatedCurrencies });
     }
   }
 
