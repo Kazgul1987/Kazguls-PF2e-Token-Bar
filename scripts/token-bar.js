@@ -256,10 +256,10 @@ class PF2ETokenBar {
       wrapper.appendChild(proficiencyTab);
       icons.push(proficiencyTab);
 
-      const size = 24;
-      const radius = Math.max(40, size / (2 * Math.sin(Math.PI / icons.length)));
+      const size = 16;
+      const radius = 48;
       icons.forEach((icon, i) => {
-        const ang = (i / icons.length) * 2 * Math.PI;
+        const ang = Math.PI + (i + 0.5) * Math.PI / icons.length;
         icon.style.left = `${32 + Math.cos(ang) * radius - size / 2}px`;
         icon.style.top = `${32 + Math.sin(ang) * radius - size / 2}px`;
       });
