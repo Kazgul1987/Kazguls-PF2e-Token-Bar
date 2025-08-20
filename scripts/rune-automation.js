@@ -13,7 +13,7 @@ Hooks.on("createChatMessage", async (message) => {
   if (!game.settings.get("pf2e-token-bar", "autoFortification")) return;
 
   const context = message.flags.pf2e?.context;
-  if (context?.type !== "damage-roll" || context?.outcome !== "criticalSuccess") return;
+  if (context?.type !== "attack-roll" || context?.outcome !== "criticalSuccess") return;
 
   const targetUuid = context.target?.actor;
   const target = targetUuid ? await fromUuid(targetUuid) : null;
@@ -51,17 +51,17 @@ Hooks.on("renderChatMessage", (message, html) => {
     const dc = Number(button.dataset.dc);
     const msgId = button.closest(".fortification-check").dataset.messageId;
     const original = game.messages.get(msgId);
+    const item = original?.item;
 
     const roll = await new Roll("1d20").evaluate({ async: true });
     await roll.toMessage({ flavor: `Fortification (DC ${dc})` });
 
     if (roll.total >= dc) {
-      await original.update({
-        "flags.pf2e.context.outcome": "success",
-        "flags.pf2e.damageRoll.outcome": "success",
-      });
+      await original.update({ "flags.pf2e.context.outcome": "success" });
       ui.notifications.info("Critical downgraded to normal damage.");
     }
+
+    await item?.rollDamage({ event, message: original });
   });
 });
 
