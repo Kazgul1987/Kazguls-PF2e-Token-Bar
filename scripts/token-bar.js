@@ -76,7 +76,6 @@ class PF2ETokenBar {
   static render() {
     PF2ERingMenu.close();
     if (!canvas?.ready) return;
-    if (!game.user.isGM) return;
     if (!game.settings.get("pf2e-token-bar", "enabled")) {
       document.getElementById("pf2e-token-bar")?.remove();
       return;
@@ -429,24 +428,26 @@ class PF2ETokenBar {
     });
 
     if (!activeCombat?.started) {
-        const addBtn = document.createElement("button");
-        addBtn.innerHTML = '<i class="fas fa-swords"></i>';
-        addBtn.title = game.i18n.localize("PF2ETokenBar.AddPartyToEncounter");
-        addBtn.addEventListener("click", () => this.addPartyToEncounter());
-        controls.appendChild(addBtn);
+        if (game.user.isGM) {
+            const addBtn = document.createElement("button");
+            addBtn.innerHTML = '<i class="fas fa-swords"></i>';
+            addBtn.title = game.i18n.localize("PF2ETokenBar.AddPartyToEncounter");
+            addBtn.addEventListener("click", () => this.addPartyToEncounter());
+            controls.appendChild(addBtn);
 
-        const healBtn = document.createElement("button");
-        healBtn.innerText = game.i18n.localize("PF2ETokenBar.HealAll");
-        healBtn.addEventListener("click", () => this.healAll());
-        controls.appendChild(healBtn);
+            const healBtn = document.createElement("button");
+            healBtn.innerText = game.i18n.localize("PF2ETokenBar.HealAll");
+            healBtn.addEventListener("click", () => this.healAll());
+            controls.appendChild(healBtn);
 
-        const restBtn = document.createElement("button");
-        restBtn.innerHTML = '<i class="fas fa-bed"></i>';
-        restBtn.title = game.i18n.localize("PF2E.RestAll");
-        restBtn.addEventListener("click", () => this.restAll());
-        controls.appendChild(restBtn);
+            const restBtn = document.createElement("button");
+            restBtn.innerHTML = '<i class="fas fa-bed"></i>';
+            restBtn.title = game.i18n.localize("PF2E.RestAll");
+            restBtn.addEventListener("click", () => this.restAll());
+            controls.appendChild(restBtn);
 
-        controls.appendChild(requestRollBtn);
+            controls.appendChild(requestRollBtn);
+        }
         controls.appendChild(encounterBtn);
 
         const lootGroup = document.createElement("div");
@@ -480,7 +481,7 @@ class PF2ETokenBar {
         sellBtn.addEventListener("drop", event => PF2ETokenBar.handleItemDrop(event, "Sell"));
         lootGroup.appendChild(sellBtn);
       } else {
-        controls.appendChild(requestRollBtn);
+        if (game.user.isGM) controls.appendChild(requestRollBtn);
         controls.appendChild(encounterBtn);
       }
 
