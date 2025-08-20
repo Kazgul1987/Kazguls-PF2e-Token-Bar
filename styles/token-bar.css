@@ -27,7 +27,7 @@
 
 #pf2e-token-bar .pf2e-token-bar-content {
   display: flex;
-  gap: 8px;
+  gap: 12px;
   overflow-x: auto;
   overflow-y: visible;
   max-width: 80vw;
