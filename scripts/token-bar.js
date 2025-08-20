@@ -434,35 +434,36 @@ class PF2ETokenBar {
         controls.appendChild(requestRollBtn);
         controls.appendChild(encounterBtn);
 
+        const lootGroup = document.createElement("div");
+        lootGroup.classList.add("pf2e-loot-controls");
+        controls.appendChild(lootGroup);
+
         const partyStashBtn = document.createElement("button");
         partyStashBtn.classList.add("pf2e-inventory-action");
-        partyStashBtn.style.gridColumn = "3";
         partyStashBtn.innerHTML = `<i class="fas fa-people-group"></i><span>${game.i18n.localize("PF2ETokenBar.PartyStash")}</span>`;
         partyStashBtn.addEventListener("click", () => PF2ETokenBar.openPartyStash());
         partyStashBtn.addEventListener("dragover", PF2ETokenBar.handleDragOver);
         partyStashBtn.addEventListener("dragleave", PF2ETokenBar.handleDragLeave);
         partyStashBtn.addEventListener("drop", event => PF2ETokenBar.handleItemDrop(event, "party"));
-        controls.appendChild(partyStashBtn);
+        lootGroup.appendChild(partyStashBtn);
 
         const lootBtn = document.createElement("button");
         lootBtn.classList.add("pf2e-inventory-action");
-        lootBtn.style.gridColumn = "3";
         lootBtn.innerHTML = `<i class="fas fa-treasure-chest"></i><span>${game.i18n.localize("PF2ETokenBar.Loot")}</span>`;
         lootBtn.addEventListener("click", () => PF2ETokenBar.openLootActor("Loot"));
         lootBtn.addEventListener("dragover", PF2ETokenBar.handleDragOver);
         lootBtn.addEventListener("dragleave", PF2ETokenBar.handleDragLeave);
         lootBtn.addEventListener("drop", event => PF2ETokenBar.handleItemDrop(event, "Loot"));
-        controls.appendChild(lootBtn);
+        lootGroup.appendChild(lootBtn);
 
         const sellBtn = document.createElement("button");
         sellBtn.classList.add("pf2e-inventory-action");
-        sellBtn.style.gridColumn = "3";
         sellBtn.innerHTML = `<i class="fas fa-sack-dollar"></i><span>${game.i18n.localize("PF2ETokenBar.Sell")}</span>`;
         sellBtn.addEventListener("click", () => PF2ETokenBar.openLootActor("Sell"));
         sellBtn.addEventListener("dragover", PF2ETokenBar.handleDragOver);
         sellBtn.addEventListener("dragleave", PF2ETokenBar.handleDragLeave);
         sellBtn.addEventListener("drop", event => PF2ETokenBar.handleItemDrop(event, "Sell"));
-        controls.appendChild(sellBtn);
+        lootGroup.appendChild(sellBtn);
       } else {
         controls.appendChild(requestRollBtn);
         controls.appendChild(encounterBtn);
