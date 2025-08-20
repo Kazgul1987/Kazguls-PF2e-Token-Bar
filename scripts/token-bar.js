@@ -127,7 +127,10 @@ class PF2ETokenBar {
     } else {
       tokenContainer.style.overflowX = "auto";
       tokenContainer.style.overflowY = "hidden";
-      tokenContainer.style.maxWidth = "80vw";
+      const tokenWidth = 64;
+      const gap = 12;
+      const maxWidth = (tokenWidth + gap) * 8;
+      tokenContainer.style.setProperty("--token-bar-max-width", `${maxWidth}px`);
     }
     bar.appendChild(tokenContainer);
 
@@ -898,7 +901,12 @@ Hooks.on("updateItem", item => {
 Hooks.on("updateCombat", () => PF2ETokenBar.render());
 Hooks.on("combatStart", () => PF2ETokenBar.render());
 Hooks.on("combatEnd", () => PF2ETokenBar.render());
-Hooks.on("combatTurn", () => PF2ETokenBar.render());
+Hooks.on("combatTurn", () => {
+  PF2ETokenBar.render();
+  document
+    .querySelector("#pf2e-token-bar .active-turn")
+    ?.scrollIntoView({ behavior: "smooth", inline: "center" });
+});
 Hooks.on("updateCombatant", () => PF2ETokenBar.render());
 Hooks.on("renderChatMessage", (_message, html) => {
   const links = html[0]?.querySelectorAll("a.pf2e-token-bar-roll") ?? [];

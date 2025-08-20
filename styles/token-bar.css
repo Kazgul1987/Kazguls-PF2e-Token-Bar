@@ -30,7 +30,7 @@
   gap: 12px;
   overflow-x: auto;
   overflow-y: visible;
-  max-width: 80vw;
+  max-width: var(--token-bar-max-width, 80vw);
   padding-top: 8px;
 }
 
