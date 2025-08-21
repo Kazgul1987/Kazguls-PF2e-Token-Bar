@@ -239,7 +239,8 @@ class PF2ETokenBar {
 
       const isCharacter = actor.isOfType?.("character") ?? actor.type === "character";
       const isNPC = actor.isOfType?.("npc") ?? actor.type === "npc";
-      const showHp = game.user.isGM || !isNPC;
+      const showHpBar = true;
+      const showHpNumeric = game.user.isGM || !isNPC;
       if (isCharacter) {
         const tabContainer = document.createElement("div");
         tabContainer.classList.add("pf2e-token-tabs");
@@ -285,16 +286,18 @@ class PF2ETokenBar {
         tabContainer.appendChild(proficiencyTab);
       }
 
-      if (showHp) {
-        const hp = actor.system?.attributes?.hp ?? {};
-        const hpValue = Number(hp.value) || 0;
-        const hpMax = Number(hp.max) || 0;
+      const hp = actor.system?.attributes?.hp ?? {};
+      const hpValue = Number(hp.value) || 0;
+      const hpMax = Number(hp.max) || 0;
 
+      if (showHpNumeric) {
         const hpText = document.createElement("div");
         hpText.classList.add("pf2e-hp-text");
         hpText.innerText = `${hpValue}`;
         wrapper.appendChild(hpText);
+      }
 
+      if (showHpBar) {
         const barOuter = document.createElement("div");
         barOuter.classList.add("pf2e-hp-bar");
         const barInner = document.createElement("div");
