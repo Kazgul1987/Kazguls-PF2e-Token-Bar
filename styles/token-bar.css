@@ -189,6 +189,12 @@
   pointer-events: none;
 }
 
+.pf2e-effect-chat {
+  float: right;
+  cursor: pointer;
+  margin-left: 4px;
+}
+
 .pf2e-token-bar-tooltip {
   max-width: 300px;
 }
