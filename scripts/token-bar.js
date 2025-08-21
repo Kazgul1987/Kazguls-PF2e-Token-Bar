@@ -238,6 +238,8 @@ class PF2ETokenBar {
       wrapper.appendChild(img);
 
       const isCharacter = actor.isOfType?.("character") ?? actor.type === "character";
+      const isNPC = actor.isOfType?.("npc") ?? actor.type === "npc";
+      const showHp = game.user.isGM || !isNPC;
       if (isCharacter) {
         const tabContainer = document.createElement("div");
         tabContainer.classList.add("pf2e-token-tabs");
@@ -283,29 +285,31 @@ class PF2ETokenBar {
         tabContainer.appendChild(proficiencyTab);
       }
 
-      const hp = actor.system?.attributes?.hp ?? {};
-      const hpValue = Number(hp.value) || 0;
-      const hpMax = Number(hp.max) || 0;
+      if (showHp) {
+        const hp = actor.system?.attributes?.hp ?? {};
+        const hpValue = Number(hp.value) || 0;
+        const hpMax = Number(hp.max) || 0;
 
-      const hpText = document.createElement("div");
-      hpText.classList.add("pf2e-hp-text");
-      hpText.innerText = `${hpValue}`;
-      wrapper.appendChild(hpText);
+        const hpText = document.createElement("div");
+        hpText.classList.add("pf2e-hp-text");
+        hpText.innerText = `${hpValue}`;
+        wrapper.appendChild(hpText);
 
-      const barOuter = document.createElement("div");
-      barOuter.classList.add("pf2e-hp-bar");
-      const barInner = document.createElement("div");
-      barInner.classList.add("pf2e-hp-bar-inner");
-      const pct = hpMax > 0 ? Math.min(Math.max((hpValue / hpMax) * 100, 0), 100) : 0;
-      const color =
-        pct > 75 ? "green" :
-        pct > 50 ? "yellow" :
-        pct > 25 ? "orange" :
-        "red";
-      barInner.style.backgroundColor = color;
-      barInner.style.width = `${pct}%`;
-      barOuter.appendChild(barInner);
-      wrapper.appendChild(barOuter);
+        const barOuter = document.createElement("div");
+        barOuter.classList.add("pf2e-hp-bar");
+        const barInner = document.createElement("div");
+        barInner.classList.add("pf2e-hp-bar-inner");
+        const pct = hpMax > 0 ? Math.min(Math.max((hpValue / hpMax) * 100, 0), 100) : 0;
+        const color =
+          pct > 75 ? "green" :
+          pct > 50 ? "yellow" :
+          pct > 25 ? "orange" :
+          "red";
+        barInner.style.backgroundColor = color;
+        barInner.style.width = `${pct}%`;
+        barOuter.appendChild(barInner);
+        wrapper.appendChild(barOuter);
+      }
 
       if (isCharacter) {
         const heroPoints = actor.system?.resources?.heroPoints ?? {};
