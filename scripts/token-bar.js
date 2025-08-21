@@ -362,7 +362,7 @@ class PF2ETokenBar {
           content: async () => {
             const doc = await fromUuid(uuid);
             if (!doc) return "";
-            const description = doc.system?.description?.value ?? "";
+            const description = doc._source?.system?.description?.value ?? doc.system?.description?.value ?? "";
             const enriched = await TextEditor.enrichHTML(description, {
               async: true,
               documents: true,
@@ -382,7 +382,7 @@ class PF2ETokenBar {
               ev.stopPropagation();
               try {
                 const doc = await fromUuid(uuid);
-                const description = doc.system?.description?.value ?? "";
+                const description = doc._source?.system?.description?.value ?? doc.system?.description?.value ?? "";
                 const content = await TextEditor.enrichHTML(description, {
                   async: true,
                   documents: true,
