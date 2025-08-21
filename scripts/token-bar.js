@@ -345,25 +345,29 @@ class PF2ETokenBar {
         ...(actor.conditions?.active ?? [])
       ];
       for (const effect of effects.filter(e => !e.disabled && !e.isExpired)) {
-        const icon = document.createElement("img");
-        icon.classList.add("pf2e-effect-icon");
-        icon.src = effect.img;
+        const effectWrapper = document.createElement("div");
+        effectWrapper.classList.add("pf2e-effect");
+
+        const img = document.createElement("img");
+        img.classList.add("pf2e-effect-icon");
+        img.src = effect.img;
         const uuid = effect.sourceId || effect.uuid;
-        icon.dataset.uuid = uuid; // Fallback to effect.uuid when sourceId is missing
-        icon.title = effect.name;
-        foundry?.applications?.tooltip?.createTooltipListener?.(icon, {
-          async render() {
+        img.dataset.uuid = uuid;
+        img.dataset.tooltip = effect.name;
+        game.tooltip.activateListeners(img, {
+          content: async () => {
             const doc = await fromUuid(uuid);
-            if (!doc) return document.createElement("div");
+            if (!doc) return "";
             const description = doc.system?.description?.value ?? "";
-            const html = await TextEditor.enrichHTML(description, { async: true, documents: true, rollData: doc.actor?.getRollData?.() });
-            const div = document.createElement("div");
-            div.innerHTML = html;
-            return div;
+            return await TextEditor.enrichHTML(description, {
+              async: true,
+              documents: true,
+              rollData: doc.actor?.getRollData?.(),
+            });
           },
-          cssClass: "pf2e-token-bar-tooltip"
+          cssClass: "pf2e-token-bar-tooltip",
         });
-        icon.addEventListener("click", async () => {
+        img.addEventListener("click", async () => {
           try {
             const doc = await fromUuid(uuid);
             doc?.sheet.render(true);
@@ -371,13 +375,25 @@ class PF2ETokenBar {
             console.error("PF2ETokenBar | failed to open effect sheet", err);
           }
         });
-        icon.addEventListener("contextmenu", async event => {
+
+        img.addEventListener("contextmenu", async event => {
           event.preventDefault();
           event.stopPropagation();
           await actor.deleteEmbeddedDocuments("Item", [effect.id]);
           PF2ETokenBar.render();
         });
-        effectBar.appendChild(icon);
+
+        effectWrapper.appendChild(img);
+
+        const stack = effect.badge?.value ?? effect.system?.badge?.value ?? effect.value;
+        if (stack > 1) {
+          const badge = document.createElement("span");
+          badge.classList.add("pf2e-effect-badge");
+          badge.textContent = stack;
+          effectWrapper.appendChild(badge);
+        }
+
+        effectBar.appendChild(effectWrapper);
       }
       wrapper.appendChild(effectBar);
 
