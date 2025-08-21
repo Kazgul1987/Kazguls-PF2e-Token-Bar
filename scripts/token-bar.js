@@ -415,7 +415,7 @@ class PF2ETokenBar {
             });
             const rect = img.getBoundingClientRect();
             bubbleAnchor = { x: rect.left + rect.width / 2, y: rect.top };
-            canvas.hud.bubbles?.say?.(bubbleAnchor, enriched);
+            canvas.hud.bubbles?.say?.(enriched, { anchor: bubbleAnchor });
           } catch (err) {
             console.error("PF2ETokenBar | failed to show effect bubble", err);
           }
@@ -423,7 +423,7 @@ class PF2ETokenBar {
 
         img.addEventListener("mouseleave", () => {
           if (bubbleAnchor) {
-            canvas.hud.bubbles?.clear?.(bubbleAnchor);
+            canvas.hud.bubbles?.clear?.({ anchor: bubbleAnchor });
             bubbleAnchor = null;
           }
         });
