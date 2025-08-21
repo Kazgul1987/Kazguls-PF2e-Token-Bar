@@ -368,7 +368,8 @@ class PF2ETokenBar {
               documents: true,
               rollData: doc.actor?.getRollData?.(),
             });
-            return `${enriched}<i class="fas fa-comment pf2e-effect-chat"></i>`;
+            const name = doc.name ?? effect.name;
+            return `<strong>${name}</strong>${enriched}<i class="fas fa-comment pf2e-effect-chat"></i>`;
           },
           cssClass: "pf2e-token-bar-tooltip",
         });
