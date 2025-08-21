@@ -53,7 +53,8 @@ Hooks.on("renderChatMessage", (message, html) => {
     const original = game.messages.get(msgId);
     const item = original?.item;
 
-    const roll = await new game.pf2e.CheckRoll(
+    const CheckRoll = CONFIG.Dice.rolls.find((r) => r.name === "CheckRoll");
+    const roll = await new CheckRoll(
       "1d20",
       {},
       { type: "flat-check", dc: { value: dc, label: "PF2E.Check.Result.Flat" } }
