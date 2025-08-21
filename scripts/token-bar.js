@@ -354,7 +354,7 @@ class PF2ETokenBar {
         const uuid = effect.sourceId || effect.uuid;
         img.dataset.uuid = uuid;
         img.dataset.tooltip = effect.name;
-        game.tooltip.activateListeners(img, {
+        game.tooltip?.bind?.(img, {
           content: async () => {
             const doc = await fromUuid(uuid);
             if (!doc) return "";
