@@ -365,6 +365,7 @@ class PF2ETokenBar {
         const stack = effect.badge?.value ?? effect.system?.badge?.value ?? effect.value;
         const canStack = typeof stack === "number";
 
+        let bubbleAnchor;
         game.tooltip?.bind?.(img, {
           content: async () => {
             const doc = await fromUuid(uuid);
@@ -412,14 +413,19 @@ class PF2ETokenBar {
               documents: true,
               rollData: doc?.actor?.getRollData?.(),
             });
-            canvas.hud.bubbles?.say?.(token, enriched);
+            const rect = img.getBoundingClientRect();
+            bubbleAnchor = { x: rect.left + rect.width / 2, y: rect.top };
+            canvas.hud.bubbles?.say?.(bubbleAnchor, enriched);
           } catch (err) {
             console.error("PF2ETokenBar | failed to show effect bubble", err);
           }
         });
 
         img.addEventListener("mouseleave", () => {
-          canvas.hud.bubbles?.clear?.(token);
+          if (bubbleAnchor) {
+            canvas.hud.bubbles?.clear?.(bubbleAnchor);
+            bubbleAnchor = null;
+          }
         });
 
         img.addEventListener("click", async event => {
