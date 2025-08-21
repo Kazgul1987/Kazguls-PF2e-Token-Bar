@@ -403,6 +403,25 @@ class PF2ETokenBar {
           }, 50);
         });
 
+        img.addEventListener("mouseenter", async () => {
+          try {
+            const doc = await fromUuid(uuid);
+            const description = doc?._source?.system?.description?.value ?? doc?.system?.description?.value ?? "";
+            const enriched = await TextEditor.enrichHTML(description, {
+              async: true,
+              documents: true,
+              rollData: doc?.actor?.getRollData?.(),
+            });
+            canvas.hud.bubbles?.say?.(token, enriched);
+          } catch (err) {
+            console.error("PF2ETokenBar | failed to show effect bubble", err);
+          }
+        });
+
+        img.addEventListener("mouseleave", () => {
+          canvas.hud.bubbles?.clear?.(token);
+        });
+
         img.addEventListener("click", async event => {
           event.preventDefault();
           if (canStack) {
