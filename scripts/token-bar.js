@@ -354,39 +354,102 @@ class PF2ETokenBar {
         const uuid = effect.sourceId || effect.uuid;
         img.dataset.uuid = uuid;
         img.dataset.tooltip = effect.name;
+
+        const stack = effect.badge?.value ?? effect.system?.badge?.value ?? effect.value;
+        const canStack = typeof stack === "number";
+
         game.tooltip?.bind?.(img, {
           content: async () => {
             const doc = await fromUuid(uuid);
             if (!doc) return "";
             const description = doc.system?.description?.value ?? "";
-            return await TextEditor.enrichHTML(description, {
+            const enriched = await TextEditor.enrichHTML(description, {
               async: true,
               documents: true,
               rollData: doc.actor?.getRollData?.(),
             });
+            return `${enriched}<i class="fas fa-comment pf2e-effect-chat"></i>`;
           },
           cssClass: "pf2e-token-bar-tooltip",
         });
-        img.addEventListener("click", async () => {
-          try {
-            const doc = await fromUuid(uuid);
-            doc?.sheet.render(true);
-          } catch (err) {
-            console.error("PF2ETokenBar | failed to open effect sheet", err);
+
+        img.addEventListener("mouseenter", () => {
+          setTimeout(() => {
+            const icon = document.querySelector(".pf2e-token-bar-tooltip .pf2e-effect-chat");
+            icon?.addEventListener("click", async ev => {
+              ev.preventDefault();
+              ev.stopPropagation();
+              try {
+                const doc = await fromUuid(uuid);
+                const description = doc.system?.description?.value ?? "";
+                const content = await TextEditor.enrichHTML(description, {
+                  async: true,
+                  documents: true,
+                  rollData: doc.actor?.getRollData?.(),
+                });
+                ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor: doc.actor }), content });
+              } catch (err) {
+                console.error("PF2ETokenBar | failed to send effect to chat", err);
+              }
+            }, { once: true });
+          }, 50);
+        });
+
+        img.addEventListener("click", async event => {
+          event.preventDefault();
+          if (canStack) {
+            try {
+              if (typeof effect.increase === "function") {
+                await effect.increase();
+              } else {
+                const newValue = (stack ?? 0) + 1;
+                await effect.update?.({
+                  "badge.value": newValue,
+                  "system.badge.value": newValue,
+                  value: newValue,
+                });
+              }
+            } catch (err) {
+              console.error("PF2ETokenBar | failed to increase effect stack", err);
+            }
+            PF2ETokenBar.render();
+          } else {
+            try {
+              const doc = await fromUuid(uuid);
+              doc?.sheet.render(true);
+            } catch (err) {
+              console.error("PF2ETokenBar | failed to open effect sheet", err);
+            }
           }
         });
 
         img.addEventListener("contextmenu", async event => {
           event.preventDefault();
           event.stopPropagation();
-          await actor.deleteEmbeddedDocuments("Item", [effect.id]);
+          if (canStack && stack > 1) {
+            try {
+              if (typeof effect.decrease === "function") {
+                await effect.decrease();
+              } else {
+                const newValue = stack - 1;
+                await effect.update?.({
+                  "badge.value": newValue,
+                  "system.badge.value": newValue,
+                  value: newValue,
+                });
+              }
+            } catch (err) {
+              console.error("PF2ETokenBar | failed to decrease effect stack", err);
+            }
+          } else {
+            await actor.deleteEmbeddedDocuments("Item", [effect.id]);
+          }
           PF2ETokenBar.render();
         });
 
         effectWrapper.appendChild(img);
 
-        const stack = effect.badge?.value ?? effect.system?.badge?.value ?? effect.value;
-        if (stack > 1) {
+        if (canStack && stack >= 1) {
           const badge = document.createElement("span");
           badge.classList.add("pf2e-effect-badge");
           badge.textContent = stack;
