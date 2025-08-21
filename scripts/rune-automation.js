@@ -53,10 +53,14 @@ Hooks.on("renderChatMessage", (message, html) => {
     const original = game.messages.get(msgId);
     const item = original?.item;
 
-    const roll = await new Roll("1d20").evaluate({ async: true });
-    await roll.toMessage({ flavor: `Fortification (DC ${dc})` });
+    const roll = await new game.pf2e.CheckRoll(
+      "1d20",
+      {},
+      { type: "flat-check", dc: { value: dc, label: "PF2E.Check.Result.Flat" } }
+    ).evaluate({ async: true });
+    await roll.toMessage({ speaker: message.speaker, flavor: `Fortification (DC ${dc})` });
 
-    if (roll.total >= dc) {
+    if (roll.degreeOfSuccess >= 2) {
       await original.update({ "flags.pf2e.context.outcome": "success" });
       ui.notifications.info("Critical downgraded to normal damage.");
     }
