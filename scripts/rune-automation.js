@@ -53,13 +53,11 @@ Hooks.on("renderChatMessage", (message, html) => {
     const original = game.messages.get(msgId);
     const item = original?.item;
 
-    const CheckRoll = CONFIG.Dice.rolls.find((r) => r.name === "CheckRoll");
-    const roll = await new CheckRoll(
-      "1d20",
-      {},
-      { type: "flat-check", dc: { value: dc, label: "PF2E.Check.Result.Flat" } }
-    ).evaluate({ async: true });
-    await roll.toMessage({ speaker: message.speaker, flavor: `Fortification (DC ${dc})` });
+    const roll = await game.pf2e.Check.roll(
+      new game.pf2e.Dice.Roll("1d20"),
+      { type: "flat-check", dc: { value: dc, label: "PF2E.Check.Result.Flat" } },
+      { speaker: message.speaker, flavor: `Fortification (DC ${dc})` }
+    );
 
     if (roll.degreeOfSuccess >= 2) {
       await original.update({ "flags.pf2e.context.outcome": "success" });
