@@ -171,7 +171,30 @@
   margin-top: 2px;
 }
 
+.pf2e-effect {
+  position: relative;
+  display: inline-block;
+}
+
+.pf2e-effect-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font-size: 0.7rem;
+  line-height: 1;
+  padding: 0 2px;
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.pf2e-token-bar-tooltip {
+  max-width: 300px;
+}
+
 .pf2e-effect-icon {
+  display: block;
   width: 24px;
   height: 24px;
 }
