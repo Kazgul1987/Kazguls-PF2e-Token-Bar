@@ -598,7 +598,7 @@ class PF2ETokenBar {
             });
             if (confirmed) {
               await PF2ETokenBar.transferDefeatedLoot();
-              PF2ETokenBar.openLootActor("Loot");
+              PF2ETokenBar.openLootActor("Loot", true);
             }
           }
           await game.combat.endCombat();
@@ -814,10 +814,13 @@ class PF2ETokenBar {
     }
   }
 
-  static openLootActor(name) {
+  static openLootActor(name, broadcast = false) {
     const actor = game.actors.getName(name);
     if (actor) {
       actor.sheet.render(true);
+      if (broadcast) {
+        game.socket.emit("module.pf2e-token-bar", { action: "openLoot", actorId: actor.id });
+      }
     } else {
       ui.notifications.error(game.i18n.format("PF2ETokenBar.TokenMissing", { name }));
     }
@@ -1127,6 +1130,12 @@ globalThis.PF2ETokenBar = PF2ETokenBar;
 let keydownListener;
 
 Hooks.once("ready", () => {
+  game.socket.on("module.pf2e-token-bar", data => {
+    if (data.action === "openLoot" && data.actorId) {
+      const actor = game.actors.get(data.actorId);
+      actor?.sheet?.render(true);
+    }
+  });
   keydownListener = event => {
     const target = event.target;
     const isEditable =
