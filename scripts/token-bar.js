@@ -722,15 +722,19 @@ class PF2ETokenBar {
     });
 
     document.body.appendChild(bar);
-    this.scrollActiveToken();
+    this.scrollActiveToken("instant");
   }
 
-  static scrollActiveToken() {
-    requestAnimationFrame(() =>
-      document
-        .querySelector("#pf2e-token-bar .active-turn")
-        ?.scrollIntoView({ behavior: "smooth", inline: "center" })
-    );
+  static scrollActiveToken(behavior = "smooth") {
+    const active = document.querySelector("#pf2e-token-bar .active-turn");
+    if (!active) return;
+    if (behavior === "smooth") {
+      requestAnimationFrame(() =>
+        active.scrollIntoView({ behavior, inline: "center" })
+      );
+    } else {
+      active.scrollIntoView({ behavior, inline: "center" });
+    }
   }
 
     static _partyTokens() {
