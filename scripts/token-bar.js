@@ -1,5 +1,4 @@
 import { PF2ERingMenu } from "./ring-menu.js";
-import { createTooltipListener } from "/systems/pf2e/module/sheet/helpers.js";
 
 Hooks.once("init", () => {
   game.settings.register("pf2e-token-bar", "position", {
@@ -367,37 +366,42 @@ class PF2ETokenBar {
         const canStack = typeof stack === "number";
 
         let bubbleAnchor;
-        createTooltipListener(img, {
-          cssClass: "pf2e effect-info",
-          async render() {
-            try {
-              const doc = await fromUuid(uuid);
-              if (!doc) return null;
-              const description = (await doc.getDescription?.())?.value ??
-                doc._source?.system?.description?.value ??
-                doc.system?.description?.value ?? "";
-              const viewData = { effect: doc, description, remaining: null };
-              const wrapper = document.createElement("div");
-              wrapper.innerHTML = await renderTemplate(
-                "systems/pf2e/templates/system/effects/tooltip.hbs",
-                viewData
-              );
-              const content = wrapper.firstElementChild;
-              content
-                ?.querySelector("[data-action=send-to-chat]")
-                ?.addEventListener("click", () => doc.toMessage());
-              content
-                ?.querySelector("[data-action=edit]")
-                ?.addEventListener("click", () => doc.sheet?.render(true));
-              content
-                ?.querySelector("[data-action=recover-persistent-damage]")
-                ?.addEventListener("click", () => doc.rollRecovery?.());
-              return content;
-            } catch (err) {
-              console.error("PF2ETokenBar | failed to render effect tooltip", err);
-              return null;
-            }
+        game.tooltip?.bind?.(img, {
+          content: async () => {
+            const doc = await fromUuid(uuid);
+            if (!doc) return "";
+            const description = doc._source?.system?.description?.value ?? doc.system?.description?.value ?? "";
+            const enriched = await TextEditor.enrichHTML(description, {
+              async: true,
+              documents: true,
+              rollData: doc.actor?.getRollData?.(),
+            });
+            const name = doc.name ?? effect.name;
+            return `<strong>${name}</strong>${enriched}<i class="fas fa-comment pf2e-effect-chat"></i>`;
           },
+          cssClass: "pf2e-token-bar-tooltip",
+        });
+
+        img.addEventListener("mouseenter", () => {
+          setTimeout(() => {
+            const icon = document.querySelector(".pf2e-token-bar-tooltip .pf2e-effect-chat");
+            icon?.addEventListener("click", async ev => {
+              ev.preventDefault();
+              ev.stopPropagation();
+              try {
+                const doc = await fromUuid(uuid);
+                const description = doc._source?.system?.description?.value ?? doc.system?.description?.value ?? "";
+                const content = await TextEditor.enrichHTML(description, {
+                  async: true,
+                  documents: true,
+                  rollData: doc.actor?.getRollData?.(),
+                });
+                ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor: doc.actor }), content });
+              } catch (err) {
+                console.error("PF2ETokenBar | failed to send effect to chat", err);
+              }
+            }, { once: true });
+          }, 50);
         });
 
         img.addEventListener("mouseenter", async () => {
@@ -1122,5 +1126,6 @@ Hooks.on("renderChatMessage", (_message, html) => {
   }
 });
 Hooks.on("targetToken", () => PF2ETokenBar.render());
+Hooks.on("deleteCombat", () => PF2ETokenBar.render());
 Hooks.on("deleteCombat", () => PF2ETokenBar.render());
 
