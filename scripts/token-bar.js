@@ -81,6 +81,15 @@ Hooks.once("init", () => {
     default: true,
     onChange: () => PF2ETokenBar.render(),
   });
+  game.settings.register("pf2e-token-bar", "encounterScroll", {
+    name: game.i18n.localize("PF2ETokenBar.Settings.EncounterScroll.Name"),
+    hint: game.i18n.localize("PF2ETokenBar.Settings.EncounterScroll.Hint"),
+    scope: "client",
+    config: true,
+    type: Boolean,
+    default: true,
+    onChange: () => PF2ETokenBar.render(),
+  });
 });
 
 class PF2ETokenBar {
@@ -147,12 +156,18 @@ class PF2ETokenBar {
       tokenContainer.style.overflowX = "hidden";
       tokenContainer.style.maxHeight = "80vh";
     } else {
-      tokenContainer.style.overflowX = "auto";
       tokenContainer.style.overflowY = "hidden";
       const tokenWidth = 64;
       const gap = 12;
       const maxWidth = (tokenWidth + gap) * 8;
-      tokenContainer.style.setProperty("--token-bar-max-width", `${maxWidth}px`);
+      const encounterScroll = game.settings.get("pf2e-token-bar", "encounterScroll");
+      if (encounterMode && !encounterScroll) {
+        tokenContainer.style.overflowX = "visible";
+        tokenContainer.style.setProperty("--token-bar-max-width", "none");
+      } else {
+        tokenContainer.style.overflowX = "auto";
+        tokenContainer.style.setProperty("--token-bar-max-width", `${maxWidth}px`);
+      }
     }
     bar.appendChild(tokenContainer);
 

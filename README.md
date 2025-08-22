@@ -107,6 +107,7 @@ Under **Settings → Module Settings → PF2e Token-Bar**:
 - **Lock bar** – prevents accidental moving.
 - **Position** – automatically saved after moving.
 - **Encounter mode** – when enabled (default), the bar switches to combatants during encounters and shows round counter and difficulty.
+- **Encounter scrollbar** – when disabled, the bar extends to the right without scrolling.
 - **Quick loot** – automatically transfer defeated NPC loot and open the Loot actor when combat ends.
 
 ---

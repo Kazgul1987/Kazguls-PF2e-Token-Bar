@@ -25,6 +25,10 @@
         "Name": "Encounter-Modus aktivieren",
         "Hint": "Verwendet Encounter-spezifische Funktionen wie Kampftoken, Rundenzähler und Schwierigkeitsanzeige"
       },
+      "EncounterScroll": {
+        "Name": "Begegnungs-Scrollbalken",
+        "Hint": "Wenn deaktiviert, erweitert sich die Leiste nach rechts ohne Scrollen"
+      },
       "AutoFortification": {
         "Name": "Fortification-Automatisierung",
         "Hint": "Bietet bei kritischen Treffern automatisch einen Fortification-Flatcheck an"
