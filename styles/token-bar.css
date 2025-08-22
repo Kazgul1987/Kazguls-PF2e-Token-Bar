@@ -42,6 +42,15 @@
   padding-top: 8px;
 }
 
+#pf2e-token-bar .pf2e-token-bar-header {
+  display: flex;
+  gap: 4px;
+  position: sticky;
+  top: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
 #pf2e-token-bar .pf2e-token-bar-controls {
   display: grid;
   grid-template-columns: repeat(3, auto);
