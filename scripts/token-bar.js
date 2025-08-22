@@ -445,6 +445,33 @@ class PF2ETokenBar {
 
         img.addEventListener("click", async event => {
           event.preventDefault();
+          if (event.ctrlKey) {
+            event.stopPropagation();
+            try {
+              const doc = await fromUuid(uuid);
+              const description = doc?._source?.system?.description?.value ?? doc?.system?.description?.value ?? "";
+              const enriched = await TextEditor.enrichHTML(description, {
+                async: true,
+                documents: true,
+                rollData: doc?.actor?.getRollData?.()
+              });
+              const dialog = new Dialog({
+                title: doc?.name ?? "",
+                content: enriched,
+                buttons: {
+                  chat: {
+                    label: '<i class="fas fa-comment"></i>',
+                    callback: () => ChatMessage.create({ content: enriched })
+                  }
+                }
+              });
+              dialog.render(true);
+              dialog.element.find('button').addClass('pf2e-effect-dialog-chat');
+            } catch (err) {
+              console.error("PF2ETokenBar | failed to show effect description", err);
+            }
+            return;
+          }
           if (canStack) {
             try {
               if (typeof effect.increase === "function") {
