@@ -136,6 +136,10 @@ class PF2ETokenBar {
       bar.style.right = "0px";
     }
 
+    const header = document.createElement("div");
+    header.classList.add("pf2e-token-bar-header");
+    bar.appendChild(header);
+
     const tokenContainer = document.createElement("div");
     tokenContainer.classList.add("pf2e-token-bar-content");
     if (orientation === "vertical") {
@@ -159,14 +163,14 @@ class PF2ETokenBar {
         const capThreat = threat.charAt(0).toUpperCase() + threat.slice(1);
         difficultyDisplay.classList.add("pf2e-encounter-difficulty", `pf2e-encounter-${threat}`);
         difficultyDisplay.innerText = game.i18n.localize(`PF2ETokenBar.Difficulties.${capThreat}`);
-        tokenContainer.prepend(difficultyDisplay);
+        header.appendChild(difficultyDisplay);
       }
 
       if (activeCombat?.round > 0) {
         const roundDisplay = document.createElement("div");
         roundDisplay.classList.add("pf2e-round-display");
         roundDisplay.innerText = game.i18n.format("PF2ETokenBar.Round", { round: activeCombat.round });
-        tokenContainer.prepend(roundDisplay);
+        header.prepend(roundDisplay);
       }
     }
 
