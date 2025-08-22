@@ -711,6 +711,15 @@ class PF2ETokenBar {
     });
 
     document.body.appendChild(bar);
+    this.scrollActiveToken();
+  }
+
+  static scrollActiveToken() {
+    requestAnimationFrame(() =>
+      document
+        .querySelector("#pf2e-token-bar .active-turn")
+        ?.scrollIntoView({ behavior: "smooth", inline: "center" })
+    );
   }
 
     static _partyTokens() {
@@ -1112,12 +1121,7 @@ Hooks.on("combatStart", () => PF2ETokenBar.render());
 Hooks.on("combatEnd", async () => {
   PF2ETokenBar.render();
 });
-Hooks.on("combatTurn", () => {
-  PF2ETokenBar.render();
-  document
-    .querySelector("#pf2e-token-bar .active-turn")
-    ?.scrollIntoView({ behavior: "smooth", inline: "center" });
-});
+Hooks.on("combatTurn", () => PF2ETokenBar.scrollActiveToken());
 Hooks.on("updateCombatant", () => PF2ETokenBar.render());
 Hooks.on("renderChatMessage", (_message, html) => {
   const links = html[0]?.querySelectorAll("a.pf2e-token-bar-roll") ?? [];
