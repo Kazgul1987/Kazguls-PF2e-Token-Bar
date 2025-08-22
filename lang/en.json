@@ -71,7 +71,7 @@
     "Unlock": "Unlock",
     "HeroPoints": "Hero Points",
     "TokenMissing": "Token '{name}' not found",
-    "InvalidItemType": "Only physical items can be dropped here",
+    "InvalidItemType": "Only physical items or effects can be dropped here",
     "PartySheetMissing": "Party Sheet not found",
     "EncounterDifficulty": "Encounter Difficulty",
     "Difficulties": {
