@@ -207,6 +207,11 @@
   margin-left: 4px;
 }
 
+.pf2e-effect-dialog-chat {
+  cursor: pointer;
+  font-size: 1.2em;
+}
+
 .pf2e-token-bar-tooltip {
   max-width: 300px;
 }
