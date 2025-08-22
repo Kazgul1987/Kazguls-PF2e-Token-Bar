@@ -72,6 +72,15 @@ Hooks.once("init", () => {
     type: Boolean,
     default: true,
   });
+  game.settings.register("pf2e-token-bar", "encounterMode", {
+    name: game.i18n.localize("PF2ETokenBar.Settings.EncounterMode.Name"),
+    hint: game.i18n.localize("PF2ETokenBar.Settings.EncounterMode.Hint"),
+    scope: "client",
+    config: true,
+    type: Boolean,
+    default: true,
+    onChange: () => PF2ETokenBar.render(),
+  });
 });
 
 class PF2ETokenBar {
@@ -89,6 +98,7 @@ class PF2ETokenBar {
       return;
     }
 
+    const encounterMode = game.settings.get("pf2e-token-bar", "encounterMode");
     const activeCombat = game.combat && game.combats.has(game.combat.id) ? game.combat : null;
 
     this.debug("PF2ETokenBar | fetching party actors");
@@ -99,7 +109,7 @@ class PF2ETokenBar {
       .map(a => a.getActiveTokens(true)[0])
       .filter(t => t);
 
-    if (activeCombat?.combatants.size) {
+    if (encounterMode && activeCombat?.combatants.size) {
       this.debug("PF2ETokenBar | fetching combat tokens");
       tokens = this._combatTokens();
     }
@@ -142,21 +152,22 @@ class PF2ETokenBar {
     }
     bar.appendChild(tokenContainer);
 
+    if (encounterMode) {
+      const threat = activeCombat?.metrics?.threat ?? activeCombat?.analyze()?.threat;
+      if (game.user.isGM && threat) {
+        const difficultyDisplay = document.createElement("div");
+        const capThreat = threat.charAt(0).toUpperCase() + threat.slice(1);
+        difficultyDisplay.classList.add("pf2e-encounter-difficulty", `pf2e-encounter-${threat}`);
+        difficultyDisplay.innerText = game.i18n.localize(`PF2ETokenBar.Difficulties.${capThreat}`);
+        tokenContainer.prepend(difficultyDisplay);
+      }
 
-    const threat = activeCombat?.metrics?.threat ?? activeCombat?.analyze()?.threat;
-    if (game.user.isGM && threat) {
-      const difficultyDisplay = document.createElement("div");
-      const capThreat = threat.charAt(0).toUpperCase() + threat.slice(1);
-      difficultyDisplay.classList.add("pf2e-encounter-difficulty", `pf2e-encounter-${threat}`);
-      difficultyDisplay.innerText = game.i18n.localize(`PF2ETokenBar.Difficulties.${capThreat}`);
-      tokenContainer.prepend(difficultyDisplay);
-    }
-
-    if (activeCombat?.round > 0) {
-      const roundDisplay = document.createElement("div");
-      roundDisplay.classList.add("pf2e-round-display");
-      roundDisplay.innerText = game.i18n.format("PF2ETokenBar.Round", { round: activeCombat.round });
-      tokenContainer.prepend(roundDisplay);
+      if (activeCombat?.round > 0) {
+        const roundDisplay = document.createElement("div");
+        roundDisplay.classList.add("pf2e-round-display");
+        roundDisplay.innerText = game.i18n.format("PF2ETokenBar.Round", { round: activeCombat.round });
+        tokenContainer.prepend(roundDisplay);
+      }
     }
 
     tokens.forEach(token => {
@@ -175,9 +186,9 @@ class PF2ETokenBar {
       wrapper.addEventListener("dragleave", () => wrapper.classList.remove("pf2e-drop-hover"));
       wrapper.addEventListener("drop", event => PF2ETokenBar.handleItemDrop(event, actor));
 
-      const combatant = activeCombat?.combatants.find(c => c.tokenId === token.id);
+      const combatant = encounterMode ? activeCombat?.combatants.find(c => c.tokenId === token.id) : null;
 
-      if (combatant) {
+      if (encounterMode && combatant) {
         const delayed = combatant.getFlag("pf2e-token-bar", "delayed");
         const isActive = activeCombat?.started && combatant.id === activeCombat.combatant?.id;
         if (isActive) wrapper.classList.add("active-turn");
