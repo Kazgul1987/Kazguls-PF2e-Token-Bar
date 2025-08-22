@@ -31,6 +31,7 @@
   overflow-x: auto;
   overflow-y: visible;
   max-width: var(--token-bar-max-width, 80vw);
+  /* set --token-bar-max-width: none to remove the max-width */
   padding-top: 8px;
 }
 

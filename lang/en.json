@@ -25,6 +25,10 @@
         "Name": "Enable Encounter Mode",
         "Hint": "Use encounter features such as combatant tokens, round counter, and difficulty display"
       },
+      "EncounterScroll": {
+        "Name": "Encounter scrollbar",
+        "Hint": "When disabled, the bar extends to the right without scrolling"
+      },
       "AutoFortification": {
         "Name": "Auto Fortification",
         "Hint": "Automatically prompt a Fortification flat check on critical hits"
