@@ -144,7 +144,7 @@ class PF2ETokenBar {
 
 
     const threat = activeCombat?.metrics?.threat ?? activeCombat?.analyze()?.threat;
-    if (threat) {
+    if (game.user.isGM && threat) {
       const difficultyDisplay = document.createElement("div");
       const capThreat = threat.charAt(0).toUpperCase() + threat.slice(1);
       difficultyDisplay.classList.add("pf2e-encounter-difficulty", `pf2e-encounter-${threat}`);
