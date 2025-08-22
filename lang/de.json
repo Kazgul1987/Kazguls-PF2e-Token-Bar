@@ -21,6 +21,10 @@
         "Name": "Schnellbeute",
         "Hint": "Überträgt nach dem Kampf automatisch die Beute besiegter NSC und öffnet den Beute-Akteur."
       },
+      "EncounterMode": {
+        "Name": "Encounter-Modus aktivieren",
+        "Hint": "Verwendet Encounter-spezifische Funktionen wie Kampftoken, Rundenzähler und Schwierigkeitsanzeige"
+      },
       "AutoFortification": {
         "Name": "Fortification-Automatisierung",
         "Hint": "Bietet bei kritischen Treffern automatisch einen Fortification-Flatcheck an"

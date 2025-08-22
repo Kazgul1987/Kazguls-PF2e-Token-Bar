@@ -106,6 +106,7 @@ Under **Settings → Module Settings → PF2e Token-Bar**:
 - **Orientation** – horizontal or vertical (also via button on the bar).  
 - **Lock bar** – prevents accidental moving.
 - **Position** – automatically saved after moving.
+- **Encounter mode** – when enabled (default), the bar switches to combatants during encounters and shows round counter and difficulty.
 - **Quick loot** – automatically transfer defeated NPC loot and open the Loot actor when combat ends.
 
 ---
