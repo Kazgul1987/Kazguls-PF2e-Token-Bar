@@ -395,7 +395,6 @@ class PF2ETokenBar {
         const stack = effect.badge?.value ?? effect.system?.badge?.value ?? effect.value;
         const canStack = typeof stack === "number";
 
-        let bubbleAnchor;
         game.tooltip?.bind?.(img, {
           content: async () => {
             const doc = await fromUuid(uuid);
@@ -432,30 +431,6 @@ class PF2ETokenBar {
               }
             }, { once: true });
           }, 50);
-        });
-
-        img.addEventListener("mouseenter", async () => {
-          try {
-            const doc = await fromUuid(uuid);
-            const description = doc?._source?.system?.description?.value ?? doc?.system?.description?.value ?? "";
-            const enriched = await TextEditor.enrichHTML(description, {
-              async: true,
-              documents: true,
-              rollData: doc?.actor?.getRollData?.(),
-            });
-            const rect = img.getBoundingClientRect();
-            bubbleAnchor = { x: rect.left + rect.width / 2, y: rect.top };
-            canvas.hud.bubbles?.say?.(enriched, { anchor: bubbleAnchor });
-          } catch (err) {
-            console.error("PF2ETokenBar | failed to show effect bubble", err);
-          }
-        });
-
-        img.addEventListener("mouseleave", () => {
-          if (bubbleAnchor) {
-            canvas.hud.bubbles?.clear?.({ anchor: bubbleAnchor });
-            bubbleAnchor = null;
-          }
         });
 
         img.addEventListener("click", async event => {
