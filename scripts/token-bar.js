@@ -583,7 +583,7 @@ class PF2ETokenBar {
 
     const requestRollBtn = document.createElement("button");
     requestRollBtn.innerText = game.i18n.localize("PF2ETokenBar.RequestRoll");
-    requestRollBtn.addEventListener("click", () => this.requestRoll());
+    requestRollBtn.addEventListener("click", () => game.pf2e.gm.checkPrompt({ actors }));
 
     const encounterBtn = document.createElement("button");
     const encounterKey = activeCombat?.started ? "PF2ETokenBar.EndEncounter" : "PF2ETokenBar.StartEncounter";
@@ -1061,76 +1061,6 @@ class PF2ETokenBar {
     }
     this.render();
   }
-
-  static requestRoll() {
-    const tokens = this._activePlayerTokens();
-    const tokenOptions = tokens.map(t => `<div><input type="checkbox" name="token" value="${t.id}"/> ${t.name}</div>`).join("");
-    const skills = CONFIG.PF2E?.skills || {};
-    const skillOptions = Object.entries(skills)
-      .map(([k, v]) => {
-        const label = v.label ?? v;
-        const localized = game.i18n?.localize(label) ?? label;
-        return `<option value="${k}">${localized}</option>`;
-      })
-      .join("");
-    const saves = ["fortitude", "reflex", "will"];
-    const saveOptions = saves
-      .map(s => {
-        const label = game.i18n.localize(`PF2ETokenBar.${s.charAt(0).toUpperCase() + s.slice(1)}`);
-        return `<option value="${s}">${label}</option>`;
-      })
-      .join("");
-    const content = `<div><label>${game.i18n.localize("PF2ETokenBar.DC")} <input type="number" name="dc"/></label></div>
-    <div class="flexrow">
-      <div class="token-select">${tokenOptions}</div>
-      <div class="skill-select">
-        <select name="skill">${skillOptions}<optgroup label="${game.i18n.localize("PF2ETokenBar.Saves")}">${saveOptions}</optgroup></select>
-      </div>
-    </div>`;
-    new Dialog({
-      title: game.i18n.localize("PF2ETokenBar.RequestRoll"),
-      content,
-      buttons: {
-        roll: {
-          label: game.i18n.localize("PF2ETokenBar.Roll"),
-          callback: html => {
-            const form = html[0].querySelector("form") || html[0];
-            const dc = Number(form.querySelector('input[name="dc"]').value) || undefined;
-            const skill = form.querySelector('select[name="skill"]').value;
-            const selected = Array.from(form.querySelectorAll('input[name="token"]:checked')).map(i => i.value);
-            this.debug("PF2ETokenBar | requestRoll selection", { tokens: selected, skill, dc });
-            selected.forEach(id => {
-              const token = canvas.tokens.get(id);
-              if (!token?.actor) return;
-              const skillLabelKey = CONFIG.PF2E?.skills[skill]?.label ?? skill;
-              const skillLabel = game.i18n?.localize(skillLabelKey) ?? skillLabelKey;
-              const link = `<a class="pf2e-token-bar-roll" data-token-id="${id}" data-skill="${skill}" data-dc="${dc ?? ""}">${skillLabel}</a>`;
-              const img = `<img class="pf2e-token-bar-chat-token" src="${token.texture?.src ?? ""}"/>`;
-              const content = `${token.name ? token.name + ": " : ""}${img}${link}`;
-              ChatMessage.create({ content });
-            });
-          }
-        },
-        cancel: { label: game.i18n.localize("PF2ETokenBar.Cancel") }
-      },
-      default: "roll"
-    }).render(true);
-  }
-
-  static _handleRollClick(event) {
-    event.preventDefault();
-    const { tokenId, skill, dc } = event.currentTarget.dataset;
-    const token = canvas.tokens.get(tokenId);
-    const actor = token?.actor;
-    if (!actor) return;
-    const dcValue = dc ? Number(dc) : undefined;
-    const rollOpts = dcValue ? { dc: { value: dcValue } } : {};
-    if (["fortitude", "reflex", "will"].includes(skill)) {
-      actor.saves[skill]?.check.roll(rollOpts);
-    } else {
-      actor.skills[skill]?.check.roll(rollOpts);
-    }
-  }
 }
 
 globalThis.PF2ETokenBar = PF2ETokenBar;
@@ -1195,12 +1125,6 @@ Hooks.on("combatEnd", async () => {
 });
 Hooks.on("combatTurn", () => PF2ETokenBar.scrollActiveToken());
 Hooks.on("updateCombatant", () => PF2ETokenBar.render());
-Hooks.on("renderChatMessage", (_message, html) => {
-  const links = html[0]?.querySelectorAll("a.pf2e-token-bar-roll") ?? [];
-  for (const link of links) {
-    link.addEventListener("click", PF2ETokenBar._handleRollClick);
-  }
-});
 Hooks.on("targetToken", () => PF2ETokenBar.render());
 Hooks.on("deleteCombat", () => PF2ETokenBar.render());
 Hooks.on("deleteCombat", () => PF2ETokenBar.render());
