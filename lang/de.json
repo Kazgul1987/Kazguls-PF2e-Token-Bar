@@ -74,6 +74,7 @@
     "Lock": "Sperren",
     "Unlock": "Entsperren",
     "HeroPoints": "Heldenpunkte",
+    "ArmorClass": "Rüstungsklasse",
     "TokenMissing": "Token '{name}' nicht gefunden",
     "InvalidItemType": "Hier können nur physische Gegenstände oder Effekte abgelegt werden",
     "PartySheetMissing": "Gruppenblatt nicht gefunden",

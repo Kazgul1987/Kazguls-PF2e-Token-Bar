@@ -136,6 +136,20 @@
   flex-shrink: 0;
 }
 
+.pf2e-ac-icon {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 3px;
+  font-size: 12px;
+  padding: 0 2px;
+  z-index: 1;
+}
+
 #pf2e-token-bar .pf2e-token-wrapper.pf2e-drop-hover {
   filter: brightness(1.2);
 }

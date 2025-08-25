@@ -58,9 +58,10 @@ Active when an **encounter is running** or combatants exist.
 
 - Shows all combatants, sorted by initiative (NPCs first on tie).  
 - **Initiative values** per token; missing values show “RFC!” (roll for initiative).  
-- **Current turn:** the active combatant’s token is highlighted.  
-- **Round counter** and **encounter difficulty** (Trivial to Extreme).  
+- **Current turn:** the active combatant’s token is highlighted.
+- **Round counter** and **encounter difficulty** (Trivial to Extreme).
 - **Delay/play icons:** delay a turn or resume it, including hourglass/play symbols.
+- **Armor Class indicator:** shield icon with AC value on character tokens.
 
 ### Additional Buttons
 

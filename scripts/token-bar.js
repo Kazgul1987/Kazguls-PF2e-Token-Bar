@@ -269,6 +269,16 @@ class PF2ETokenBar {
 
       const isCharacter = actor.isOfType?.("character") ?? actor.type === "character";
       const isNPC = actor.isOfType?.("npc") ?? actor.type === "npc";
+      if (encounterMode && isCharacter) {
+        const ac = actor.system?.attributes?.ac?.value ?? 0;
+        const acIcon = document.createElement("div");
+        acIcon.classList.add("pf2e-ac-icon");
+        acIcon.innerHTML = `<i class="fas fa-shield-alt"></i> ${ac}`;
+        const acTitle = game.i18n.localize("PF2ETokenBar.ArmorClass");
+        acIcon.title = acTitle;
+        acIcon.setAttribute("aria-label", acTitle);
+        wrapper.appendChild(acIcon);
+      }
       const showHpBar = true;
       const showHpNumeric = game.user.isGM || !isNPC;
       if (isCharacter) {
