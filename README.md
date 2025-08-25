@@ -23,7 +23,7 @@ The **PF2e Token-Bar** extends Foundry VTT with a compact display of all relevan
 - **HP bar & value** directly under the token.  
 - **Hero Points:** plus/minus buttons for quick adjustment.  
 - **Effect bar:** active effects and conditions as icons (click to open, right-click to remove).  
-- **Roll requests:** “Request Roll” button creates chat links for skills or saving throws.  
+- **Roll requests:** “Request Roll” button opens the PF2e Check Prompt for skills or saving throws.
 - **Orientation & position:** horizontal or vertical, freely movable, scalable.  
 - **Collapsible** and can be **locked** to prevent repositioning.
 
@@ -45,7 +45,7 @@ Active when **no combat is running**.
 - **Rest all** – triggers “Rest for the Night” for the entire party.  
 - **Party stash** – opens the party inventory; items can be dragged & dropped.  
 - **Loot / Sell** – opens named loot actors and accepts items via drag & drop.  
-- **Request roll** – see above.  
+- **Request roll** – opens the Check Prompt dialog.
 - **Start encounter** – begins a new encounter (button toggles to “End encounter”).
 
 ---
@@ -68,7 +68,7 @@ Active when an **encounter is running** or combatants exist.
 - **End encounter** – ends the current combat.  
 - **NPC initiative** – rolls initiative for all NPCs without a value.  
 - **Previous/Next turn** – navigate the active combatant.  
-- **Request roll** – also available during combat.  
+- **Request roll** – opens the Check Prompt dialog (also available during combat).
 - **Toggle visibility** – expand or minimize the token bar.
 
 ---
