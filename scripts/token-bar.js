@@ -658,6 +658,14 @@ class PF2ETokenBar {
             controls.appendChild(encounterBtn);
         }
 
+        const shortRestBtn = document.createElement("button");
+        shortRestBtn.innerHTML = '<i class="fas fa-campground"></i>';
+        shortRestBtn.title = game.i18n.localize("PF2ETokenBar.ShortRest");
+        shortRestBtn.addEventListener("click", () =>
+          game.actors.party?.sheet.render(true, { tab: "exploration" })
+        );
+        controls.appendChild(shortRestBtn);
+
         const lootGroup = document.createElement("div");
         lootGroup.classList.add("pf2e-loot-controls");
         controls.appendChild(lootGroup);
