@@ -74,6 +74,7 @@
     "Lock": "Lock",
     "Unlock": "Unlock",
     "HeroPoints": "Hero Points",
+    "ArmorClass": "Armor Class",
     "TokenMissing": "Token '{name}' not found",
     "InvalidItemType": "Only physical items or effects can be dropped here",
     "PartySheetMissing": "Party Sheet not found",
