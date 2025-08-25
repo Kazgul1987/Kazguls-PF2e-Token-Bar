@@ -138,7 +138,7 @@
 
 .pf2e-ac-icon {
   position: absolute;
-  bottom: 2px;
+  top: 16px;
   right: 2px;
   display: flex;
   align-items: center;
