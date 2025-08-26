@@ -173,13 +173,13 @@
 #pf2e-token-bar .pf2e-hero-points {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 1px;
   margin-top: 2px;
 }
 
 #pf2e-token-bar .pf2e-hero-point {
-  width: 16px;
-  height: 16px;
+  width: 8px;
+  height: 8px;
   border: 1px solid gold;
   border-radius: 50%;
   cursor: pointer;
