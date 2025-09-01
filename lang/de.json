@@ -23,7 +23,7 @@
       },
       "EncounterMode": {
         "Name": "Encounter-Modus aktivieren",
-        "Hint": "Verwendet Encounter-spezifische Funktionen wie Kampftoken, Rundenzähler und Schwierigkeitsanzeige"
+        "Hint": "Verwendet Encounter-spezifische Funktionen wie Kampftoken, Rundenzähler und Schwierigkeitsanzeige. Verborgene NSC werden nur SL angezeigt."
       },
       "EncounterScroll": {
         "Name": "Begegnungs-Scrollbalken",

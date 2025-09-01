@@ -23,7 +23,7 @@
       },
       "EncounterMode": {
         "Name": "Enable Encounter Mode",
-        "Hint": "Use encounter features such as combatant tokens, round counter, and difficulty display"
+        "Hint": "Use encounter features such as combatant tokens, round counter, and difficulty display. Hidden combatants are only shown to GMs."
       },
       "EncounterScroll": {
         "Name": "Encounter scrollbar",
