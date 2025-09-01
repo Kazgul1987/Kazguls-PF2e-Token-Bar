@@ -56,8 +56,9 @@ Active when an **encounter is running** or combatants exist.
 
 ### Display
 
-- Shows all combatants, sorted by initiative (NPCs first on tie).  
-- **Initiative values** per token; missing values show “RFC!” (roll for initiative).  
+- Shows all combatants, sorted by initiative (NPCs first on tie).
+- Hidden combatants are only shown to GMs.
+- **Initiative values** per token; missing values show “RFC!” (roll for initiative).
 - **Current turn:** the active combatant’s token is highlighted.
 - **Round counter** and **encounter difficulty** (Trivial to Extreme).
 - **Delay/play icons:** delay a turn or resume it, including hourglass/play symbols.

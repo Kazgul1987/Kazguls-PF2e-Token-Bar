@@ -799,7 +799,8 @@ class PF2ETokenBar {
         const bIsPlayer = b.actor?.hasPlayerOwner ? 1 : 0;
         return aIsPlayer - bIsPlayer;   // NPCs (0) vor PCs (1)
       });
-      const tokens = combatants.map(c => canvas.tokens.get(c.tokenId)).filter(t => t);
+      let tokens = combatants.map(c => canvas.tokens.get(c.tokenId)).filter(t => t);
+      tokens = tokens.filter(t => !t.document.hidden || game.user.isGM);
       this.debug(
         `PF2ETokenBar | _combatTokens found ${tokens.length} tokens`,
         tokens.map(t => t.id)
