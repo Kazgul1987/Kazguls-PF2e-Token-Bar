@@ -72,6 +72,15 @@ Hooks.once("init", () => {
     type: Boolean,
     default: true,
   });
+  game.settings.register("pf2e-token-bar", "encounterModeAvailable", {
+    name: game.i18n.localize("PF2ETokenBar.Settings.EncounterModeAvailable.Name"),
+    hint: game.i18n.localize("PF2ETokenBar.Settings.EncounterModeAvailable.Hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true,
+    onChange: () => PF2ETokenBar.render(),
+  });
   game.settings.register("pf2e-token-bar", "encounterMode", {
     name: game.i18n.localize("PF2ETokenBar.Settings.EncounterMode.Name"),
     hint: game.i18n.localize("PF2ETokenBar.Settings.EncounterMode.Hint"),
@@ -107,7 +116,10 @@ class PF2ETokenBar {
       return;
     }
 
-    const encounterMode = game.settings.get("pf2e-token-bar", "encounterMode");
+    const encounterAvailable = game.settings.get("pf2e-token-bar", "encounterModeAvailable");
+    const encounterMode =
+      encounterAvailable &&
+      game.settings.get("pf2e-token-bar", "encounterMode");
     const activeCombat = game.combat && game.combats.has(game.combat.id) ? game.combat : null;
 
     this.debug("PF2ETokenBar | fetching party actors");
@@ -580,6 +592,29 @@ class PF2ETokenBar {
       updateLockBtn();
     });
     controls.appendChild(lockBtn);
+
+    if (encounterAvailable) {
+      const encounterToggleBtn = document.createElement("button");
+      const updateEncounterToggleBtn = () => {
+        const current = game.settings.get("pf2e-token-bar", "encounterMode");
+        encounterToggleBtn.innerHTML = current
+          ? '<i class="fas fa-people-group"></i>'
+          : '<i class="fas fa-swords"></i>';
+        const key = current
+          ? "PF2ETokenBar.DisableEncounterMode"
+          : "PF2ETokenBar.EnableEncounterMode";
+        encounterToggleBtn.title = game.i18n.localize(key);
+        encounterToggleBtn.setAttribute("aria-label", encounterToggleBtn.title);
+      };
+      updateEncounterToggleBtn();
+      encounterToggleBtn.addEventListener("click", async () => {
+        const current = game.settings.get("pf2e-token-bar", "encounterMode");
+        await game.settings.set("pf2e-token-bar", "encounterMode", !current);
+        updateEncounterToggleBtn();
+        PF2ETokenBar.render();
+      });
+      controls.appendChild(encounterToggleBtn);
+    }
 
     const requestRollBtn = document.createElement("button");
     requestRollBtn.innerText = game.i18n.localize("PF2ETokenBar.RequestRoll");

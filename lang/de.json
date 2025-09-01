@@ -21,6 +21,10 @@
         "Name": "Schnellbeute",
         "Hint": "Überträgt nach dem Kampf automatisch die Beute besiegter NSC und öffnet den Beute-Akteur."
       },
+      "EncounterModeAvailable": {
+        "Name": "Begegnungsmodus verfügbar",
+        "Hint": "Erlaubt die Verwendung des Begegnungsmodus und zeigt den Umschalter an"
+      },
       "EncounterMode": {
         "Name": "Encounter-Modus aktivieren",
         "Hint": "Verwendet Encounter-spezifische Funktionen wie Kampftoken, Rundenzähler und Schwierigkeitsanzeige. Verborgene NSC werden nur SL angezeigt."
@@ -74,6 +78,8 @@
     "Horizontal": "Horizontal",
     "Lock": "Sperren",
     "Unlock": "Entsperren",
+    "EnableEncounterMode": "Begegnungsmodus aktivieren",
+    "DisableEncounterMode": "Begegnungsmodus deaktivieren",
     "HeroPoints": "Heldenpunkte",
     "ArmorClass": "Rüstungsklasse",
     "TokenMissing": "Token '{name}' nicht gefunden",

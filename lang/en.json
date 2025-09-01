@@ -21,6 +21,10 @@
         "Name": "Quick Loot",
         "Hint": "Automatically transfer defeated NPC loot and open the Loot actor on combat end."
       },
+      "EncounterModeAvailable": {
+        "Name": "Encounter Mode Available",
+        "Hint": "Allow use of encounter mode features and show the encounter toggle"
+      },
       "EncounterMode": {
         "Name": "Enable Encounter Mode",
         "Hint": "Use encounter features such as combatant tokens, round counter, and difficulty display. Hidden combatants are only shown to GMs."
@@ -74,6 +78,8 @@
     "Horizontal": "Horizontal",
     "Lock": "Lock",
     "Unlock": "Unlock",
+    "EnableEncounterMode": "Enable Encounter Mode",
+    "DisableEncounterMode": "Disable Encounter Mode",
     "HeroPoints": "Hero Points",
     "ArmorClass": "Armor Class",
     "TokenMissing": "Token '{name}' not found",
