@@ -1122,7 +1122,10 @@ Hooks.once("ready", () => {
 
     if (event.code === "KeyT" && PF2ETokenBar.hoveredToken) {
       const token = PF2ETokenBar.hoveredToken;
-      token.setTarget(!token.isTargeted, { user: game.user });
+      token.setTarget(!token.isTargeted, {
+        user: game.user,
+        releaseOthers: !event.shiftKey
+      });
     }
   };
   document.addEventListener("keydown", keydownListener);
