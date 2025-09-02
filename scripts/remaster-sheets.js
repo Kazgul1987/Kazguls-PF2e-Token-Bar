@@ -32,9 +32,9 @@ function applySheetMode(element, mode) {
   element.classList.add(mode, theme);
 }
 
-Hooks.on("renderActorSheet", (app, html) => {
+Hooks.on("pf2e.actorSheetReady", (app) => {
   const mode = game.settings.get("pf2e-token-bar", "remasterSheetMode");
-  const element = html.closest(".sheet")[0];
+  const element = app.element?.[0] ?? app.element;
   applySheetMode(element, mode);
 });
 
