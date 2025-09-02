@@ -177,7 +177,11 @@
   margin-top: 2px;
 }
 
-#pf2e-token-bar .pf2e-hero-point {
+/* Hero point colors adjust for remaster sheet modes */
+#pf2e-token-bar .pf2e-hero-point,
+.remasterLight #pf2e-token-bar .pf2e-hero-point,
+.remasterDark #pf2e-token-bar .pf2e-hero-point,
+.remasterRed #pf2e-token-bar .pf2e-hero-point {
   width: 8px;
   height: 8px;
   border: 1px solid gold;
@@ -185,7 +189,10 @@
   cursor: pointer;
 }
 
-#pf2e-token-bar .pf2e-hero-point.full {
+#pf2e-token-bar .pf2e-hero-point.full,
+.remasterLight #pf2e-token-bar .pf2e-hero-point.full,
+.remasterDark #pf2e-token-bar .pf2e-hero-point.full,
+.remasterRed #pf2e-token-bar .pf2e-hero-point.full {
   background: gold;
 }
 

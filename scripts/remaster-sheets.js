@@ -15,11 +15,26 @@ Hooks.once("init", () => {
   });
 });
 
-Hooks.on("renderActorSheet", (app, html) => {
-  const style = game.settings.get("pf2e-token-bar", "remasterSheetMode");
-  const element = html.closest(".sheet.character")[0];
+function applySheetMode(element, mode) {
   if (!element) return;
-  element.classList.remove("dark-theme", "remasterLight", "remasterDark", "remasterRed");
-  if (style !== "off") element.classList.add("dark-theme", style);
+
+  element.classList.remove(
+    "dark-theme",
+    "dark-npc-theme",
+    "remasterLight",
+    "remasterDark",
+    "remasterRed"
+  );
+
+  if (mode === "off") return;
+
+  const theme = element.classList.contains("npc") ? "dark-npc-theme" : "dark-theme";
+  element.classList.add(mode, theme);
+}
+
+Hooks.on("renderActorSheet", (app, html) => {
+  const mode = game.settings.get("pf2e-token-bar", "remasterSheetMode");
+  const element = html.closest(".sheet")[0];
+  applySheetMode(element, mode);
 });
 
