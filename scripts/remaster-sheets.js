@@ -15,17 +15,26 @@ Hooks.once("init", () => {
   });
 });
 
-Hooks.on("renderActorSheet", (_app, html) => {
-  const mode = game.settings.get("pf2e-token-bar", "remasterSheetMode");
-  const element = html[0];
+const applySheetMode = (element, mode, useNpc) => {
   if (!element) return;
-  element.classList.remove("dark-theme", "remaster", "red", "dark");
+  element.classList.remove("dark-theme", "dark-npc-theme", "remaster", "red", "dark");
   if (mode === "remasterLight") {
-    element.classList.add("remaster");
+    if (useNpc) element.classList.add("dark-npc-theme", "remaster");
+    else element.classList.add("remaster");
   } else if (mode === "remasterDark") {
-    element.classList.add("dark-theme", "remaster");
+    element.classList.add(useNpc ? "dark-npc-theme" : "dark-theme", "remaster");
   } else if (mode === "remasterRed") {
-    element.classList.add("dark-theme", "red");
+    element.classList.add(useNpc ? "dark-npc-theme" : "dark-theme", "red");
   }
+};
+
+Hooks.on("renderCharacterSheetPF2e", (_app, html) => {
+  const mode = game.settings.get("pf2e-token-bar", "remasterSheetMode");
+  applySheetMode(html[0], mode, false);
+});
+
+Hooks.on("renderNPCSheetPF2e", (_app, html) => {
+  const mode = game.settings.get("pf2e-token-bar", "remasterSheetMode");
+  applySheetMode(html[0], mode, true);
 });
 

@@ -442,3 +442,18 @@
   justify-content:center;
   margin-top:4px;
 }
+
+/* NPC sheet theming */
+.actor.npc.dark-npc-theme .window-content {
+  background: #1e1e1e;
+  color: #ddd;
+}
+
+.actor.npc.dark-npc-theme.remaster .window-content {
+  background: #1e1e1e;
+}
+
+.actor.npc.dark-npc-theme.red .window-content {
+  background: #1e1e1e;
+  color: #ddd;
+}
