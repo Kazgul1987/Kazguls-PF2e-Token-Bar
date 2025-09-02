@@ -3,6 +3,12 @@
   --pfui-main-color: #cfbda7;
 }
 
+/* Light remaster palette */
+.remasterLight {
+  --primary-remaster: hsl(153, 100%, 88%);
+  --on-primary-remaster: #000000;
+}
+
 /* Dark remaster palette */
 .remasterDark {
   --primary-remaster: hsl(153, 100%, 8%);
