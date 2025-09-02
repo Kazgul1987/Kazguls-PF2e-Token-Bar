@@ -205,6 +205,7 @@ class PF2ETokenBar {
       const actor = token.actor;
       const wrapper = document.createElement("div");
       wrapper.classList.add("pf2e-token-wrapper");
+      wrapper.dataset.tokenId = token.id;
       if (token.document.hidden) wrapper.classList.add("pf2e-token-hidden");
       wrapper.addEventListener("mouseenter", () => PF2ETokenBar.hoveredToken = token);
       wrapper.addEventListener("mouseleave", () => {
@@ -261,7 +262,8 @@ class PF2ETokenBar {
 
       const indicator = document.createElement("i");
       indicator.classList.add("fas", "fa-crosshairs", "target-indicator");
-      indicator.style.display = game.user.targets.has(token) ? "block" : "none";
+      const isTargeted = game.user.targets.has(token.document ?? token.id);
+      indicator.style.display = isTargeted ? "block" : "none";
       wrapper.appendChild(indicator);
 
       const img = document.createElement("img");
@@ -1161,7 +1163,13 @@ Hooks.on("combatEnd", async () => {
 });
 Hooks.on("combatTurn", () => PF2ETokenBar.scrollActiveToken());
 Hooks.on("updateCombatant", () => PF2ETokenBar.render());
-Hooks.on("targetToken", () => PF2ETokenBar.render());
+Hooks.on("targetToken", (user, token, targeted) => {
+  if (user !== game.user) return;
+  const indicator = document.querySelector(
+    `#pf2e-token-bar .pf2e-token-wrapper[data-token-id="${token.id}"] .target-indicator`
+  );
+  if (indicator) indicator.style.display = targeted ? "block" : "none";
+});
 Hooks.on("deleteCombat", () => PF2ETokenBar.render());
 Hooks.on("deleteCombat", () => PF2ETokenBar.render());
 
