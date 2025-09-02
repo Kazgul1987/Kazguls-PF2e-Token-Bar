@@ -12,6 +12,14 @@ Hooks.once("init", () => {
       remasterDark: game.i18n.localize("PF2ETokenBar.Settings.RemasterSheetMode.Choices.RemasterDark"),
       remasterRed: game.i18n.localize("PF2ETokenBar.Settings.RemasterSheetMode.Choices.RemasterRed"),
     },
+    onChange: (value) => {
+      for (const app of Object.values(ui.windows)) {
+        if (app instanceof ActorSheetPF2e) {
+          const element = app.element?.[0] ?? app.element;
+          applySheetMode(element, value);
+        }
+      }
+    },
   });
 });
 
@@ -32,7 +40,7 @@ function applySheetMode(element, mode) {
   element.classList.add(mode, theme);
 }
 
-Hooks.on("pf2e.actorSheetReady", (app) => {
+Hooks.on("renderActorSheetPF2e", (app) => {
   const mode = game.settings.get("pf2e-token-bar", "remasterSheetMode");
   const element = app.element?.[0] ?? app.element;
   applySheetMode(element, mode);
