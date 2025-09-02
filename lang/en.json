@@ -36,6 +36,16 @@
       "AutoFortification": {
         "Name": "Auto Fortification",
         "Hint": "Automatically prompt a Fortification flat check on critical hits"
+      },
+      "RemasterSheetMode": {
+        "Name": "Remaster Sheets",
+        "Hint": "Enable alternative color schemes for character and NPC sheets",
+        "Choices": {
+          "Off": "Off",
+          "RemasterLight": "Original (Remaster)",
+          "RemasterDark": "Dark Mode (Remaster)",
+          "RemasterRed": "Dark Mode (Red)"
+        }
       }
     },
     "QuickLootConfirmTitle": "Quick Loot",
