@@ -19,7 +19,8 @@
   ],
   "esmodules": [
     "scripts/token-bar.js",
-    "scripts/rune-automation.js"
+    "scripts/rune-automation.js",
+    "scripts/remaster-sheets.js"
   ],
   "styles": [
     "styles/token-bar.css"
