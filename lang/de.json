@@ -36,6 +36,16 @@
       "AutoFortification": {
         "Name": "Fortification-Automatisierung",
         "Hint": "Bietet bei kritischen Treffern automatisch einen Fortification-Flatcheck an"
+      },
+      "RemasterSheetMode": {
+        "Name": "Remaster-Sheets",
+        "Hint": "Aktiviert alternative Farbgebungen für Charakter- und NSC-Sheets",
+        "Choices": {
+          "Off": "Aus",
+          "RemasterLight": "Original (Remaster)",
+          "RemasterDark": "Dark Mode (Remaster)",
+          "RemasterRed": "Dark Mode (Rot)"
+        }
       }
     },
     "QuickLootConfirmTitle": "Schnellbeute",
