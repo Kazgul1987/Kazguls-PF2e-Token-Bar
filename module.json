@@ -23,7 +23,8 @@
     "scripts/remaster-sheets.js"
   ],
   "styles": [
-    "styles/token-bar.css"
+    "styles/token-bar.css",
+    "styles/remaster-sheets.css"
   ],
 
   "languages": [
