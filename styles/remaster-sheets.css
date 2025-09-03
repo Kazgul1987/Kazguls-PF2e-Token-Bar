@@ -5,6 +5,7 @@
 
 /* Light remaster palette */
 .remasterLight {
+  --pfui-main-color: #cfbda7;
   --primary-remaster: hsl(153, 100%, 88%);
   --on-primary-remaster: #000000;
 }
@@ -18,5 +19,12 @@
 /* Red remaster palette */
 .remasterRed {
   --primary-remaster: hsl(0, 65%, 15%);
+  --on-primary-remaster: #ffffff;
+}
+
+/* Dark NPC palette */
+.dark-npc-theme {
+  --pfui-main-color: #cfbda7;
+  --primary-remaster: hsl(153, 100%, 8%);
   --on-primary-remaster: #ffffff;
 }
