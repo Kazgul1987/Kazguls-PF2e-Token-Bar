@@ -40,7 +40,13 @@ function applySheetMode(element, mode) {
   element.classList.add(mode, theme);
 }
 
-Hooks.on("renderActorSheetPF2e", (app) => {
+Hooks.on("renderCharacterSheetPF2e", (app) => {
+  const mode = game.settings.get("pf2e-token-bar", "remasterSheetMode");
+  const element = app.element?.[0] ?? app.element;
+  applySheetMode(element, mode);
+});
+
+Hooks.on("renderNPCSheetPF2e", (app) => {
   const mode = game.settings.get("pf2e-token-bar", "remasterSheetMode");
   const element = app.element?.[0] ?? app.element;
   applySheetMode(element, mode);
