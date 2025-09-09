@@ -666,6 +666,11 @@ class PF2ETokenBar {
             restBtn.addEventListener("click", () => this.restAll());
             controls.appendChild(restBtn);
 
+            const xpBtn = document.createElement("button");
+            xpBtn.innerText = game.i18n.localize("PF2ETokenBar.XP");
+            xpBtn.addEventListener("click", () => PF2ETokenBar.awardXPDialog());
+            controls.appendChild(xpBtn);
+
             controls.appendChild(requestRollBtn);
             controls.appendChild(encounterBtn);
         }
@@ -997,6 +1002,22 @@ class PF2ETokenBar {
       console.error(err);
       ui.notifications.error(err.message || "Failed to drop item.");
     }
+  }
+
+  static async awardXPDialog() {
+    await Dialog.prompt({
+      title: game.i18n.localize("PF2ETokenBar.GiveXPTitle"),
+      label: game.i18n.localize("PF2ETokenBar.Roll"),
+      content: `<form><div class="form-group"><label>${game.i18n.localize("PF2ETokenBar.GiveXPLabel")}</label><input type="number" name="xp"/></div></form>`,
+      callback: html => {
+        const xp = Number(html.find("input[name='xp']").val());
+        for (const actor of game.actors.party?.members ?? []) {
+          const curr = actor.system.details.xp.value;
+          actor.update({ "system.details.xp.value": curr + xp });
+        }
+        ChatMessage.create({ content: game.i18n.format("PF2ETokenBar.GiveXPMessage", { xp }) });
+      }
+    });
   }
 
   static async restAll() {

@@ -41,9 +41,10 @@ Active when **no combat is running**.
 ### Additional Buttons
 
 - **Add party to encounter** – creates a new encounter and adds all party tokens.  
-- **Heal all** – sets HP of all party members to the maximum.  
-- **Rest all** – triggers “Rest for the Night” for the entire party.  
-- **Party stash** – opens the party inventory; items can be dragged & dropped.  
+- **Heal all** – sets HP of all party members to the maximum.
+- **Rest all** – triggers “Rest for the Night” for the entire party.
+- **Award XP** – adds the entered experience points to every party member.
+- **Party stash** – opens the party inventory; items can be dragged & dropped.
 - **Loot / Sell** – opens named loot actors and accepts items via drag & drop.  
 - **Request roll** – opens the Check Prompt dialog.
 - **Start encounter** – begins a new encounter (button toggles to “End encounter”).
