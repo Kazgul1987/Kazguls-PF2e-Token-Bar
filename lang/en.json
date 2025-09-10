@@ -110,6 +110,10 @@
       "Moderate": "Moderate",
       "Severe": "Severe",
       "Extreme": "Extreme"
+    },
+    "Fortification": {
+      "Check": "Fortification Flat Check (DC {dc})",
+      "Success": "Critical downgraded to normal damage."
     }
   }
 }
