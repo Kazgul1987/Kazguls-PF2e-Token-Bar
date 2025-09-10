@@ -7,6 +7,41 @@ Hooks.once("init", () => {
     type: Boolean,
     default: false,
   });
+
+  game.settings.register("pf2e-token-bar", "autoShadow", {
+    name: game.i18n.localize("PF2ETokenBar.Settings.AutoShadow.Name"),
+    hint: game.i18n.localize("PF2ETokenBar.Settings.AutoShadow.Hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+  });
+});
+
+Hooks.on("pf2e.prepareActorData", (actor) => {
+  if (!game.settings.get("pf2e-token-bar", "autoShadow")) return;
+
+  const options = actor.rollOptions.all;
+  const bonus = options["armor:rune:property:major-shadow"]
+    ? 3
+    : options["armor:rune:property:greater-shadow"]
+    ? 2
+    : options["armor:rune:property:shadow"]
+    ? 1
+    : 0;
+  if (!bonus) return;
+
+  const { FlatModifier } = game.pf2e.rules;
+  const modifier = new FlatModifier({
+    slug: "shadow-rune",
+    label: "Shadow Rune",
+    selector: "stealth",
+    type: "item",
+    value: bonus,
+  });
+
+  actor.synthetics.statisticsModifiers.stealth ??= [];
+  actor.synthetics.statisticsModifiers.stealth.push(modifier);
 });
 
 Hooks.on("createChatMessage", async (message) => {

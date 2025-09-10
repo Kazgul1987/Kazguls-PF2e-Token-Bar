@@ -37,6 +37,10 @@
         "Name": "Auto Fortification",
         "Hint": "Automatically prompt a Fortification flat check on critical hits"
       },
+      "AutoShadow": {
+        "Name": "Auto Shadow",
+        "Hint": "Automatically apply Shadow rune bonuses to Stealth"
+      },
       "RemasterSheetMode": {
         "Name": "Remaster Sheets",
         "Hint": "Enable alternative color schemes for character and NPC sheets",

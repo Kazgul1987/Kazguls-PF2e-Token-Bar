@@ -37,6 +37,10 @@
         "Name": "Fortification-Automatisierung",
         "Hint": "Bietet bei kritischen Treffern automatisch einen Fortification-Flatcheck an"
       },
+      "AutoShadow": {
+        "Name": "Schatten-Automatisierung",
+        "Hint": "Wendet automatisch Schattenrune-Boni auf Heimlichkeit an"
+      },
       "RemasterSheetMode": {
         "Name": "Remaster-Sheets",
         "Hint": "Aktiviert alternative Farbgebungen für Charakter- und NSC-Sheets",
