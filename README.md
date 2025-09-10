@@ -10,7 +10,7 @@ The **PF2e Token-Bar** extends Foundry VTT with a compact display of all relevan
 2. [Party Mode](#party-mode)
 3. [Combat Mode](#combat-mode)
 4. [Ring Menu](#ring-menu)
-5. [Fortification Automation](#fortification-automation)
+5. [Rune Automation](#rune-automation)
 6. [Settings & Controls](#settings--controls)
 7. [Hotkeys](#hotkeys)
 8. [Debugging](#debugging)
@@ -89,13 +89,20 @@ Right-click a token to open a radial menu:
 
 ---
 
-## Fortification Automation
+## Rune Automation
 
-Automatically handle Fortification armor runes on critical hits.
+Automatically handle armor property runes.
+
+### Fortification
 
 - Enable the **Auto Fortification** setting under *Settings → Module Settings → PF2e Token-Bar*.
 - When a creature with a **Fortification** or **Greater Fortification** rune suffers a critical hit, a chat button prompts a **flat check** (DC 17 or DC 14 for greater fortification).
 - Success downgrades the critical hit to normal damage and rolls the weapon's damage automatically.
+
+### Shadow
+
+- Enable the **Auto Shadow** setting under *Settings → Module Settings → PF2e Token-Bar*.
+- When wearing armor with a **Shadow**, **Greater Shadow**, or **Major Shadow** rune, a +1/+2/+3 item bonus to Stealth checks is automatically applied.
 
 ---
 
