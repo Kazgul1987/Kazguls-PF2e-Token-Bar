@@ -1035,11 +1035,22 @@ class PF2ETokenBar {
     if (!confirmed) return;
     const updates = [];
     for (const actor of this._partyTokens()) {
+      const maxHp = actor.system.attributes.hp.max;
+      // Update the actor document
       updates.push(
-        actor.update({ 'system.attributes.hp.value': actor.system.attributes.hp.max })
+        actor.update({ "system.attributes.hp.value": maxHp })
           .then(() => this.debug("PF2ETokenBar | healAll", `healed ${actor.id}`))
           .catch(err => console.error("PF2ETokenBar | healAll", `failed to heal ${actor?.id}` , err))
       );
+      // Also update any unlinked token actors on the canvas
+      for (const token of actor.getActiveTokens(true)) {
+        if (token.actor !== actor) {
+          updates.push(
+            token.actor.update({ "system.attributes.hp.value": maxHp })
+              .catch(err => console.error("PF2ETokenBar | healAll", `failed to heal token ${token.id}` , err))
+          );
+        }
+      }
     }
     await Promise.all(updates);
     PF2ETokenBar.render();
