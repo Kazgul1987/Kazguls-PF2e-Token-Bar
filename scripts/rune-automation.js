@@ -38,6 +38,8 @@ Hooks.on("pf2e.prepareActorData", (actor) => {
     selector: "stealth",
     type: "item",
     value: bonus,
+    enabled: false,
+    custom: true,
   });
 
   actor.synthetics.statisticsModifiers.stealth ??= [];
