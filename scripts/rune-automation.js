@@ -60,42 +60,33 @@ Hooks.on("createChatMessage", async (message) => {
   if (!hasFort && !hasGreater) return;
 
   const dc = hasGreater ? 14 : 17;
-
-  const content = `
-    <div class="fortification-check" data-message-id="${message.id}">
-      <button class="fort-btn" data-dc="${dc}">
-        Fortification Flat Check (DC ${dc})
-      </button>
-    </div>`;
+  const label = game.i18n.format("PF2ETokenBar.Fortification.Check", { dc });
+  const content = `@Check[type:flat|dc:${dc}|traits:fortification]{${label}}`;
 
   await ChatMessage.create({
     speaker: ChatMessage.getSpeaker({ actor: target }),
     flavor: `Fortification – ${target.name}`,
     content,
+    flags: { "pf2e-token-bar": { original: message.id } },
   });
 });
 
-Hooks.on("renderChatMessage", (message, html) => {
+Hooks.on("pf2e.check.roll", async (check, roll, data) => {
   if (!game.settings.get("pf2e-token-bar", "autoFortification")) return;
+  if (!check.traits?.has("fortification")) return;
 
-  html.find("button.fort-btn").on("click", async (event) => {
-    const button = event.currentTarget;
-    if (button.disabled) return;
-    button.disabled = true;
+  const message = data?.message;
+  const originalId = message?.flags?.["pf2e-token-bar"]?.original;
+  if (!originalId) return;
 
-    const dc = Number(button.dataset.dc);
-    const msgId = button.closest(".fortification-check").dataset.messageId;
-    const original = game.messages.get(msgId);
-    const item = original?.item;
+  const original = game.messages.get(originalId);
+  const item = original?.item;
+  const dc = check.dc?.value ?? check.dc ?? 0;
 
-    const roll = await new Roll("1d20").evaluate({ async: true });
-    await roll.toMessage({ flavor: `Fortification (DC ${dc})` });
+  if (roll.total >= dc) {
+    await original.update({ "flags.pf2e.context.outcome": "success" });
+    ui.notifications.info(game.i18n.localize("PF2ETokenBar.Fortification.Success"));
+  }
 
-    if (roll.total >= dc) {
-      await original.update({ "flags.pf2e.context.outcome": "success" });
-      ui.notifications.info("Critical downgraded to normal damage.");
-    }
-
-    await item?.rollDamage({ event, message: original });
-  });
+  await item?.rollDamage({ message: original });
 });

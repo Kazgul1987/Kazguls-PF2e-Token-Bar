@@ -110,6 +110,10 @@
       "Moderate": "Mittel",
       "Severe": "Schwer",
       "Extreme": "Extrem"
+    },
+    "Fortification": {
+      "Check": "Fortifikations-Flatcheck (SG {dc})",
+      "Success": "Kritischer Treffer zu normalem Schaden herabgestuft."
     }
   }
 }
