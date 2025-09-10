@@ -1096,7 +1096,11 @@ class PF2ETokenBar {
     try {
       await combatant.setFlag("pf2e-token-bar", "delayed", true);
       const token = combatant.token?.object;
-      await token?.document.update({ overlayEffect: "icons/svg/hourglass.svg" });
+      if (token) {
+        const original = token.document.overlayEffect ?? CONFIG.controlIcons.combat;
+        await token.document.setFlag("pf2e-token-bar", "overlayEffect", original);
+        await token.document.update({ overlayEffect: "icons/svg/hourglass.svg" });
+      }
       await game.combat.nextTurn();
     } catch (err) {
       console.error("PF2ETokenBar | delayTurn", err);
@@ -1112,7 +1116,11 @@ class PF2ETokenBar {
       if (init !== undefined) await game.combat.setInitiative(combatant.id, init - 1);
       await combatant.unsetFlag("pf2e-token-bar", "delayed");
       const token = combatant.token?.object;
-      await token?.document.update({ overlayEffect: null });
+      if (token) {
+        const original = token.document.getFlag("pf2e-token-bar", "overlayEffect") ?? CONFIG.controlIcons.combat;
+        await token.document.unsetFlag("pf2e-token-bar", "overlayEffect");
+        await token.document.update({ overlayEffect: original });
+      }
       const index = game.combat.turns.findIndex(c => c.id === combatant.id);
       if (index >= 0) await game.combat.update({ turn: index });
     } catch (err) {
