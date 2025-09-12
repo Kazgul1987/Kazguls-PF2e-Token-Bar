@@ -55,6 +55,14 @@ Hooks.once("init", () => {
     type: Boolean,
     default: false
   });
+  game.settings.register("pf2e-token-bar", "keepTurnOverlay", {
+    name: game.i18n.localize("PF2ETokenBar.Settings.KeepTurnOverlay.Name"),
+    hint: game.i18n.localize("PF2ETokenBar.Settings.KeepTurnOverlay.Hint"),
+    scope: "client",
+    config: true,
+    type: Boolean,
+    default: false,
+  });
   game.settings.register("pf2e-token-bar", "partyOnlySelf", {
     name: game.i18n.localize("PF2ETokenBar.Settings.PartyOnlySelf.Name"),
     hint: game.i18n.localize("PF2ETokenBar.Settings.PartyOnlySelf.Hint"),
@@ -1107,7 +1115,7 @@ class PF2ETokenBar {
     try {
       await combatant.setFlag("pf2e-token-bar", "delayed", true);
       const token = combatant.token?.object;
-      if (token) {
+      if (token && !game.settings.get("pf2e-token-bar", "keepTurnOverlay")) {
         const original = token.document.overlayEffect ?? CONFIG.controlIcons.combat;
         await token.document.setFlag("pf2e-token-bar", "overlayEffect", original);
         await token.document.update({ overlayEffect: "icons/svg/hourglass.svg" });
@@ -1127,7 +1135,7 @@ class PF2ETokenBar {
       if (init !== undefined) await game.combat.setInitiative(combatant.id, init - 1);
       await combatant.unsetFlag("pf2e-token-bar", "delayed");
       const token = combatant.token?.object;
-      if (token) {
+      if (token && !game.settings.get("pf2e-token-bar", "keepTurnOverlay")) {
         const original = token.document.getFlag("pf2e-token-bar", "overlayEffect") ?? CONFIG.controlIcons.combat;
         await token.document.unsetFlag("pf2e-token-bar", "overlayEffect");
         await token.document.update({ overlayEffect: original });
@@ -1204,7 +1212,13 @@ Hooks.on("combatStart", () => PF2ETokenBar.render());
 Hooks.on("combatEnd", async () => {
   PF2ETokenBar.render();
 });
-Hooks.on("combatTurn", () => PF2ETokenBar.scrollActiveToken());
+Hooks.on("combatTurn", () => {
+  if (game.settings.get("pf2e-token-bar", "keepTurnOverlay")) {
+    const token = game.combat?.combatant?.token?.object;
+    token?.document.update({ overlayEffect: CONFIG.controlIcons.combat }, { diff: false });
+  }
+  PF2ETokenBar.scrollActiveToken();
+});
 Hooks.on("updateCombatant", () => PF2ETokenBar.render());
 Hooks.on("targetToken", (user, token, targeted) => {
   if (user !== game.user) return;
