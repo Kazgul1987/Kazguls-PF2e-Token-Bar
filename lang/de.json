@@ -33,6 +33,10 @@
         "Name": "Begegnungs-Scrollbalken",
         "Hint": "Wenn deaktiviert, erweitert sich die Leiste nach rechts ohne Scrollen"
       },
+      "KeepTurnOverlay": {
+        "Name": "Turn-Marker beibehalten",
+        "Hint": "Belässt die Kampfrunden-Markierung dauerhaft auf dem aktiven Token"
+      },
       "AutoFortification": {
         "Name": "Fortification-Automatisierung",
         "Hint": "Bietet bei kritischen Treffern automatisch einen Fortification-Flatcheck an"
