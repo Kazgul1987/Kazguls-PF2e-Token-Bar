@@ -92,7 +92,7 @@ Hooks.once("init", () => {
   game.settings.register("pf2e-token-bar", "encounterMode", {
     name: game.i18n.localize("PF2ETokenBar.Settings.EncounterMode.Name"),
     hint: game.i18n.localize("PF2ETokenBar.Settings.EncounterMode.Hint"),
-    scope: "client",
+    scope: "world",
     config: true,
     type: Boolean,
     default: true,
@@ -603,7 +603,7 @@ class PF2ETokenBar {
     });
     controls.appendChild(lockBtn);
 
-    if (encounterAvailable) {
+    if (encounterAvailable && game.user.isGM) {
       const encounterToggleBtn = document.createElement("button");
       const updateEncounterToggleBtn = () => {
         const current = game.settings.get("pf2e-token-bar", "encounterMode");
