@@ -1188,11 +1188,37 @@ class PF2ETokenBar {
 
     try {
       const turnMarker = token.turnMarker;
+      const icon = this.resolveTurnMarkerIcon(combatant);
       if (turnMarker?.draw) {
+        const getProperty = globalThis.foundry?.utils?.getProperty;
+        const currentIcon =
+          (typeof getProperty === "function"
+            ? getProperty(token.document, "turnMarker.src")
+            : token.document?.turnMarker?.src) ??
+          turnMarker?.path ??
+          turnMarker?.src ??
+          null;
+        if (currentIcon !== icon) {
+          if (typeof token.document?.updateSource === "function") {
+            token.document.updateSource({ turnMarker: { src: icon } });
+          } else {
+            const setProperty = globalThis.foundry?.utils?.setProperty;
+            if (typeof setProperty === "function") {
+              setProperty(token.document, "turnMarker.src", icon);
+            } else if (token.document?.turnMarker) {
+              token.document.turnMarker.src = icon;
+            }
+          }
+          if (typeof turnMarker.setIcon === "function") {
+            await turnMarker.setIcon(icon);
+          } else {
+            turnMarker.path = icon;
+            turnMarker.src = icon;
+          }
+        }
         token.renderFlags?.set?.("refreshTurnMarker", true);
         await turnMarker.draw();
       } else {
-        const icon = this.resolveTurnMarkerIcon(combatant);
         if (token.document?.overlayEffect !== icon) {
           await token.document.update({ overlayEffect: icon }, { diff: false });
         }
