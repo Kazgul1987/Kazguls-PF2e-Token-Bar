@@ -1128,10 +1128,21 @@ class PF2ETokenBar {
   }
 
   static async enforceTurnMarker() {
-    const token = game.combat?.combatant?.token?.object;
+    const combatant = game.combat?.combatant;
+    if (!combatant) return;
+
+    const tokensLayer = canvas?.tokens;
+    const token =
+      combatant.token?.object ??
+      (combatant.tokenId && tokensLayer ? tokensLayer.get(combatant.tokenId) : null);
     if (!token) return;
+
     try {
-      if (token.document.overlayEffect !== CONFIG.controlIcons.combat) {
+      const turnMarker = token.turnMarker;
+      if (turnMarker?.draw) {
+        token.renderFlags?.set?.("refreshTurnMarker", true);
+        await turnMarker.draw();
+      } else if (token.document?.overlayEffect !== CONFIG.controlIcons.combat) {
         await token.document.update({ overlayEffect: CONFIG.controlIcons.combat }, { diff: false });
       }
     } catch (err) {
