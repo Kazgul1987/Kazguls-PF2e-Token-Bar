@@ -90,6 +90,26 @@ Hooks.once("init", () => {
     default: true,
     onChange: () => PF2ETokenBar.render(),
   });
+  game.settings.register("pf2e-token-bar", "partyTurnMarkerIcon", {
+    name: game.i18n.localize("PF2ETokenBar.Settings.PartyTurnMarkerIcon.Name"),
+    hint: game.i18n.localize("PF2ETokenBar.Settings.PartyTurnMarkerIcon.Hint"),
+    scope: "world",
+    config: true,
+    type: String,
+    default: "",
+    filePicker: "image",
+    onChange: () => PF2ETokenBar.enforceTurnMarker(),
+  });
+  game.settings.register("pf2e-token-bar", "npcTurnMarkerIcon", {
+    name: game.i18n.localize("PF2ETokenBar.Settings.NPCTurnMarkerIcon.Name"),
+    hint: game.i18n.localize("PF2ETokenBar.Settings.NPCTurnMarkerIcon.Hint"),
+    scope: "world",
+    config: true,
+    type: String,
+    default: "",
+    filePicker: "image",
+    onChange: () => PF2ETokenBar.enforceTurnMarker(),
+  });
   game.settings.register("pf2e-token-bar", "encounterScroll", {
     name: game.i18n.localize("PF2ETokenBar.Settings.EncounterScroll.Name"),
     hint: game.i18n.localize("PF2ETokenBar.Settings.EncounterScroll.Hint"),
@@ -106,6 +126,35 @@ class PF2ETokenBar {
 
   static debug(...args) {
     if (game.settings.get("pf2e-token-bar", "debug")) console.debug(...args);
+  }
+
+  static turnMarkerAliasMap() {
+    return {
+      default: () => CONFIG.controlIcons?.combat ?? "icons/svg/combat.svg",
+      combat: () => CONFIG.controlIcons?.combat ?? "icons/svg/combat.svg",
+      target: () => CONFIG.controlIcons?.target ?? "icons/svg/target.svg",
+      crosshairs: () => CONFIG.controlIcons?.target ?? "icons/svg/target.svg",
+      skull: () => CONFIG.controlIcons?.defeated ?? "icons/svg/skull.svg",
+      defeated: () => CONFIG.controlIcons?.defeated ?? "icons/svg/skull.svg",
+      hourglass: () => "icons/svg/hourglass.svg",
+    };
+  }
+
+  static resolveTurnMarkerValue(value, fallback = CONFIG.controlIcons?.combat ?? "icons/svg/combat.svg") {
+    const trimmed = typeof value === "string" ? value.trim() : "";
+    if (!trimmed) return fallback;
+    const alias = this.turnMarkerAliasMap()[trimmed.toLowerCase()];
+    if (alias) return typeof alias === "function" ? alias() : alias;
+    return trimmed;
+  }
+
+  static resolveTurnMarkerIcon(combatant) {
+    const fallback = CONFIG.controlIcons?.combat ?? "icons/svg/combat.svg";
+    if (!combatant) return fallback;
+    const isParty = combatant.actor?.hasPlayerOwner || combatant.alliance === "party";
+    const settingKey = isParty ? "partyTurnMarkerIcon" : "npcTurnMarkerIcon";
+    const settingValue = game.settings.get("pf2e-token-bar", settingKey);
+    return this.resolveTurnMarkerValue(settingValue, fallback);
   }
 
   static render() {
@@ -1142,8 +1191,11 @@ class PF2ETokenBar {
       if (turnMarker?.draw) {
         token.renderFlags?.set?.("refreshTurnMarker", true);
         await turnMarker.draw();
-      } else if (token.document?.overlayEffect !== CONFIG.controlIcons.combat) {
-        await token.document.update({ overlayEffect: CONFIG.controlIcons.combat }, { diff: false });
+      } else {
+        const icon = this.resolveTurnMarkerIcon(combatant);
+        if (token.document?.overlayEffect !== icon) {
+          await token.document.update({ overlayEffect: icon }, { diff: false });
+        }
       }
     } catch (err) {
       console.error("PF2ETokenBar | enforceTurnMarker", err);
@@ -1193,7 +1245,8 @@ class PF2ETokenBar {
       await combatant.setFlag("pf2e-token-bar", "delayed", true);
       const token = combatant.token?.object;
       if (token) {
-        const original = token.document.overlayEffect ?? CONFIG.controlIcons.combat;
+        const fallback = this.resolveTurnMarkerIcon(combatant);
+        const original = this.resolveTurnMarkerValue(token.document.overlayEffect, fallback);
         await token.document.setFlag("pf2e-token-bar", "overlayEffect", original);
         await token.document.update({ overlayEffect: "icons/svg/hourglass.svg" });
       }
@@ -1213,7 +1266,11 @@ class PF2ETokenBar {
       await combatant.unsetFlag("pf2e-token-bar", "delayed");
       const token = combatant.token?.object;
       if (token) {
-        const original = token.document.getFlag("pf2e-token-bar", "overlayEffect") ?? CONFIG.controlIcons.combat;
+        const fallback = this.resolveTurnMarkerIcon(combatant);
+        const original = this.resolveTurnMarkerValue(
+          token.document.getFlag("pf2e-token-bar", "overlayEffect"),
+          fallback
+        );
         await token.document.unsetFlag("pf2e-token-bar", "overlayEffect");
         await token.document.update({ overlayEffect: original });
       }
