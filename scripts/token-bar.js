@@ -666,6 +666,18 @@ class PF2ETokenBar {
             restBtn.addEventListener("click", () => this.restAll());
             controls.appendChild(restBtn);
 
+            const clearEffectsBtn = document.createElement("button");
+            clearEffectsBtn.innerHTML = '<i class="fas fa-broom"></i>';
+            clearEffectsBtn.title = game.i18n.localize("PF2ETokenBar.ClearZeroHpEffects");
+            clearEffectsBtn.addEventListener("click", async () => {
+              const confirmed = await Dialog.confirm({
+                title: game.i18n.localize("PF2ETokenBar.ClearZeroHpEffects"),
+                content: `<p>${game.i18n.localize("PF2ETokenBar.ClearZeroHpEffectsConfirm")}</p>`
+              });
+              if (confirmed) await this.clearZeroHpEffects();
+            });
+            controls.appendChild(clearEffectsBtn);
+
             const xpBtn = document.createElement("button");
             xpBtn.innerText = game.i18n.localize("PF2ETokenBar.XP");
             xpBtn.addEventListener("click", () => PF2ETokenBar.awardXPDialog());
@@ -1028,6 +1040,52 @@ class PF2ETokenBar {
     const actors = this._partyTokens();
     if (!actors.length) return;
     await game.pf2e.actions.restForTheNight({ actors });
+    this.render();
+  }
+
+  static async clearZeroHpEffects() {
+    if (!canvas?.ready) return;
+    const tokens = canvas.tokens?.placeables ?? [];
+    const processed = new Set();
+    const deletions = [];
+
+    for (const token of tokens) {
+      const actor = token.actor;
+      if (!actor) continue;
+      const actorKey = actor.id ?? actor.uuid ?? token.id;
+      const actorKeyStr = String(actorKey);
+      if (processed.has(actorKeyStr)) continue;
+      processed.add(actorKeyStr);
+      const actorLabel = actor.name ?? actorKeyStr;
+
+      const hpValue = Number(actor.system?.attributes?.hp?.value ?? 0);
+      if (hpValue > 0) continue;
+      if (!actor.isOwner) continue;
+
+      const effectIds = new Set();
+      const effects = [
+        ...(actor.itemTypes?.effect ?? []),
+        ...(actor.conditions?.active ?? []),
+      ];
+      for (const effect of effects) {
+        if (!effect || effect.disabled || effect.isExpired) continue;
+        const id = effect.id ?? effect._id;
+        if (typeof id === "string" && id.length) effectIds.add(id);
+      }
+
+      if (!effectIds.size) continue;
+
+      deletions.push(
+        actor.deleteEmbeddedDocuments("Item", [...effectIds])
+          .catch(err => console.error(
+            "PF2ETokenBar | clearZeroHpEffects",
+            `failed to clear effects for actor ${actorLabel}`,
+            err
+          ))
+      );
+    }
+
+    if (deletions.length) await Promise.allSettled(deletions);
     this.render();
   }
 

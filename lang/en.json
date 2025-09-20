@@ -56,6 +56,8 @@
     "QuickLootConfirmContent": "Transfer defeated NPC loot and open the Loot actor?",
     "HealAll": "Heal All",
     "HealAllConfirm": "Set everyone to full HP?",
+    "ClearZeroHpEffects": "Clear 0 HP Effects",
+    "ClearZeroHpEffectsConfirm": "Remove all active effects and conditions from tokens at 0 HP?",
     "XP": "XP",
     "GiveXPTitle": "Award XP",
     "GiveXPLabel": "Amount",

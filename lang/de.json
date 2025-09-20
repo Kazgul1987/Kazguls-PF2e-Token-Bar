@@ -56,6 +56,8 @@
     "QuickLootConfirmContent": "Beute besiegter NSC übertragen und Beute-Akteur öffnen?",
     "HealAll": "Alle heilen",
     "HealAllConfirm": "Alle auf volle HP setzen?",
+    "ClearZeroHpEffects": "Effekte bei 0 HP entfernen",
+    "ClearZeroHpEffectsConfirm": "Alle aktiven Effekte und Zustände von Tokens mit 0 Trefferpunkten entfernen?",
     "XP": "EP",
     "GiveXPTitle": "EP vergeben",
     "GiveXPLabel": "Menge",
