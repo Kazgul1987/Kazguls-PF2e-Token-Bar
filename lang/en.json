@@ -33,10 +33,6 @@
         "Name": "Encounter scrollbar",
         "Hint": "When disabled, the bar extends to the right without scrolling"
       },
-      "KeepTurnOverlay": {
-        "Name": "Keep Turn Overlay",
-        "Hint": "Keep the combat turn marker visible on the active token"
-      },
       "AutoFortification": {
         "Name": "Auto Fortification",
         "Hint": "Automatically prompt a Fortification flat check on critical hits"
