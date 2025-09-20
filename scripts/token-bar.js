@@ -1241,6 +1241,7 @@ class PF2ETokenBar {
       const icon = this.resolveTurnMarkerIcon(combatant);
       const fallbackIcon = CONFIG.controlIcons?.combat ?? "icons/svg/combat.svg";
       const isCustomIcon = !!icon && icon !== fallbackIcon;
+      const desiredSpin = Boolean(isCustomIcon);
       const modes = globalThis.CONST?.TOKEN_TURN_MARKER_MODES ?? {};
       const customMode = isCustomIcon ? modes.CUSTOM ?? "custom" : undefined;
       const defaultMode = isCustomIcon
@@ -1260,6 +1261,12 @@ class PF2ETokenBar {
         typeof getProperty === "function"
           ? getProperty(token.document, "turnMarker.mode")
           : token.document?.turnMarker?.mode ?? null;
+      const normalizeSpin = value => value === true || value === "true";
+      const currentSpin = normalizeSpin(
+        typeof getProperty === "function"
+          ? getProperty(token.document, "turnMarker.spin")
+          : token.document?.turnMarker?.spin
+      );
       const iconChanged = currentIcon !== icon;
       const shouldSetMode = desiredMode !== undefined;
       const modeChanged =
@@ -1267,11 +1274,14 @@ class PF2ETokenBar {
       const turnMarkerUpdate = {};
       if (iconChanged) turnMarkerUpdate.src = icon;
       if (modeChanged) turnMarkerUpdate.mode = desiredMode;
+      const spinChanged = currentSpin !== desiredSpin;
+      if (spinChanged) turnMarkerUpdate.spin = desiredSpin;
       const liveModeNeedsUpdate =
         shouldSetMode && (turnMarker?.mode ?? null) !== desiredMode;
+      const liveSpinNeedsUpdate = normalizeSpin(turnMarker?.spin) !== desiredSpin;
 
       if (turnMarker?.draw) {
-        if (iconChanged || modeChanged) {
+        if (iconChanged || modeChanged || spinChanged) {
           if (typeof token.document?.updateSource === "function") {
             token.document.updateSource({ turnMarker: turnMarkerUpdate });
           } else if (typeof setProperty === "function") {
@@ -1296,6 +1306,13 @@ class PF2ETokenBar {
             await turnMarker.setMode(desiredMode);
           } else {
             turnMarker.mode = desiredMode;
+          }
+        }
+        if (liveSpinNeedsUpdate) {
+          if (typeof turnMarker.setSpin === "function") {
+            await turnMarker.setSpin(desiredSpin);
+          } else {
+            turnMarker.spin = desiredSpin;
           }
         }
         const renderFlags = token.renderFlags;
