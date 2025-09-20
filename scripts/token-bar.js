@@ -1239,31 +1239,63 @@ class PF2ETokenBar {
     try {
       const turnMarker = token.turnMarker;
       const icon = this.resolveTurnMarkerIcon(combatant);
+      const fallbackIcon = CONFIG.controlIcons?.combat ?? "icons/svg/combat.svg";
+      const isCustomIcon = !!icon && icon !== fallbackIcon;
+      const modes = globalThis.CONST?.TOKEN_TURN_MARKER_MODES ?? {};
+      const customMode = isCustomIcon ? modes.CUSTOM ?? "custom" : undefined;
+      const defaultMode = isCustomIcon
+        ? undefined
+        : modes.COMBAT ?? modes.DEFAULT ?? modes.AUTOMATIC ?? modes.AUTO;
+      const desiredMode = customMode ?? defaultMode;
+      const getProperty = globalThis.foundry?.utils?.getProperty;
+      const setProperty = globalThis.foundry?.utils?.setProperty;
+      const currentIcon =
+        (typeof getProperty === "function"
+          ? getProperty(token.document, "turnMarker.src")
+          : token.document?.turnMarker?.src) ??
+        turnMarker?.path ??
+        turnMarker?.src ??
+        null;
+      const currentMode =
+        typeof getProperty === "function"
+          ? getProperty(token.document, "turnMarker.mode")
+          : token.document?.turnMarker?.mode ?? null;
+      const iconChanged = currentIcon !== icon;
+      const shouldSetMode = desiredMode !== undefined;
+      const modeChanged =
+        shouldSetMode && (currentMode ?? null) !== desiredMode;
+      const turnMarkerUpdate = {};
+      if (iconChanged) turnMarkerUpdate.src = icon;
+      if (modeChanged) turnMarkerUpdate.mode = desiredMode;
+      const liveModeNeedsUpdate =
+        shouldSetMode && (turnMarker?.mode ?? null) !== desiredMode;
+
       if (turnMarker?.draw) {
-        const getProperty = globalThis.foundry?.utils?.getProperty;
-        const currentIcon =
-          (typeof getProperty === "function"
-            ? getProperty(token.document, "turnMarker.src")
-            : token.document?.turnMarker?.src) ??
-          turnMarker?.path ??
-          turnMarker?.src ??
-          null;
-        if (currentIcon !== icon) {
+        if (iconChanged || modeChanged) {
           if (typeof token.document?.updateSource === "function") {
-            token.document.updateSource({ turnMarker: { src: icon } });
-          } else {
-            const setProperty = globalThis.foundry?.utils?.setProperty;
-            if (typeof setProperty === "function") {
-              setProperty(token.document, "turnMarker.src", icon);
-            } else if (token.document?.turnMarker) {
-              token.document.turnMarker.src = icon;
+            token.document.updateSource({ turnMarker: turnMarkerUpdate });
+          } else if (typeof setProperty === "function") {
+            for (const [key, value] of Object.entries(turnMarkerUpdate)) {
+              setProperty(token.document, `turnMarker.${key}`, value);
             }
+          } else {
+            token.document.turnMarker ??= {};
+            Object.assign(token.document.turnMarker, turnMarkerUpdate);
           }
+        }
+        if (iconChanged) {
           if (typeof turnMarker.setIcon === "function") {
             await turnMarker.setIcon(icon);
           } else {
             turnMarker.path = icon;
             turnMarker.src = icon;
+          }
+        }
+        if (shouldSetMode && liveModeNeedsUpdate) {
+          if (typeof turnMarker.setMode === "function") {
+            await turnMarker.setMode(desiredMode);
+          } else {
+            turnMarker.mode = desiredMode;
           }
         }
         const renderFlags = token.renderFlags;
@@ -1275,8 +1307,15 @@ class PF2ETokenBar {
         }
         await turnMarker.draw();
       } else {
+        const updateData = {};
+        if (Object.keys(turnMarkerUpdate).length) {
+          updateData.turnMarker = turnMarkerUpdate;
+        }
         if (token.document?.overlayEffect !== icon) {
-          await token.document.update({ overlayEffect: icon }, { diff: false });
+          updateData.overlayEffect = icon;
+        }
+        if (Object.keys(updateData).length && typeof token.document?.update === "function") {
+          await token.document.update(updateData, { diff: false });
         }
       }
     } catch (err) {
