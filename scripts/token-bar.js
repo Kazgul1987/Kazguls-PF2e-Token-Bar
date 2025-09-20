@@ -1250,22 +1250,33 @@ class PF2ETokenBar {
       const desiredMode = customMode ?? defaultMode;
       const getProperty = globalThis.foundry?.utils?.getProperty;
       const setProperty = globalThis.foundry?.utils?.setProperty;
+      const documentTurnMarkerRaw =
+        typeof getProperty === "function"
+          ? getProperty(token.document, "turnMarker")
+          : token.document?.turnMarker;
+      const documentTurnMarkerData =
+        documentTurnMarkerRaw && typeof documentTurnMarkerRaw === "object"
+          ? documentTurnMarkerRaw
+          : {};
+      const existingTurnMarkerData = { ...documentTurnMarkerData };
       const currentIcon =
-        (typeof getProperty === "function"
-          ? getProperty(token.document, "turnMarker.src")
-          : token.document?.turnMarker?.src) ??
+        documentTurnMarkerData?.src ??
+        documentTurnMarkerData?.path ??
         turnMarker?.path ??
         turnMarker?.src ??
         null;
       const currentMode =
-        typeof getProperty === "function"
+        documentTurnMarkerData?.mode ??
+        (typeof getProperty === "function"
           ? getProperty(token.document, "turnMarker.mode")
-          : token.document?.turnMarker?.mode ?? null;
+          : token.document?.turnMarker?.mode) ??
+        null;
       const normalizeSpin = value => value === true || value === "true";
       const currentSpin = normalizeSpin(
-        typeof getProperty === "function"
-          ? getProperty(token.document, "turnMarker.spin")
-          : token.document?.turnMarker?.spin
+        documentTurnMarkerData?.spin ??
+          (typeof getProperty === "function"
+            ? getProperty(token.document, "turnMarker.spin")
+            : token.document?.turnMarker?.spin)
       );
       const iconChanged = currentIcon !== icon;
       const shouldSetMode = desiredMode !== undefined;
@@ -1276,21 +1287,26 @@ class PF2ETokenBar {
       if (modeChanged) turnMarkerUpdate.mode = desiredMode;
       const spinChanged = currentSpin !== desiredSpin;
       if (spinChanged) turnMarkerUpdate.spin = desiredSpin;
+      const hasTurnMarkerChanges = iconChanged || modeChanged || spinChanged;
       const liveModeNeedsUpdate =
         shouldSetMode && (turnMarker?.mode ?? null) !== desiredMode;
       const liveSpinNeedsUpdate = normalizeSpin(turnMarker?.spin) !== desiredSpin;
 
       if (turnMarker?.draw) {
-        if (iconChanged || modeChanged || spinChanged) {
+        if (hasTurnMarkerChanges) {
+          const mergedTurnMarkerData = {
+            ...existingTurnMarkerData,
+            ...turnMarkerUpdate,
+          };
           if (typeof token.document?.updateSource === "function") {
-            token.document.updateSource({ turnMarker: turnMarkerUpdate });
+            token.document.updateSource({ turnMarker: mergedTurnMarkerData });
           } else if (typeof setProperty === "function") {
-            for (const [key, value] of Object.entries(turnMarkerUpdate)) {
-              setProperty(token.document, `turnMarker.${key}`, value);
-            }
+            setProperty(token.document, "turnMarker", mergedTurnMarkerData);
           } else {
-            token.document.turnMarker ??= {};
-            Object.assign(token.document.turnMarker, turnMarkerUpdate);
+            token.document.turnMarker = {
+              ...(token.document.turnMarker ?? {}),
+              ...mergedTurnMarkerData,
+            };
           }
         }
         if (iconChanged) {
@@ -1325,8 +1341,11 @@ class PF2ETokenBar {
         await turnMarker.draw();
       } else {
         const updateData = {};
-        if (Object.keys(turnMarkerUpdate).length) {
-          updateData.turnMarker = turnMarkerUpdate;
+        if (hasTurnMarkerChanges) {
+          updateData.turnMarker = {
+            ...existingTurnMarkerData,
+            ...turnMarkerUpdate,
+          };
         }
         if (token.document?.overlayEffect !== icon) {
           updateData.overlayEffect = icon;
