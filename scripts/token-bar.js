@@ -1248,17 +1248,58 @@ class PF2ETokenBar {
         ? undefined
         : modes.COMBAT ?? modes.DEFAULT ?? modes.AUTOMATIC ?? modes.AUTO;
       const desiredMode = customMode ?? defaultMode;
-      const getProperty = globalThis.foundry?.utils?.getProperty;
-      const setProperty = globalThis.foundry?.utils?.setProperty;
+      const foundryUtils = globalThis.foundry?.utils;
+      const getProperty = foundryUtils?.getProperty;
+      const setProperty = foundryUtils?.setProperty;
+      const cloneTurnMarkerData = data => {
+        if (!data || typeof data !== "object") return {};
+        if (typeof data.toObject === "function") {
+          try {
+            const clone = data.toObject();
+            if (clone && typeof clone === "object") return clone;
+          } catch (err) {
+            this.debug(
+              "PF2ETokenBar | enforceTurnMarker",
+              "turnMarker.toObject() failed",
+              err
+            );
+          }
+        }
+        if (typeof foundryUtils?.duplicate === "function") {
+          try {
+            const clone = foundryUtils.duplicate(data);
+            if (clone && typeof clone === "object") return clone;
+          } catch (err) {
+            this.debug(
+              "PF2ETokenBar | enforceTurnMarker",
+              "turnMarker clone via foundry.utils.duplicate failed",
+              err
+            );
+          }
+        }
+        if (typeof foundryUtils?.deepClone === "function") {
+          try {
+            const clone = foundryUtils.deepClone(data);
+            if (clone && typeof clone === "object") return clone;
+          } catch (err) {
+            this.debug(
+              "PF2ETokenBar | enforceTurnMarker",
+              "turnMarker clone via foundry.utils.deepClone failed",
+              err
+            );
+          }
+        }
+        return { ...data };
+      };
       const documentTurnMarkerRaw =
         typeof getProperty === "function"
           ? getProperty(token.document, "turnMarker")
           : token.document?.turnMarker;
       const documentTurnMarkerData =
         documentTurnMarkerRaw && typeof documentTurnMarkerRaw === "object"
-          ? documentTurnMarkerRaw
+          ? cloneTurnMarkerData(documentTurnMarkerRaw)
           : {};
-      const existingTurnMarkerData = { ...documentTurnMarkerData };
+      const existingTurnMarkerData = documentTurnMarkerData;
       const currentIcon =
         documentTurnMarkerData?.src ??
         documentTurnMarkerData?.path ??
@@ -1304,7 +1345,7 @@ class PF2ETokenBar {
             setProperty(token.document, "turnMarker", mergedTurnMarkerData);
           } else {
             token.document.turnMarker = {
-              ...(token.document.turnMarker ?? {}),
+              ...existingTurnMarkerData,
               ...mergedTurnMarkerData,
             };
           }
