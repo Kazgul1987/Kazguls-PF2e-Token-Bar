@@ -33,6 +33,14 @@
         "Name": "Encounter scrollbar",
         "Hint": "When disabled, the bar extends to the right without scrolling"
       },
+      "PartyTurnMarkerIcon": {
+        "Name": "Party turn marker icon",
+        "Hint": "Icon path or preset name (default, target, skull, hourglass). Leave blank to use Foundry's combat marker."
+      },
+      "NPCTurnMarkerIcon": {
+        "Name": "NPC turn marker icon",
+        "Hint": "Icon path or preset name (default, target, skull, hourglass). Leave blank to use Foundry's combat marker."
+      },
       "AutoFortification": {
         "Name": "Auto Fortification",
         "Hint": "Automatically prompt a Fortification flat check on critical hits"
