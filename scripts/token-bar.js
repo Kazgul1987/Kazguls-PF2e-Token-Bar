@@ -157,6 +157,56 @@ class PF2ETokenBar {
     return this.resolveTurnMarkerValue(settingValue, fallback);
   }
 
+  static renderFlagsSupports(renderFlags, flag) {
+    if (!renderFlags) return false;
+
+    if (typeof renderFlags.supports === "function") {
+      try {
+        return renderFlags.supports(flag);
+      } catch (err) {
+        this.debug("PF2ETokenBar | renderFlags.supports check failed", flag, err);
+        return false;
+      }
+    }
+
+    const optionsSources = [];
+    if (renderFlags.options) optionsSources.push(renderFlags.options);
+    const staticOptions = renderFlags.constructor?.options;
+    if (staticOptions && !optionsSources.includes(staticOptions)) {
+      optionsSources.push(staticOptions);
+    }
+
+    for (const options of optionsSources) {
+      if (!options) continue;
+      if (typeof options.has === "function") {
+        if (options.has(flag)) return true;
+        continue;
+      }
+      if (Array.isArray(options)) {
+        if (options.includes(flag)) return true;
+        continue;
+      }
+      if (typeof options === "object") {
+        if (Object.prototype.hasOwnProperty.call(options, flag)) return true;
+        continue;
+      }
+    }
+
+    return false;
+  }
+
+  static trySetRenderFlag(renderFlags, flag, value) {
+    if (!renderFlags?.set) return false;
+    if (!this.renderFlagsSupports(renderFlags, flag)) return false;
+    try {
+      renderFlags.set(flag, value);
+      return true;
+    } catch (err) {
+      this.debug("PF2ETokenBar | renderFlags.set failed", flag, err);
+      return false;
+    }
+  }
+
   static render() {
     PF2ERingMenu.close();
     if (!canvas?.ready) return;
@@ -1216,7 +1266,13 @@ class PF2ETokenBar {
             turnMarker.src = icon;
           }
         }
-        token.renderFlags?.set?.("refreshTurnMarker", true);
+        const renderFlags = token.renderFlags;
+        if (!this.trySetRenderFlag(renderFlags, "refreshTurnMarker", true)) {
+          const fallbackFlags = ["refreshOverlay", "refreshEffects", "refresh"];
+          for (const flag of fallbackFlags) {
+            if (this.trySetRenderFlag(renderFlags, flag, true)) break;
+          }
+        }
         await turnMarker.draw();
       } else {
         if (token.document?.overlayEffect !== icon) {
