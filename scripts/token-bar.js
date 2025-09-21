@@ -1168,6 +1168,9 @@ class PF2ETokenBar {
       ];
       for (const effect of effects) {
         if (!effect || effect.disabled || effect.isExpired) continue;
+        const slug = typeof effect.slug === "string" ? effect.slug.toLowerCase() : "";
+        const statusId = typeof effect.statusId === "string" ? effect.statusId.toLowerCase() : "";
+        if (slug === "dead" || statusId === "dead") continue;
         const id = effect.id ?? effect._id;
         if (typeof id === "string" && id.length) effectIds.add(id);
       }
