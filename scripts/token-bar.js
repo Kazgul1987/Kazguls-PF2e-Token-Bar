@@ -1315,13 +1315,62 @@ class PF2ETokenBar {
           ? getProperty(token.document, "turnMarker.mode")
           : token.document?.turnMarker?.mode) ??
         null;
-      const normalizeSpin = value => value === true || value === "true";
+      const normalizeSpin = value => {
+        if (value === null || value === undefined) return false;
+        if (typeof value === "number") return value !== 0;
+        if (typeof value === "boolean") return value;
+        if (typeof value === "string") {
+          const trimmed = value.trim().toLowerCase();
+          if (!trimmed) return false;
+          const numeric = Number(trimmed);
+          if (!Number.isNaN(numeric)) return numeric !== 0;
+          return trimmed === "true";
+        }
+        return false;
+      };
+      const resolveSpinValue = data => {
+        if (!data || typeof data !== "object") return undefined;
+        const animation = data.animation;
+        if (animation && typeof animation === "object" && "spin" in animation) {
+          return animation.spin;
+        }
+        if ("spin" in data) return data.spin;
+        return undefined;
+      };
+      const toNumericSpin = value => {
+        if (value === null || value === undefined) return undefined;
+        if (typeof value === "number") return value;
+        if (typeof value === "boolean") return value ? 1 : 0;
+        if (typeof value === "string") {
+          const trimmed = value.trim().toLowerCase();
+          if (!trimmed) return undefined;
+          const numeric = Number(trimmed);
+          if (!Number.isNaN(numeric)) return numeric;
+          if (trimmed === "true") return 1;
+          if (trimmed === "false") return 0;
+        }
+        return undefined;
+      };
       const currentSpin = normalizeSpin(
-        documentTurnMarkerData?.spin ??
+        resolveSpinValue(documentTurnMarkerData) ??
+          (typeof getProperty === "function"
+            ? getProperty(token.document, "turnMarker.animation.spin")
+            : token.document?.turnMarker?.animation?.spin) ??
           (typeof getProperty === "function"
             ? getProperty(token.document, "turnMarker.spin")
             : token.document?.turnMarker?.spin)
       );
+      const desiredSpinValue = desiredSpin ? 1 : 0;
+      const existingAnimationSpinValue = toNumericSpin(
+        (existingTurnMarkerData?.animation &&
+          typeof existingTurnMarkerData.animation === "object"
+            ? existingTurnMarkerData.animation.spin
+            : undefined) ??
+          (typeof getProperty === "function"
+            ? getProperty(token.document, "turnMarker.animation.spin")
+            : token.document?.turnMarker?.animation?.spin)
+      );
+      const needsAnimationMerge = existingAnimationSpinValue !== desiredSpinValue;
       const iconChanged = currentIcon !== icon;
       const shouldSetMode = desiredMode !== undefined;
       const modeChanged =
@@ -1330,11 +1379,34 @@ class PF2ETokenBar {
       if (iconChanged) turnMarkerUpdate.src = icon;
       if (modeChanged) turnMarkerUpdate.mode = desiredMode;
       const spinChanged = currentSpin !== desiredSpin;
-      if (spinChanged) turnMarkerUpdate.spin = desiredSpin;
-      const hasTurnMarkerChanges = iconChanged || modeChanged || spinChanged;
+      if (spinChanged) {
+        turnMarkerUpdate.spin = desiredSpin;
+      }
+      if (needsAnimationMerge) {
+        const existingAnimationData =
+          existingTurnMarkerData?.animation &&
+          typeof existingTurnMarkerData.animation === "object"
+            ? { ...existingTurnMarkerData.animation }
+            : {};
+        turnMarkerUpdate.animation = {
+          ...existingAnimationData,
+          spin: desiredSpinValue,
+        };
+      }
+      const hasTurnMarkerChanges =
+        iconChanged || modeChanged || spinChanged || needsAnimationMerge;
       const liveModeNeedsUpdate =
         shouldSetMode && (turnMarker?.mode ?? null) !== desiredMode;
-      const liveSpinNeedsUpdate = normalizeSpin(turnMarker?.spin) !== desiredSpin;
+      const hasAnimationObject =
+        turnMarker?.animation && typeof turnMarker.animation === "object";
+      const liveSpinNeedsUpdate =
+        normalizeSpin(
+          (hasAnimationObject ? turnMarker.animation.spin : undefined) ??
+            turnMarker?.spin
+        ) !== desiredSpin ||
+        (hasAnimationObject
+          ? toNumericSpin(turnMarker.animation.spin) !== desiredSpinValue
+          : false);
 
       if (turnMarker?.draw) {
         if (hasTurnMarkerChanges) {
@@ -1369,7 +1441,14 @@ class PF2ETokenBar {
           }
         }
         if (liveSpinNeedsUpdate) {
-          if (typeof turnMarker.setSpin === "function") {
+          if (hasAnimationObject) {
+            turnMarker.animation.spin = desiredSpinValue;
+          } else if (
+            turnMarker &&
+            (turnMarker.animation === undefined || turnMarker.animation === null)
+          ) {
+            turnMarker.animation = { spin: desiredSpinValue };
+          } else if (typeof turnMarker.setSpin === "function") {
             await turnMarker.setSpin(desiredSpin);
           } else {
             turnMarker.spin = desiredSpin;
