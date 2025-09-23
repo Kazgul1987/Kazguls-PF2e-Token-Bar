@@ -33,14 +33,6 @@
         "Name": "Begegnungs-Scrollbalken",
         "Hint": "Wenn deaktiviert, erweitert sich die Leiste nach rechts ohne Scrollen"
       },
-      "PartyTurnMarkerIcon": {
-        "Name": "Rundenmarker-Symbol (Gruppe)",
-        "Hint": "Symbolpfad oder Vorgabename (default, target, skull, hourglass). Leer lassen, um den Foundry-Standardmarker zu verwenden."
-      },
-      "NPCTurnMarkerIcon": {
-        "Name": "Rundenmarker-Symbol (NSC)",
-        "Hint": "Symbolpfad oder Vorgabename (default, target, skull, hourglass). Leer lassen, um den Foundry-Standardmarker zu verwenden."
-      },
       "AutoFortification": {
         "Name": "Fortification-Automatisierung",
         "Hint": "Bietet bei kritischen Treffern automatisch einen Fortification-Flatcheck an"

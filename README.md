@@ -119,13 +119,6 @@ Under **Settings → Module Settings → PF2e Token-Bar**:
 - **Encounter mode** – when enabled (default), the bar switches to combatants during encounters and shows round counter and difficulty.
 - **Encounter scrollbar** – when disabled, the bar extends to the right without scrolling.
 - **Quick loot** – automatically transfer defeated NPC loot and open the Loot actor when combat ends.
-- **Turn marker icons (party/NPC)** – choose overlay icons for party members and NPCs when Foundry cannot draw the default turn marker. Accepts preset keywords (`default`, `target`, `skull`, `hourglass`) or a custom image path via the file picker.
-
-### Custom turn markers
-
-- Preset keywords expand to Foundry's built-in icons: `default`/`combat` (crossed swords), `target`/`crosshairs`, `skull`/`defeated`, and `hourglass`.
-- You can also enter a path to any image in the user data directory, such as `icons/custom/party-marker.png` or `worlds/<your-world>/art/token-overlay.webp`. The settings dialog includes a file picker button to browse for files.
-- When a combatant delays and resumes their turn, PF2e Token-Bar remembers and restores the previously configured marker so that custom overlays persist.
 
 ---
 

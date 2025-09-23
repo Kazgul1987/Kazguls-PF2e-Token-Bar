@@ -90,26 +90,6 @@ Hooks.once("init", () => {
     default: true,
     onChange: () => PF2ETokenBar.render(),
   });
-  game.settings.register("pf2e-token-bar", "partyTurnMarkerIcon", {
-    name: game.i18n.localize("PF2ETokenBar.Settings.PartyTurnMarkerIcon.Name"),
-    hint: game.i18n.localize("PF2ETokenBar.Settings.PartyTurnMarkerIcon.Hint"),
-    scope: "world",
-    config: true,
-    type: String,
-    default: "",
-    filePicker: "image",
-    onChange: () => PF2ETokenBar.enforceTurnMarker(),
-  });
-  game.settings.register("pf2e-token-bar", "npcTurnMarkerIcon", {
-    name: game.i18n.localize("PF2ETokenBar.Settings.NPCTurnMarkerIcon.Name"),
-    hint: game.i18n.localize("PF2ETokenBar.Settings.NPCTurnMarkerIcon.Hint"),
-    scope: "world",
-    config: true,
-    type: String,
-    default: "",
-    filePicker: "image",
-    onChange: () => PF2ETokenBar.enforceTurnMarker(),
-  });
   game.settings.register("pf2e-token-bar", "encounterScroll", {
     name: game.i18n.localize("PF2ETokenBar.Settings.EncounterScroll.Name"),
     hint: game.i18n.localize("PF2ETokenBar.Settings.EncounterScroll.Hint"),
@@ -126,35 +106,6 @@ class PF2ETokenBar {
 
   static debug(...args) {
     if (game.settings.get("pf2e-token-bar", "debug")) console.debug(...args);
-  }
-
-  static turnMarkerAliasMap() {
-    return {
-      default: () => CONFIG.controlIcons?.combat ?? "icons/svg/combat.svg",
-      combat: () => CONFIG.controlIcons?.combat ?? "icons/svg/combat.svg",
-      target: () => CONFIG.controlIcons?.target ?? "icons/svg/target.svg",
-      crosshairs: () => CONFIG.controlIcons?.target ?? "icons/svg/target.svg",
-      skull: () => CONFIG.controlIcons?.defeated ?? "icons/svg/skull.svg",
-      defeated: () => CONFIG.controlIcons?.defeated ?? "icons/svg/skull.svg",
-      hourglass: () => "icons/svg/hourglass.svg",
-    };
-  }
-
-  static resolveTurnMarkerValue(value, fallback = CONFIG.controlIcons?.combat ?? "icons/svg/combat.svg") {
-    const trimmed = typeof value === "string" ? value.trim() : "";
-    if (!trimmed) return fallback;
-    const alias = this.turnMarkerAliasMap()[trimmed.toLowerCase()];
-    if (alias) return typeof alias === "function" ? alias() : alias;
-    return trimmed;
-  }
-
-  static resolveTurnMarkerIcon(combatant) {
-    const fallback = CONFIG.controlIcons?.combat ?? "icons/svg/combat.svg";
-    if (!combatant) return fallback;
-    const isParty = combatant.actor?.hasPlayerOwner || combatant.alliance === "party";
-    const settingKey = isParty ? "partyTurnMarkerIcon" : "npcTurnMarkerIcon";
-    const settingValue = game.settings.get("pf2e-token-bar", settingKey);
-    return this.resolveTurnMarkerValue(settingValue, fallback);
   }
 
   static renderFlagsSupports(renderFlags, flag) {
@@ -874,7 +825,6 @@ class PF2ETokenBar {
       nextBtn.addEventListener("click", async () => {
         if (!game.combat) return;
         await game.combat.nextTurn();
-        await PF2ETokenBar.enforceTurnMarker();
       });
       controls.appendChild(nextBtn);
     }
@@ -1228,260 +1178,6 @@ class PF2ETokenBar {
     }
     PF2ETokenBar.render();
   }
-
-  static async enforceTurnMarker() {
-    const combatant = game.combat?.combatant;
-    if (!combatant) return;
-
-    const tokensLayer = canvas?.tokens;
-    const token =
-      combatant.token?.object ??
-      (combatant.tokenId && tokensLayer ? tokensLayer.get(combatant.tokenId) : null);
-    if (!token) return;
-
-    try {
-      const turnMarker = token.turnMarker;
-      const icon = this.resolveTurnMarkerIcon(combatant);
-      const fallbackIcon = CONFIG.controlIcons?.combat ?? "icons/svg/combat.svg";
-      const isCustomIcon = !!icon && icon !== fallbackIcon;
-      const desiredSpin = Boolean(isCustomIcon);
-      const modes = globalThis.CONST?.TOKEN_TURN_MARKER_MODES ?? {};
-      const customMode = isCustomIcon ? modes.CUSTOM ?? "custom" : undefined;
-      const defaultMode = isCustomIcon
-        ? undefined
-        : modes.COMBAT ?? modes.DEFAULT ?? modes.AUTOMATIC ?? modes.AUTO;
-      const desiredMode = customMode ?? defaultMode;
-      const foundryUtils = globalThis.foundry?.utils;
-      const getProperty = foundryUtils?.getProperty;
-      const setProperty = foundryUtils?.setProperty;
-      const cloneTurnMarkerData = data => {
-        if (!data || typeof data !== "object") return {};
-        if (typeof data.toObject === "function") {
-          try {
-            const clone = data.toObject();
-            if (clone && typeof clone === "object") return clone;
-          } catch (err) {
-            this.debug(
-              "PF2ETokenBar | enforceTurnMarker",
-              "turnMarker.toObject() failed",
-              err
-            );
-          }
-        }
-        if (typeof foundryUtils?.duplicate === "function") {
-          try {
-            const clone = foundryUtils.duplicate(data);
-            if (clone && typeof clone === "object") return clone;
-          } catch (err) {
-            this.debug(
-              "PF2ETokenBar | enforceTurnMarker",
-              "turnMarker clone via foundry.utils.duplicate failed",
-              err
-            );
-          }
-        }
-        if (typeof foundryUtils?.deepClone === "function") {
-          try {
-            const clone = foundryUtils.deepClone(data);
-            if (clone && typeof clone === "object") return clone;
-          } catch (err) {
-            this.debug(
-              "PF2ETokenBar | enforceTurnMarker",
-              "turnMarker clone via foundry.utils.deepClone failed",
-              err
-            );
-          }
-        }
-        return { ...data };
-      };
-      const documentTurnMarkerRaw =
-        typeof getProperty === "function"
-          ? getProperty(token.document, "turnMarker")
-          : token.document?.turnMarker;
-      const documentTurnMarkerData =
-        documentTurnMarkerRaw && typeof documentTurnMarkerRaw === "object"
-          ? cloneTurnMarkerData(documentTurnMarkerRaw)
-          : {};
-      const existingTurnMarkerData = documentTurnMarkerData;
-      const currentIcon =
-        documentTurnMarkerData?.src ??
-        documentTurnMarkerData?.path ??
-        turnMarker?.path ??
-        turnMarker?.src ??
-        null;
-      const currentMode =
-        documentTurnMarkerData?.mode ??
-        (typeof getProperty === "function"
-          ? getProperty(token.document, "turnMarker.mode")
-          : token.document?.turnMarker?.mode) ??
-        null;
-      const normalizeSpin = value => {
-        if (value === null || value === undefined) return false;
-        if (typeof value === "number") return value !== 0;
-        if (typeof value === "boolean") return value;
-        if (typeof value === "string") {
-          const trimmed = value.trim().toLowerCase();
-          if (!trimmed) return false;
-          const numeric = Number(trimmed);
-          if (!Number.isNaN(numeric)) return numeric !== 0;
-          return trimmed === "true";
-        }
-        return false;
-      };
-      const resolveSpinValue = data => {
-        if (!data || typeof data !== "object") return undefined;
-        const animation = data.animation;
-        if (animation && typeof animation === "object" && "spin" in animation) {
-          return animation.spin;
-        }
-        if ("spin" in data) return data.spin;
-        return undefined;
-      };
-      const toNumericSpin = value => {
-        if (value === null || value === undefined) return undefined;
-        if (typeof value === "number") return value;
-        if (typeof value === "boolean") return value ? 1 : 0;
-        if (typeof value === "string") {
-          const trimmed = value.trim().toLowerCase();
-          if (!trimmed) return undefined;
-          const numeric = Number(trimmed);
-          if (!Number.isNaN(numeric)) return numeric;
-          if (trimmed === "true") return 1;
-          if (trimmed === "false") return 0;
-        }
-        return undefined;
-      };
-      const currentSpin = normalizeSpin(
-        resolveSpinValue(documentTurnMarkerData) ??
-          (typeof getProperty === "function"
-            ? getProperty(token.document, "turnMarker.animation.spin")
-            : token.document?.turnMarker?.animation?.spin) ??
-          (typeof getProperty === "function"
-            ? getProperty(token.document, "turnMarker.spin")
-            : token.document?.turnMarker?.spin)
-      );
-      const desiredSpinValue = desiredSpin ? 1 : 0;
-      const existingAnimationSpinValue = toNumericSpin(
-        (existingTurnMarkerData?.animation &&
-          typeof existingTurnMarkerData.animation === "object"
-            ? existingTurnMarkerData.animation.spin
-            : undefined) ??
-          (typeof getProperty === "function"
-            ? getProperty(token.document, "turnMarker.animation.spin")
-            : token.document?.turnMarker?.animation?.spin)
-      );
-      const needsAnimationMerge = existingAnimationSpinValue !== desiredSpinValue;
-      const iconChanged = currentIcon !== icon;
-      const shouldSetMode = desiredMode !== undefined;
-      const modeChanged =
-        shouldSetMode && (currentMode ?? null) !== desiredMode;
-      const turnMarkerUpdate = {};
-      if (iconChanged) turnMarkerUpdate.src = icon;
-      if (modeChanged) turnMarkerUpdate.mode = desiredMode;
-      const spinChanged = currentSpin !== desiredSpin;
-      if (spinChanged) {
-        turnMarkerUpdate.spin = desiredSpin;
-      }
-      if (needsAnimationMerge) {
-        const existingAnimationData =
-          existingTurnMarkerData?.animation &&
-          typeof existingTurnMarkerData.animation === "object"
-            ? { ...existingTurnMarkerData.animation }
-            : {};
-        turnMarkerUpdate.animation = {
-          ...existingAnimationData,
-          spin: desiredSpinValue,
-        };
-      }
-      const hasTurnMarkerChanges =
-        iconChanged || modeChanged || spinChanged || needsAnimationMerge;
-      const liveModeNeedsUpdate =
-        shouldSetMode && (turnMarker?.mode ?? null) !== desiredMode;
-      const hasAnimationObject =
-        turnMarker?.animation && typeof turnMarker.animation === "object";
-      const liveSpinNeedsUpdate =
-        normalizeSpin(
-          (hasAnimationObject ? turnMarker.animation.spin : undefined) ??
-            turnMarker?.spin
-        ) !== desiredSpin ||
-        (hasAnimationObject
-          ? toNumericSpin(turnMarker.animation.spin) !== desiredSpinValue
-          : false);
-
-      if (turnMarker?.draw) {
-        if (hasTurnMarkerChanges) {
-          const mergedTurnMarkerData = {
-            ...existingTurnMarkerData,
-            ...turnMarkerUpdate,
-          };
-          if (typeof token.document?.updateSource === "function") {
-            token.document.updateSource({ turnMarker: mergedTurnMarkerData });
-          } else if (typeof setProperty === "function") {
-            setProperty(token.document, "turnMarker", mergedTurnMarkerData);
-          } else {
-            token.document.turnMarker = {
-              ...existingTurnMarkerData,
-              ...mergedTurnMarkerData,
-            };
-          }
-        }
-        if (iconChanged) {
-          if (typeof turnMarker.setIcon === "function") {
-            await turnMarker.setIcon(icon);
-          } else {
-            turnMarker.path = icon;
-            turnMarker.src = icon;
-          }
-        }
-        if (shouldSetMode && liveModeNeedsUpdate) {
-          if (typeof turnMarker.setMode === "function") {
-            await turnMarker.setMode(desiredMode);
-          } else {
-            turnMarker.mode = desiredMode;
-          }
-        }
-        if (liveSpinNeedsUpdate) {
-          if (hasAnimationObject) {
-            turnMarker.animation.spin = desiredSpinValue;
-          } else if (
-            turnMarker &&
-            (turnMarker.animation === undefined || turnMarker.animation === null)
-          ) {
-            turnMarker.animation = { spin: desiredSpinValue };
-          } else if (typeof turnMarker.setSpin === "function") {
-            await turnMarker.setSpin(desiredSpin);
-          } else {
-            turnMarker.spin = desiredSpin;
-          }
-        }
-        const renderFlags = token.renderFlags;
-        if (!this.trySetRenderFlag(renderFlags, "refreshTurnMarker", true)) {
-          const fallbackFlags = ["refreshOverlay", "refreshEffects", "refresh"];
-          for (const flag of fallbackFlags) {
-            if (this.trySetRenderFlag(renderFlags, flag, true)) break;
-          }
-        }
-        await turnMarker.draw();
-      } else {
-        const updateData = {};
-        if (hasTurnMarkerChanges) {
-          updateData.turnMarker = {
-            ...existingTurnMarkerData,
-            ...turnMarkerUpdate,
-          };
-        }
-        if (token.document?.overlayEffect !== icon) {
-          updateData.overlayEffect = icon;
-        }
-        if (Object.keys(updateData).length && typeof token.document?.update === "function") {
-          await token.document.update(updateData, { diff: false });
-        }
-      }
-    } catch (err) {
-      console.error("PF2ETokenBar | enforceTurnMarker", err);
-    }
-  }
-
   static async addPartyToEncounter() {
     const actors = this._partyTokens();
     if (!actors.length) return;
@@ -1525,8 +1221,8 @@ class PF2ETokenBar {
       await combatant.setFlag("pf2e-token-bar", "delayed", true);
       const token = combatant.token?.object;
       if (token) {
-        const fallback = this.resolveTurnMarkerIcon(combatant);
-        const original = this.resolveTurnMarkerValue(token.document.overlayEffect, fallback);
+        const fallback = CONFIG.controlIcons?.combat ?? "icons/svg/combat.svg";
+        const original = token.document.overlayEffect || fallback;
         await token.document.setFlag("pf2e-token-bar", "overlayEffect", original);
         await token.document.update({ overlayEffect: "icons/svg/hourglass.svg" });
       }
@@ -1546,11 +1242,9 @@ class PF2ETokenBar {
       await combatant.unsetFlag("pf2e-token-bar", "delayed");
       const token = combatant.token?.object;
       if (token) {
-        const fallback = this.resolveTurnMarkerIcon(combatant);
-        const original = this.resolveTurnMarkerValue(
-          token.document.getFlag("pf2e-token-bar", "overlayEffect"),
-          fallback
-        );
+        const fallback = CONFIG.controlIcons?.combat ?? "icons/svg/combat.svg";
+        const stored = token.document.getFlag("pf2e-token-bar", "overlayEffect");
+        const original = typeof stored === "string" && stored.trim().length ? stored : fallback;
         await token.document.unsetFlag("pf2e-token-bar", "overlayEffect");
         await token.document.update({ overlayEffect: original });
       }
@@ -1627,7 +1321,6 @@ Hooks.on("combatEnd", async () => {
   PF2ETokenBar.render();
 });
 Hooks.on("combatTurn", () => {
-  PF2ETokenBar.enforceTurnMarker();
   PF2ETokenBar.scrollActiveToken();
 });
 Hooks.on("updateCombatant", () => PF2ETokenBar.render());
