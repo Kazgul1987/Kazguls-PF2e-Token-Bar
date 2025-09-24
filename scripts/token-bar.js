@@ -691,6 +691,23 @@ class PF2ETokenBar {
           await game.combat.endCombat();
         } else {
           await game.combat.startCombat();
+
+          const activeCombat = game.combat;
+          if (activeCombat && !activeCombat.combatant) {
+            try {
+              await activeCombat.setupTurns({ updateTurn: true });
+            } catch (err) {
+              console.error("PF2ETokenBar | startEncounter", "failed to setup turns", err);
+            }
+
+            if (!activeCombat.combatant && activeCombat.turns.length) {
+              try {
+                await activeCombat.update({ turn: 0 });
+              } catch (err) {
+                console.error("PF2ETokenBar | startEncounter", "failed to set active turn", err);
+              }
+            }
+          }
         }
       } catch (error) {
         console.error(error);
@@ -1185,7 +1202,7 @@ class PF2ETokenBar {
     let combat = game.combat;
     if (!combat || !game.combats.has(combat.id)) {
       try {
-        combat = await Combat.create({ scene: canvas.scene });
+        combat = await Combat.create({ scene: canvas.scene?.id });
         game.combat = combat;
       } catch (err) {
         console.error("PF2ETokenBar | addPartyToEncounter", "failed to create combat", err);
@@ -1193,21 +1210,43 @@ class PF2ETokenBar {
       }
     }
 
+    if (!combat) return;
+
     for (const actor of actors) {
       const token = actor.getActiveTokens(true)[0];
       if (!token) continue;
-      const exists = combat.combatants.find(c => c.tokenId === token.id);
-      if (exists) continue;
+
+      const tokenId = token.document?.id ?? token.id;
+      if (!tokenId) continue;
+
+      const exists = combat.combatants.find(c => c.tokenId === tokenId);
+      if (exists) {
+        if (exists.system?.alliance !== "party") {
+          try {
+            await exists.update({ alliance: "party" });
+          } catch (err) {
+            console.error("PF2ETokenBar | addPartyToEncounter", `failed to update alliance for ${actor.id}`, err);
+          }
+        }
+        continue;
+      }
+
       try {
-        await combat.createEmbeddedDocuments("Combatant", [{
-          tokenId: token.id,
-          actorId: actor.id,
-          sceneId: token.scene.id,
-          alliance: "party"
-        }]);
+        const combatant = await token.toggleCombat(true);
+
+        const created = combatant ?? combat.combatants.find(c => c.tokenId === tokenId);
+        if (created && created.system?.alliance !== "party") {
+          await created.update({ alliance: "party" });
+        }
       } catch (err) {
         console.error("PF2ETokenBar | addPartyToEncounter", `failed to add ${actor.id}`, err);
       }
+    }
+
+    try {
+      await combat.setupTurns({ updateTurn: true });
+    } catch (err) {
+      // No-op: setupTurns can throw if the combat isn't fully initialized yet.
     }
 
     // Removed auto-starting combat; combat should be started manually via the Start Encounter button
