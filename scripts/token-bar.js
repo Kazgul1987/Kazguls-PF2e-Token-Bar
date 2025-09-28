@@ -714,6 +714,20 @@ class PF2ETokenBar {
       }
     });
 
+    let clearEffectsBtn;
+    if (game.user.isGM) {
+      clearEffectsBtn = document.createElement("button");
+      clearEffectsBtn.innerHTML = '<i class="fas fa-broom"></i>';
+      clearEffectsBtn.title = game.i18n.localize("PF2ETokenBar.ClearZeroHpEffects");
+      clearEffectsBtn.addEventListener("click", async () => {
+        const confirmed = await Dialog.confirm({
+          title: game.i18n.localize("PF2ETokenBar.ClearZeroHpEffects"),
+          content: `<p>${game.i18n.localize("PF2ETokenBar.ClearZeroHpEffectsConfirm")}</p>`
+        });
+        if (confirmed) await this.clearZeroHpEffects();
+      });
+    }
+
     if (!activeCombat?.started) {
         if (game.user.isGM) {
             const addBtn = document.createElement("button");
@@ -733,17 +747,7 @@ class PF2ETokenBar {
             restBtn.addEventListener("click", () => this.restAll());
             controls.appendChild(restBtn);
 
-            const clearEffectsBtn = document.createElement("button");
-            clearEffectsBtn.innerHTML = '<i class="fas fa-broom"></i>';
-            clearEffectsBtn.title = game.i18n.localize("PF2ETokenBar.ClearZeroHpEffects");
-            clearEffectsBtn.addEventListener("click", async () => {
-              const confirmed = await Dialog.confirm({
-                title: game.i18n.localize("PF2ETokenBar.ClearZeroHpEffects"),
-                content: `<p>${game.i18n.localize("PF2ETokenBar.ClearZeroHpEffectsConfirm")}</p>`
-              });
-              if (confirmed) await this.clearZeroHpEffects();
-            });
-            controls.appendChild(clearEffectsBtn);
+            if (clearEffectsBtn) controls.appendChild(clearEffectsBtn);
 
             const xpBtn = document.createElement("button");
             xpBtn.innerText = game.i18n.localize("PF2ETokenBar.XP");
@@ -794,6 +798,7 @@ class PF2ETokenBar {
         lootGroup.appendChild(sellBtn);
       } else {
         if (game.user.isGM) {
+          if (clearEffectsBtn) controls.appendChild(clearEffectsBtn);
           controls.appendChild(requestRollBtn);
           controls.appendChild(encounterBtn);
         }
