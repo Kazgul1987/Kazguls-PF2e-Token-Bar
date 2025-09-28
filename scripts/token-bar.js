@@ -1224,38 +1224,31 @@ class PF2ETokenBar {
       const tokenId = token.document?.id ?? token.id;
       if (!tokenId) continue;
 
-      const exists = combat.combatants.find(c => c.tokenId === tokenId);
-      if (exists) {
-        if (exists.system?.alliance !== "party") {
-          try {
-            await exists.update({ alliance: "party" });
-          } catch (err) {
-            console.error("PF2ETokenBar | addPartyToEncounter", `failed to update alliance for ${actor.id}`, err);
-          }
-        }
-        continue;
-      }
+      const activeCombat = game.combat && game.combats.has(game.combat.id) ? game.combat : combat;
+      const exists = activeCombat?.combatants.find(c => c.tokenId === tokenId);
 
       try {
-        const combatant = await token.toggleCombat(true);
-
-        const created = combatant ?? combat.combatants.find(c => c.tokenId === tokenId);
-        if (created && created.system?.alliance !== "party") {
-          await created.update({ alliance: "party" });
+        if (exists) {
+          await token.toggleCombat(false);
+        } else {
+          const combatant = await token.toggleCombat(true);
+          const created =
+            combatant ?? (game.combat && game.combats.has(game.combat.id)
+              ? game.combat.combatants.find(c => c.tokenId === tokenId)
+              : combat.combatants.find(c => c.tokenId === tokenId));
+          if (created && created.system?.alliance !== "party") {
+            await created.update({ alliance: "party" });
+          }
         }
       } catch (err) {
-        console.error("PF2ETokenBar | addPartyToEncounter", `failed to add ${actor.id}`, err);
+        console.error(
+          "PF2ETokenBar | addPartyToEncounter",
+          `${exists ? "failed to remove" : "failed to add"} ${actor.id}`,
+          err,
+        );
       }
     }
 
-    try {
-      await combat.setupTurns({ updateTurn: true });
-    } catch (err) {
-      // No-op: setupTurns can throw if the combat isn't fully initialized yet.
-    }
-
-    // Removed auto-starting combat; combat should be started manually via the Start Encounter button
-    // if (!combat.started) await combat.startCombat();
     this.render();
   }
 
