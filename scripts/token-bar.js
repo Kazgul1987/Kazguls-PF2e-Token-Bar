@@ -1217,33 +1217,69 @@ class PF2ETokenBar {
 
     if (!combat) return;
 
+    const activeCombat = game.combat && game.combats.has(game.combat.id) ? game.combat : combat;
+    if (!activeCombat) return;
+
     for (const actor of actors) {
       const token = actor.getActiveTokens(true)[0];
-      if (!token) continue;
+      const tokenId = token?.document?.id ?? token?.id ?? null;
+      const hasCombatant = activeCombat.combatants.some(
+        c => c?.actorId === actor.id || (tokenId && c?.tokenId === tokenId),
+      );
 
-      const tokenId = token.document?.id ?? token.id;
-      if (!tokenId) continue;
+      if (token) {
+        try {
+          if (!hasCombatant) {
+            const combatant = await token.toggleCombat(true);
+            const created =
+              combatant ?? (game.combat && game.combats.has(game.combat.id)
+                ? game.combat.combatants.find(c => c.tokenId === tokenId)
+                : activeCombat.combatants.find(c => c.tokenId === tokenId));
+            if (created && created.system?.alliance !== "party") {
+              await created.update({ "system.alliance": "party" });
+            }
+          } else {
+            const existing = token.combatant ?? activeCombat.combatants.find(c => c.tokenId === tokenId);
+            if (existing && existing.system?.alliance !== "party") {
+              await existing.update({ "system.alliance": "party" });
+            }
+          }
+        } catch (err) {
+          console.error(
+            "PF2ETokenBar | addPartyToEncounter",
+            `failed to sync ${actor.id}`,
+            err,
+          );
+        }
+        continue;
+      }
 
-      const activeCombat = game.combat && game.combats.has(game.combat.id) ? game.combat : combat;
-      const exists = activeCombat?.combatants.find(c => c.tokenId === tokenId);
-
-      try {
-        if (exists) {
-          await token.toggleCombat(false);
-        } else {
-          const combatant = await token.toggleCombat(true);
-          const created =
-            combatant ?? (game.combat && game.combats.has(game.combat.id)
-              ? game.combat.combatants.find(c => c.tokenId === tokenId)
-              : combat.combatants.find(c => c.tokenId === tokenId));
-          if (created && created.system?.alliance !== "party") {
-            await created.update({ alliance: "party" });
+      if (hasCombatant) {
+        const existing = activeCombat.combatants.find(c => c.actorId === actor.id);
+        if (existing && existing.system?.alliance !== "party") {
+          try {
+            await existing.update({ "system.alliance": "party" });
+          } catch (err) {
+            console.error("PF2ETokenBar | addPartyToEncounter", `failed to update ${actor.id}`, err);
           }
         }
+        continue;
+      }
+
+      try {
+        await activeCombat.createEmbeddedDocuments("Combatant", [
+          {
+            actorId: actor.id,
+            sceneId: canvas.scene?.id ?? null,
+            token: actor.prototypeToken.toObject(),
+            flags: {},
+            system: { alliance: "party" },
+          },
+        ]);
       } catch (err) {
         console.error(
           "PF2ETokenBar | addPartyToEncounter",
-          `${exists ? "failed to remove" : "failed to add"} ${actor.id}`,
+          `failed to create combatant for ${actor.id}`,
           err,
         );
       }
