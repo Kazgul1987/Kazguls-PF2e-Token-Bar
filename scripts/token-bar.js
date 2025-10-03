@@ -730,11 +730,11 @@ class PF2ETokenBar {
 
     if (!activeCombat?.started) {
         if (game.user.isGM) {
-            const selectPartyBtn = document.createElement("button");
-            selectPartyBtn.innerHTML = '<i class="fas fa-object-group"></i>';
-            selectPartyBtn.title = game.i18n.localize("PF2ETokenBar.SelectPartyTokens");
-            selectPartyBtn.addEventListener("click", () => this.selectPartyTokens());
-            controls.appendChild(selectPartyBtn);
+            const addBtn = document.createElement("button");
+            addBtn.innerHTML = '<i class="fas fa-swords"></i>';
+            addBtn.title = game.i18n.localize("PF2ETokenBar.AddPartyToEncounter");
+            addBtn.addEventListener("click", () => this.addPartyToEncounter());
+            controls.appendChild(addBtn);
 
             const healBtn = document.createElement("button");
             healBtn.innerText = game.i18n.localize("PF2ETokenBar.HealAll");
@@ -1200,27 +1200,92 @@ class PF2ETokenBar {
     }
     PF2ETokenBar.render();
   }
-  static selectPartyTokens() {
-    if (!canvas?.ready) return;
+  static async addPartyToEncounter() {
+    const actors = this._partyTokens();
+    if (!actors.length) return;
 
-    const tokens = [];
-    const seenTokenIds = new Set();
-    for (const actor of this._partyTokens()) {
-      for (const token of actor.getActiveTokens(true)) {
-        if (token.scene?.id !== canvas.scene?.id) continue;
-        const tokenId = token.id ?? token.document?.id;
-        if (tokenId && seenTokenIds.has(tokenId)) continue;
-        if (tokenId) seenTokenIds.add(tokenId);
-        tokens.push(token);
+    let combat = game.combat;
+    if (!combat || !game.combats.has(combat.id)) {
+      try {
+        combat = await Combat.create({ scene: canvas.scene?.id });
+        game.combat = combat;
+      } catch (err) {
+        console.error("PF2ETokenBar | addPartyToEncounter", "failed to create combat", err);
+        return;
       }
     }
 
-    if (!tokens.length) return;
+    if (!combat) return;
 
-    canvas.tokens.releaseAll();
-    for (const token of tokens) {
-      token.control({ releaseOthers: false, pan: false });
+    const activeCombat = game.combat && game.combats.has(game.combat.id) ? game.combat : combat;
+    if (!activeCombat) return;
+
+    for (const actor of actors) {
+      const token = actor.getActiveTokens(true)[0];
+      const tokenId = token?.document?.id ?? token?.id ?? null;
+      const hasCombatant = activeCombat.combatants.some(
+        c => c?.actorId === actor.id || (tokenId && c?.tokenId === tokenId),
+      );
+
+      if (token) {
+        try {
+          if (!hasCombatant) {
+            const combatant = await token.toggleCombat(true);
+            const created =
+              combatant ?? (game.combat && game.combats.has(game.combat.id)
+                ? game.combat.combatants.find(c => c.tokenId === tokenId)
+                : activeCombat.combatants.find(c => c.tokenId === tokenId));
+            if (created && created.system?.alliance !== "party") {
+              await created.update({ "system.alliance": "party" });
+            }
+          } else {
+            const existing = token.combatant ?? activeCombat.combatants.find(c => c.tokenId === tokenId);
+            if (existing && existing.system?.alliance !== "party") {
+              await existing.update({ "system.alliance": "party" });
+            }
+          }
+        } catch (err) {
+          console.error(
+            "PF2ETokenBar | addPartyToEncounter",
+            `failed to sync ${actor.id}`,
+            err,
+          );
+        }
+        continue;
+      }
+
+      if (hasCombatant) {
+        const existing = activeCombat.combatants.find(c => c.actorId === actor.id);
+        if (existing && existing.system?.alliance !== "party") {
+          try {
+            await existing.update({ "system.alliance": "party" });
+          } catch (err) {
+            console.error("PF2ETokenBar | addPartyToEncounter", `failed to update ${actor.id}`, err);
+          }
+        }
+        continue;
+      }
+
+      try {
+        await activeCombat.createEmbeddedDocuments("Combatant", [
+          {
+            actorId: actor.id,
+            sceneId: canvas.scene?.id ?? null,
+            token: actor.prototypeToken.toObject(),
+            flags: {},
+            system: { alliance: "party" },
+          },
+        ]);
+      } catch (err) {
+        console.error(
+          "PF2ETokenBar | addPartyToEncounter",
+          `failed to create combatant for ${actor.id}`,
+          err,
+        );
+      }
     }
+
+    this.render();
   }
 
   static async delayTurn(combatant) {
