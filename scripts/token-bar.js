@@ -645,6 +645,22 @@ class PF2ETokenBar {
     });
     controls.appendChild(lockBtn);
 
+    const questLogBtn = document.createElement("button");
+    questLogBtn.innerHTML = '<i class="fas fa-exclamation"></i>';
+    const questLogTitle = game.i18n.localize("PF2ETokenBar.QuestLog");
+    questLogBtn.title = questLogTitle;
+    questLogBtn.setAttribute("aria-label", questLogTitle);
+    const updateQuestLogBtn = () => {
+      const questLogActive = game.modules.get("forien-quest-log")?.active ?? false;
+      questLogBtn.disabled = !questLogActive;
+    };
+    updateQuestLogBtn();
+    questLogBtn.addEventListener("click", () => {
+      if (!game.modules.get("forien-quest-log")?.active) return;
+      Hooks.callAll("ForienQuestLog.Open.QuestLog");
+    });
+    controls.appendChild(questLogBtn);
+
     if (encounterAvailable && game.user.isGM) {
       const encounterToggleBtn = document.createElement("button");
       const updateEncounterToggleBtn = () => {
