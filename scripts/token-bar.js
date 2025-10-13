@@ -778,7 +778,7 @@ class PF2ETokenBar {
         shortRestBtn.innerHTML = '<i class="fas fa-campground"></i>';
         shortRestBtn.title = game.i18n.localize("PF2ETokenBar.ShortRest");
         shortRestBtn.addEventListener("click", () =>
-          game.actors.party?.sheet.render(true, { tab: "exploration" })
+          PF2ETokenBar.openTreatWoundsDialog()
         );
         controls.appendChild(shortRestBtn);
 
@@ -1121,6 +1121,192 @@ class PF2ETokenBar {
         ChatMessage.create({ content: game.i18n.format("PF2ETokenBar.GiveXPMessage", { xp }) });
       }
     });
+  }
+
+  static async openTreatWoundsDialog() {
+    const actors = this._partyTokens().sort((a, b) => a.name.localeCompare(b.name));
+    if (!actors.length) {
+      ui.notifications.warn(
+        game.i18n.localize("PF2ETokenBar.ShortRestDialogNoHealers")
+      );
+      return;
+    }
+
+    const healerOptions = actors
+      .map(actor => `<option value="${actor.id}">${actor.name}</option>`)
+      .join("");
+
+    const content = `
+      <form class="pf2e-short-rest-dialog">
+        <div class="form-group">
+          <label>${game.i18n.localize("PF2ETokenBar.ShortRestDialogHealerLabel")}</label>
+          <select name="healer">
+            <option value="">${game.i18n.localize("PF2ETokenBar.ShortRestDialogSelectPlaceholder")}</option>
+            ${healerOptions}
+          </select>
+        </div>
+        <div class="targets"></div>
+      </form>
+    `;
+
+    await Dialog.prompt({
+      title: game.i18n.localize("PF2ETokenBar.ShortRestDialogTitle"),
+      label: game.i18n.localize("PF2ETokenBar.ShortRestDialogTreat"),
+      content,
+      render: html => {
+        const form = html.find("form.pf2e-short-rest-dialog");
+        const healerSelect = form.find("select[name='healer']");
+        const targetsContainer = form.find(".targets");
+
+        const updateTargets = () => {
+          const existingSelections = new Map();
+          targetsContainer
+            .find("select[name^='target-']")
+            .each((_, select) => existingSelections.set(select.name, select.value));
+          targetsContainer.empty();
+
+          const healerId = healerSelect.val();
+          const healer = actors.find(a => a.id === healerId);
+          if (!healer) return;
+
+          const availableTargets = actors.filter(a => a.id !== healer.id);
+          const maxTargets = Math.min(
+            this._wardMedicTargetCount(healer),
+            availableTargets.length
+          );
+
+          if (!maxTargets) {
+            targetsContainer.append(
+              `<p class="notes">${game.i18n.localize("PF2ETokenBar.ShortRestDialogNoTargets")}</p>`
+            );
+            return;
+          }
+
+          for (let index = 0; index < maxTargets; index += 1) {
+            const selectName = `target-${index}`;
+            const options = availableTargets
+              .map(actor => `<option value="${actor.id}">${actor.name}</option>`)
+              .join("");
+            const group = document.createElement("div");
+            group.classList.add("form-group");
+            group.innerHTML = `
+              <label>${game.i18n.format("PF2ETokenBar.ShortRestDialogTargetLabel", { index: index + 1 })}</label>
+              <select name="${selectName}">
+                <option value="">${game.i18n.localize("PF2ETokenBar.ShortRestDialogSelectPlaceholder")}</option>
+                ${options}
+              </select>
+            `;
+            targetsContainer.append(group);
+            const select = targetsContainer.find(`select[name='${selectName}']`);
+            const previous = existingSelections.get(selectName);
+            if (previous && availableTargets.some(actor => actor.id === previous)) {
+              select.val(previous);
+            }
+          }
+        };
+
+        healerSelect.on("change", updateTargets);
+        updateTargets();
+      },
+      callback: async html => {
+        const healerId = html.find("select[name='healer']").val();
+        const healer = actors.find(a => a.id === healerId);
+        if (!healer) {
+          ui.notifications.warn(
+            game.i18n.localize("PF2ETokenBar.ShortRestDialogHealerRequired")
+          );
+          return false;
+        }
+
+        const selectedTargetIds = html
+          .find("select[name^='target-']")
+          .map((_, select) => select.value)
+          .get()
+          .filter(Boolean);
+        const uniqueTargetIds = [...new Set(selectedTargetIds)];
+
+        if (!uniqueTargetIds.length) {
+          ui.notifications.warn(
+            game.i18n.localize("PF2ETokenBar.ShortRestDialogTargetsRequired")
+          );
+          return false;
+        }
+
+        const targets = uniqueTargetIds
+          .map(id => actors.find(actor => actor.id === id))
+          .filter(actor => !!actor);
+
+        if (!targets.length) {
+          ui.notifications.warn(
+            game.i18n.localize("PF2ETokenBar.ShortRestDialogTargetsRequired")
+          );
+          return false;
+        }
+
+        const targetTokens = [];
+        for (const target of targets) {
+          const [token] = target.getActiveTokens(true);
+          if (!token) {
+            ui.notifications.warn(
+              game.i18n.format("PF2ETokenBar.ShortRestDialogTargetTokenMissing", {
+                name: target.name
+              })
+            );
+            return false;
+          }
+          targetTokens.push(token);
+        }
+
+        const previousTargets = Array.from(game.user?.targets ?? [])
+          .map(doc => doc.object)
+          .filter(token => token);
+
+        let releaseOthers = true;
+        for (const token of targetTokens) {
+          token.setTarget(true, {
+            user: game.user,
+            releaseOthers
+          });
+          releaseOthers = false;
+        }
+
+        try {
+          const event = new MouseEvent("click");
+          await game.pf2e.actions.treatWounds({
+            actor: healer,
+            event,
+            actors: targets
+          });
+        } catch (error) {
+          console.error("PF2ETokenBar | openTreatWoundsDialog", error);
+          const fallback = game.i18n.localize("PF2ETokenBar.ShortRestDialogError");
+          ui.notifications.error(error?.message ?? fallback);
+        } finally {
+          for (const token of targetTokens) {
+            token.setTarget(false, { user: game.user, releaseOthers: false });
+          }
+
+          for (const token of previousTargets) {
+            token.setTarget(true, { user: game.user, releaseOthers: false });
+          }
+        }
+
+        return true;
+      }
+    });
+  }
+
+  static _wardMedicTargetCount(actor) {
+    const hasWardMedic = !!actor.itemTypes?.feat?.some(
+      feat => feat?.slug?.toLowerCase?.() === "ward-medic"
+    );
+
+    if (!hasWardMedic) return 1;
+
+    const rank = Number(actor.system?.skills?.medicine?.rank ?? 0);
+    if (rank >= 4) return 8;
+    if (rank >= 3) return 4;
+    return 2;
   }
 
   static async restAll() {
