@@ -1292,7 +1292,7 @@ class PF2ETokenBar {
               await game.pf2e.actions.treatWounds({
                 actor: healer,
                 event,
-                actors: targets
+                actors: [healer, ...targets.filter(target => target !== healer)]
               });
             } catch (error) {
               console.error("PF2ETokenBar | openTreatWoundsDialog", error);
