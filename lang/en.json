@@ -79,6 +79,8 @@
     "ShortRestDialogTargetsRequired": "Select at least one target.",
     "ShortRestDialogTargetTokenMissing": "No active token found for {name}.",
     "ShortRestDialogTreat": "Treat Wounds",
+    "ShortRestDialogTreatAgainTitle": "Treat Wounds Again?",
+    "ShortRestDialogTreatAgainContent": "Treat Wounds again with the same healer and targets?",
     "ShortRestDialogError": "Treat Wounds failed.",
     "NPCInit": "NPC Init",
     "Prev": "Prev",
