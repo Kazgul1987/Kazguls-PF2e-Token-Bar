@@ -79,6 +79,8 @@
     "ShortRestDialogTargetsRequired": "Wähle mindestens ein Ziel aus.",
     "ShortRestDialogTargetTokenMissing": "Kein aktives Token für {name} gefunden.",
     "ShortRestDialogTreat": "Wunden behandeln",
+    "ShortRestDialogTreatAgainTitle": "Wunden erneut behandeln?",
+    "ShortRestDialogTreatAgainContent": "Wunden erneut mit demselben Heiler und denselben Zielen behandeln?",
     "ShortRestDialogError": "Wunden behandeln fehlgeschlagen.",
     "NPCInit": "NSC-Ini",
     "Prev": "Zurück",

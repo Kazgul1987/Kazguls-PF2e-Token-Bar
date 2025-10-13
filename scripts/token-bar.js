@@ -1261,27 +1261,18 @@ class PF2ETokenBar {
           .map(doc => doc.object)
           .filter(token => token);
 
-        let releaseOthers = true;
-        for (const token of targetTokens) {
-          token.setTarget(true, {
-            user: game.user,
-            releaseOthers
-          });
-          releaseOthers = false;
-        }
+        const applyTargets = () => {
+          let releaseOthers = true;
+          for (const token of targetTokens) {
+            token.setTarget(true, {
+              user: game.user,
+              releaseOthers
+            });
+            releaseOthers = false;
+          }
+        };
 
-        try {
-          const event = new MouseEvent("click");
-          await game.pf2e.actions.treatWounds({
-            actor: healer,
-            event,
-            actors: targets
-          });
-        } catch (error) {
-          console.error("PF2ETokenBar | openTreatWoundsDialog", error);
-          const fallback = game.i18n.localize("PF2ETokenBar.ShortRestDialogError");
-          ui.notifications.error(error?.message ?? fallback);
-        } finally {
+        const restoreTargets = () => {
           for (const token of targetTokens) {
             token.setTarget(false, { user: game.user, releaseOthers: false });
           }
@@ -1289,6 +1280,44 @@ class PF2ETokenBar {
           for (const token of previousTargets) {
             token.setTarget(true, { user: game.user, releaseOthers: false });
           }
+        };
+
+        try {
+          let continueTreating = true;
+          while (continueTreating) {
+            applyTargets();
+
+            const event = new MouseEvent("click");
+            try {
+              await game.pf2e.actions.treatWounds({
+                actor: healer,
+                event,
+                actors: targets
+              });
+            } catch (error) {
+              console.error("PF2ETokenBar | openTreatWoundsDialog", error);
+              const fallback = game.i18n.localize("PF2ETokenBar.ShortRestDialogError");
+              ui.notifications.error(error?.message ?? fallback);
+              break;
+            }
+
+            try {
+              await game.time.advance(10 * 60, { warnAboutTime: false });
+            } catch (timeError) {
+              console.error(
+                "PF2ETokenBar | openTreatWoundsDialog | time advance failed",
+                timeError
+              );
+            }
+
+            const confirm = await Dialog.confirm({
+              title: game.i18n.localize("PF2ETokenBar.ShortRestDialogTreatAgainTitle"),
+              content: `<p>${game.i18n.localize("PF2ETokenBar.ShortRestDialogTreatAgainContent")}</p>`
+            });
+            if (!confirm) continueTreating = false;
+          }
+        } finally {
+          restoreTargets();
         }
 
         return true;
