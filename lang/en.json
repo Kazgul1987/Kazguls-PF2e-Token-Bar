@@ -82,6 +82,8 @@
     "ShortRestDialogTreatAgainTitle": "Treat Wounds Again?",
     "ShortRestDialogTreatAgainContent": "Treat Wounds again with the same healer and targets?",
     "ShortRestDialogError": "Treat Wounds failed.",
+    "ShortRestDialogWorkbenchMissing": "Activate the PF2E Workbench module to run the Treat Wounds macro.",
+    "ShortRestDialogWorkbenchMacroMissing": "Workbench macro '{name}' not found.",
     "NPCInit": "NPC Init",
     "Prev": "Prev",
     "Next": "Next",

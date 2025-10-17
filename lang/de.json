@@ -82,6 +82,8 @@
     "ShortRestDialogTreatAgainTitle": "Wunden erneut behandeln?",
     "ShortRestDialogTreatAgainContent": "Wunden erneut mit demselben Heiler und denselben Zielen behandeln?",
     "ShortRestDialogError": "Wunden behandeln fehlgeschlagen.",
+    "ShortRestDialogWorkbenchMissing": "Aktiviere das Modul PF2E Workbench, um das Wundenbehandlungs-Makro auszuführen.",
+    "ShortRestDialogWorkbenchMacroMissing": "Workbench-Makro '{name}' wurde nicht gefunden.",
     "NPCInit": "NSC-Ini",
     "Prev": "Zurück",
     "Next": "Weiter",

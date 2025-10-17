@@ -1123,6 +1123,44 @@ class PF2ETokenBar {
     });
   }
 
+  static async executeWorkbenchMacro(macroName, ...args) {
+    if (!game.modules.get("xdy-pf2e-workbench")?.active) {
+      ui.notifications.warn(
+        game.i18n.localize("PF2ETokenBar.ShortRestDialogWorkbenchMissing")
+      );
+      return false;
+    }
+
+    const macroCollection = game.macros;
+    const macro =
+      macroCollection?.getName?.(macroName) ??
+      macroCollection?.find(doc => doc?.name === macroName);
+    if (macro) {
+      await macro.execute(...args);
+      return true;
+    }
+
+    for (const pack of game.packs.filter(pack => pack.documentName === "Macro")) {
+      const index = await pack.getIndex();
+      const entry = index.find(item => item.name === macroName);
+      if (!entry) continue;
+
+      const document = await pack.getDocument(entry._id);
+      if (!document) continue;
+
+      await document.execute(...args);
+      return true;
+    }
+
+    ui.notifications.warn(
+      game.i18n.format("PF2ETokenBar.ShortRestDialogWorkbenchMacroMissing", {
+        name: macroName
+      })
+    );
+
+    return false;
+  }
+
   static async openTreatWoundsDialog() {
     const actors = this._partyTokens().sort((a, b) => a.name.localeCompare(b.name));
     if (!actors.length) {
@@ -1287,13 +1325,11 @@ class PF2ETokenBar {
           while (continueTreating) {
             applyTargets();
 
-            const event = new MouseEvent("click");
             try {
-              await game.pf2e.actions.treatWounds({
-                actor: healer,
-                event,
-                actors: [healer, ...targets.filter(target => target !== healer)]
-              });
+              const executed = await PF2ETokenBar.executeWorkbenchMacro(
+                "XDY DO_NOT_IMPORT Treat Wounds and Battle Medicine"
+              );
+              if (!executed) break;
             } catch (error) {
               console.error("PF2ETokenBar | openTreatWoundsDialog", error);
               const fallback = game.i18n.localize("PF2ETokenBar.ShortRestDialogError");
