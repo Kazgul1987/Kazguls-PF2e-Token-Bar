@@ -315,11 +315,22 @@ class PF2ETokenBar {
 
     if (!Number.isFinite(initiative)) return;
 
-    try {
-      await game.combat.setInitiative(combatant.id, initiative);
-    } catch (err) {
-      console.error("PF2ETokenBar | handleZeroHpTransition setInitiative failed", err);
-    }
+    const combatId = combatant.combat?.id ?? null;
+    const combatantId = combatant.id;
+
+    setTimeout(async () => {
+      try {
+        const combat = game.combat;
+        if (!combat || combat.id !== combatId) return;
+
+        const refreshedCombatant = combat.combatants.get(combatantId) ?? null;
+        if (!refreshedCombatant || refreshedCombatant.combat?.id !== combatId) return;
+
+        await combat.setInitiative(combatantId, initiative);
+      } catch (err) {
+        console.error("PF2ETokenBar | handleZeroHpTransition setInitiative failed", err);
+      }
+    });
   }
 
   static render() {
