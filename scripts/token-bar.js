@@ -72,6 +72,14 @@ Hooks.once("init", () => {
     type: Boolean,
     default: true,
   });
+  game.settings.register("pf2e-token-bar", "zeroHpInitiativePrompt", {
+    name: game.i18n.localize("PF2ETokenBar.Settings.ZeroHpInitiativePrompt.Name"),
+    hint: game.i18n.localize("PF2ETokenBar.Settings.ZeroHpInitiativePrompt.Hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+  });
   game.settings.register("pf2e-token-bar", "encounterModeAvailable", {
     name: game.i18n.localize("PF2ETokenBar.Settings.EncounterModeAvailable.Name"),
     hint: game.i18n.localize("PF2ETokenBar.Settings.EncounterModeAvailable.Hint"),
@@ -103,6 +111,8 @@ Hooks.once("init", () => {
 
 class PF2ETokenBar {
   static hoveredToken = null;
+  static zeroHpAttackers = new Map();
+  static zeroHpPreviousHp = new Map();
 
   static debug(...args) {
     if (game.settings.get("pf2e-token-bar", "debug")) console.debug(...args);
@@ -155,6 +165,160 @@ class PF2ETokenBar {
     } catch (err) {
       this.debug("PF2ETokenBar | renderFlags.set failed", flag, err);
       return false;
+    }
+  }
+
+  static _zeroHpKey(combatant) {
+    if (!combatant) return null;
+    const combatId = combatant.combat?.id ?? game.combat?.id ?? "";
+    return `${combatId}:${combatant.id}`;
+  }
+
+  static _getCombatantForActor(actor) {
+    if (!actor) return null;
+    return game.combat?.combatants.find(c => c.actor?.id === actor.id) ?? null;
+  }
+
+  static _isPartyCombatant(combatant) {
+    if (!combatant) return false;
+    const alliance = combatant.system?.alliance;
+    if (alliance) return alliance === "party";
+    return combatant.actor?.hasPlayerOwner ?? false;
+  }
+
+  static async _resolveActorFromContext(context) {
+    if (!context) return null;
+    const uuid = context.actor ?? context.token ?? context.uuid ?? null;
+    if (!uuid) return null;
+    try {
+      const document = await fromUuid(uuid);
+      if (!document) return null;
+      if (document?.documentName === "Actor" || document instanceof Actor) return document;
+      if (document.actor) return document.actor;
+      return null;
+    } catch (err) {
+      this.debug("PF2ETokenBar | _resolveActorFromContext failed", uuid, err);
+      return null;
+    }
+  }
+
+  static storePreviousHp(actor, update) {
+    if (!game.settings.get("pf2e-token-bar", "zeroHpInitiativePrompt")) return;
+    if (!game.user.isGM) return;
+    const hpUpdate = update.system?.attributes?.hp;
+    if (hpUpdate?.value === undefined) return;
+    const current = actor.system?.attributes?.hp?.value;
+    if (current === undefined) return;
+    this.zeroHpPreviousHp.set(actor.id, current);
+  }
+
+  static clearZeroHpTracking() {
+    this.zeroHpAttackers.clear();
+    this.zeroHpPreviousHp.clear();
+  }
+
+  static async trackDamageAttacker(message) {
+    if (!game.settings.get("pf2e-token-bar", "zeroHpInitiativePrompt")) return;
+    if (!game.user.isGM) return;
+    if (!game.combat?.started) return;
+
+    const context = message.flags.pf2e?.context;
+    if (context?.type !== "damage-taken") return;
+
+    const [targetActor, attackerActor] = await Promise.all([
+      this._resolveActorFromContext(context?.target),
+      this._resolveActorFromContext(context?.origin),
+    ]);
+
+    const finalTargetActor = targetActor ?? message?.target?.actor ?? null;
+    const finalAttackerActor = attackerActor ?? message?.actor ?? null;
+
+    if (!finalTargetActor) return;
+
+    const targetCombatant = this._getCombatantForActor(finalTargetActor);
+    if (!targetCombatant || !this._isPartyCombatant(targetCombatant)) return;
+
+    const attackerCombatant = this._getCombatantForActor(finalAttackerActor);
+    const key = this._zeroHpKey(targetCombatant);
+    if (!key) return;
+
+    this.zeroHpAttackers.set(key, {
+      combatId: targetCombatant.combat?.id ?? null,
+      attackerId: attackerCombatant?.id ?? null,
+      attackerInitiative: attackerCombatant?.initiative ?? null,
+    });
+  }
+
+  static async handleZeroHpTransition(actor, update) {
+    if (!game.settings.get("pf2e-token-bar", "zeroHpInitiativePrompt")) return;
+    if (!game.user.isGM) return;
+
+    const hpUpdate = update.system?.attributes?.hp;
+    if (hpUpdate?.value === undefined) return;
+
+    const previous = this.zeroHpPreviousHp.get(actor.id);
+    this.zeroHpPreviousHp.delete(actor.id);
+
+    if (typeof previous !== "number") return;
+
+    const current = actor.system?.attributes?.hp?.value ?? 0;
+    if (!(previous > 0 && current <= 0)) return;
+
+    const combatant = this._getCombatantForActor(actor);
+    if (!combatant || !this._isPartyCombatant(combatant)) return;
+
+    const key = this._zeroHpKey(combatant);
+    const tracking = key ? this.zeroHpAttackers.get(key) : null;
+    if (key) this.zeroHpAttackers.delete(key);
+
+    if (!game.combat?.started || combatant.combat?.id !== game.combat.id) return;
+
+    const attackerCombatant = tracking?.attackerId
+      ? game.combat.combatants.get(tracking.attackerId) ?? null
+      : null;
+
+    const attackerInitiative = tracking?.attackerInitiative;
+    const defaultInitiative = typeof attackerInitiative === "number"
+      ? attackerInitiative + 1
+      : typeof combatant.initiative === "number"
+      ? combatant.initiative
+      : game.combat.combatant?.initiative ?? 0;
+
+    const attackerName = attackerCombatant?.name ?? game.i18n.localize("PF2ETokenBar.ZeroHpPrompt.UnknownAttacker");
+    const targetName = combatant.name ?? actor.name;
+
+    const content = `
+      <p>${game.i18n.format("PF2ETokenBar.ZeroHpPrompt.Content", { target: targetName, attacker: attackerName })}</p>
+      <div class="form-group">
+        <label>${game.i18n.localize("PF2ETokenBar.ZeroHpPrompt.Label")}</label>
+        <input type="number" name="initiative" step="0.01" value="${defaultInitiative}"/>
+      </div>
+    `;
+
+    let initiative = null;
+    try {
+      initiative = await Dialog.prompt({
+        title: game.i18n.localize("PF2ETokenBar.ZeroHpPrompt.Title"),
+        content,
+        label: game.i18n.localize("PF2ETokenBar.ZeroHpPrompt.Confirm"),
+        callback: html => {
+          const input = html.querySelector('input[name="initiative"]');
+          const value = Number(input?.value ?? "");
+          return Number.isFinite(value) ? value : null;
+        },
+        rejectClose: false,
+      });
+    } catch (err) {
+      console.error("PF2ETokenBar | handleZeroHpTransition", err);
+      return;
+    }
+
+    if (!Number.isFinite(initiative)) return;
+
+    try {
+      await game.combat.setInitiative(combatant.id, initiative);
+    } catch (err) {
+      console.error("PF2ETokenBar | handleZeroHpTransition setInitiative failed", err);
     }
   }
 
@@ -1637,8 +1801,15 @@ Hooks.on("createToken", () => PF2ETokenBar.render());
 Hooks.on("deleteToken", () => PF2ETokenBar.render());
 Hooks.on("createCombatant", () => PF2ETokenBar.render());
 Hooks.on("deleteCombatant", () => PF2ETokenBar.render());
-Hooks.on("updateActor", (_actor, data) => {
+Hooks.on("createChatMessage", message => {
+  PF2ETokenBar.trackDamageAttacker(message);
+});
+Hooks.on("preUpdateActor", (actor, data) => {
+  PF2ETokenBar.storePreviousHp(actor, data);
+});
+Hooks.on("updateActor", async (actor, data) => {
   if (data.system?.attributes?.hp || data.system?.resources?.heroPoints) PF2ETokenBar.render();
+  await PF2ETokenBar.handleZeroHpTransition(actor, data);
 });
 Hooks.on("createItem", item => {
   const isEffect = item.isOfType?.("effect") || item.type === "effect";
@@ -1656,8 +1827,12 @@ Hooks.on("updateItem", item => {
   if (isEffect || isCondition) PF2ETokenBar.render();
 });
 Hooks.on("updateCombat", () => PF2ETokenBar.render());
-Hooks.on("combatStart", () => PF2ETokenBar.render());
+Hooks.on("combatStart", () => {
+  PF2ETokenBar.clearZeroHpTracking();
+  PF2ETokenBar.render();
+});
 Hooks.on("combatEnd", async () => {
+  PF2ETokenBar.clearZeroHpTracking();
   PF2ETokenBar.render();
 });
 Hooks.on("combatTurn", () => {
@@ -1671,6 +1846,8 @@ Hooks.on("targetToken", (user, token, targeted) => {
   );
   if (indicator) indicator.style.display = targeted ? "block" : "none";
 });
-Hooks.on("deleteCombat", () => PF2ETokenBar.render());
-Hooks.on("deleteCombat", () => PF2ETokenBar.render());
+Hooks.on("deleteCombat", () => {
+  PF2ETokenBar.clearZeroHpTracking();
+  PF2ETokenBar.render();
+});
 
