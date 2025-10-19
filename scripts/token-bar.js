@@ -280,9 +280,7 @@ class PF2ETokenBar {
     const attackerInitiative = tracking?.attackerInitiative;
     const defaultInitiative = typeof attackerInitiative === "number"
       ? attackerInitiative + 1
-      : typeof combatant.initiative === "number"
-      ? combatant.initiative
-      : game.combat.combatant?.initiative ?? 0;
+      : (game.combat?.combatant?.initiative ?? 0) + 1;
 
     const attackerName = attackerCombatant?.name ?? game.i18n.localize("PF2ETokenBar.ZeroHpPrompt.UnknownAttacker");
     const targetName = combatant.name ?? actor.name;
