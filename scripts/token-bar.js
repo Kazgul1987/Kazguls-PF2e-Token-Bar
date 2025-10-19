@@ -302,7 +302,7 @@ class PF2ETokenBar {
         content,
         label: game.i18n.localize("PF2ETokenBar.ZeroHpPrompt.Confirm"),
         callback: html => {
-          const input = html.querySelector('input[name="initiative"]');
+          const input = html.find('input[name="initiative"]').get(0);
           const value = Number(input?.value ?? "");
           return Number.isFinite(value) ? value : null;
         },
