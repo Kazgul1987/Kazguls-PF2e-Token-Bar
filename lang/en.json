@@ -21,6 +21,10 @@
         "Name": "Quick Loot",
         "Hint": "Automatically transfer defeated NPC loot and open the Loot actor on combat end."
       },
+      "ZeroHpInitiativePrompt": {
+        "Name": "Prompt Initiative Change at 0 HP",
+        "Hint": "When a party member drops to 0 HP, ask to move them just before the attacker in initiative and allow entering a custom value."
+      },
       "EncounterModeAvailable": {
         "Name": "Encounter Mode Available",
         "Hint": "Allow use of encounter mode features and show the encounter toggle"
@@ -132,6 +136,13 @@
     "Fortification": {
       "Check": "Fortification Flat Check (DC {dc})",
       "Success": "Critical downgraded to normal damage."
+    },
+    "ZeroHpPrompt": {
+      "Title": "Move Defeated Combatant",
+      "Content": "Move {target} just before {attacker} in the initiative order?",
+      "Label": "Initiative",
+      "Confirm": "Move",
+      "UnknownAttacker": "the attacker"
     }
   }
 }

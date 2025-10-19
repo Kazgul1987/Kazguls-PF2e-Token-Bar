@@ -21,6 +21,10 @@
         "Name": "Schnellbeute",
         "Hint": "Überträgt nach dem Kampf automatisch die Beute besiegter NSC und öffnet den Beute-Akteur."
       },
+      "ZeroHpInitiativePrompt": {
+        "Name": "Initiativeabfrage bei 0 TP",
+        "Hint": "Fragt, ob ein Gruppenmitglied bei 0 TP direkt vor den Angreifer in der Initiative einsortiert werden soll und erlaubt einen eigenen Wert."
+      },
       "EncounterModeAvailable": {
         "Name": "Begegnungsmodus verfügbar",
         "Hint": "Erlaubt die Verwendung des Begegnungsmodus und zeigt den Umschalter an"
@@ -132,6 +136,13 @@
     "Fortification": {
       "Check": "Fortifikations-Flatcheck (SG {dc})",
       "Success": "Kritischer Treffer zu normalem Schaden herabgestuft."
+    },
+    "ZeroHpPrompt": {
+      "Title": "Besiegten Kämpfer verschieben",
+      "Content": "{target} direkt vor {attacker} in der Initiative einreihen?",
+      "Label": "Initiative",
+      "Confirm": "Verschieben",
+      "UnknownAttacker": "dem Angreifer"
     }
   }
 }
