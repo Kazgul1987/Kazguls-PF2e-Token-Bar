@@ -489,6 +489,14 @@ class PF2ETokenBar {
       indicator.style.display = isTargeted ? "block" : "none";
       wrapper.appendChild(indicator);
 
+      const rollIcon = document.createElement("i");
+      rollIcon.classList.add("fas", "fa-dice-d20", "pf2e-roll-icon");
+      rollIcon.addEventListener("click", () => {
+        const combatant = game.combat?.getCombatantByToken(token.id);
+        if (combatant) game.combat.rollInitiative([combatant.id]);
+      });
+      wrapper.appendChild(rollIcon);
+
       const img = document.createElement("img");
       // Attempt to get the token's texture, falling back to the document's texture
       const imgSrc = token.texture?.src ?? token.document?.texture?.src ?? "";
