@@ -120,7 +120,9 @@ Hooks.on("createChatMessage", async (message) => {
       const isNatural19 = d20Results.includes(19);
       const isNatural20 = (context?.natural20 ?? false) || d20Results.includes(20);
 
-      if (isNatural19 && !isNatural20) {
+      const isSuccessOutcome = context?.degreeOfSuccess === 2 || context?.outcome === "success";
+
+      if (isNatural19 && !isNatural20 && isSuccessOutcome) {
         await message.update({
           "flags.pf2e.context.outcome": "criticalSuccess",
           "flags.pf2e.context.degreeOfSuccess": 3,
