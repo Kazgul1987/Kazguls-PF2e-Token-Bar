@@ -45,6 +45,10 @@
         "Name": "Auto Shadow",
         "Hint": "Automatically apply Shadow rune bonuses to Stealth"
       },
+      "AutoKeen": {
+        "Name": "Auto Keen",
+        "Hint": "Automatically upgrade natural 19 attack rolls to critical hits when wielding a Keen rune"
+      },
       "RemasterSheetMode": {
         "Name": "Remaster Sheets",
         "Hint": "Enable alternative color schemes for character and NPC sheets",

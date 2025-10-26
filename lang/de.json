@@ -45,6 +45,10 @@
         "Name": "Schatten-Automatisierung",
         "Hint": "Wendet automatisch Schattenrune-Boni auf Heimlichkeit an"
       },
+      "AutoKeen": {
+        "Name": "Keen-Automatisierung",
+        "Hint": "Wertet Angriffe mit natürlicher 19 bei geführter Scharf-Rune automatisch zu kritischen Treffern auf"
+      },
       "RemasterSheetMode": {
         "Name": "Remaster-Sheets",
         "Hint": "Aktiviert alternative Farbgebungen für Charakter- und NSC-Sheets",

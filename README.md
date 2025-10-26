@@ -104,6 +104,11 @@ Automatically handle armor property runes.
 - Enable the **Auto Shadow** setting under *Settings → Module Settings → PF2e Token-Bar*.
 - When wearing armor with a **Shadow**, **Greater Shadow**, or **Major Shadow** rune, a +1/+2/+3 item bonus to Stealth checks is automatically applied.
 
+### Keen
+
+- Enable the **Auto Keen** setting under *Settings → Module Settings → PF2e Token-Bar*.
+- Attacks with a natural 19 automatically upgrade to a critical hit when the weapon bears a **Keen** property rune, and critical damage is rolled immediately.
+
 ---
 
 ## Settings & Controls
