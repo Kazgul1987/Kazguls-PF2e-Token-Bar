@@ -133,7 +133,16 @@ Hooks.on("createChatMessage", async (message) => {
           context.degreeOfSuccess = 3;
         }
 
-        await message.item?.rollDamage({ message, critical: true });
+        const strike = message._strike;
+        const mapIncreases = context?.mapIncreases;
+        const altUsage = context?.altUsage;
+        const target = message.target?.token?.object;
+
+        if (strike?.critical) {
+          await strike.critical?.({ checkContext: context, mapIncreases, altUsage, target });
+        } else {
+          await message.item?.rollDamage?.({ message, critical: true });
+        }
       }
     }
   }
