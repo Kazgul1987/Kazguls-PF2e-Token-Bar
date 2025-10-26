@@ -16,6 +16,15 @@ Hooks.once("init", () => {
     type: Boolean,
     default: false,
   });
+
+  game.settings.register("pf2e-token-bar", "autoKeen", {
+    name: game.i18n.localize("PF2ETokenBar.Settings.AutoKeen.Name"),
+    hint: game.i18n.localize("PF2ETokenBar.Settings.AutoKeen.Hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+  });
 });
 
 Hooks.on("pf2e.prepareActorData", (actor) => {
@@ -75,9 +84,59 @@ Hooks.on("pf2e.prepareActorData", (actor) => {
 });
 
 Hooks.on("createChatMessage", async (message) => {
-  if (!game.settings.get("pf2e-token-bar", "autoFortification")) return;
-
   const context = message.flags.pf2e?.context;
+  const autoKeenEnabled = game.settings.get("pf2e-token-bar", "autoKeen");
+  const autoFortificationEnabled = game.settings.get("pf2e-token-bar", "autoFortification");
+
+  if (autoKeenEnabled && context?.type === "attack-roll" && context?.outcome !== "criticalSuccess") {
+    const optionValues = context.options instanceof Set
+      ? Array.from(context.options)
+      : Array.isArray(context?.options)
+      ? context.options
+      : [];
+    const keenOption = optionValues.some((option) =>
+      [
+        "weapon:rune:property:keen",
+        "weapon:property-rune:keen",
+        "property-rune:keen",
+        "item:rune:property:keen",
+      ].includes(option)
+    );
+
+    const runeProperty = message.item?.system?.runes?.property;
+    const hasKeenRune = Array.isArray(runeProperty)
+      ? runeProperty.includes("keen")
+      : runeProperty === "keen";
+
+    if (keenOption || hasKeenRune) {
+      const d20Results = (message.rolls ?? [])
+        .flatMap((roll) => roll.dice ?? [])
+        .filter((die) => die?.faces === 20)
+        .flatMap((die) => die.results ?? [])
+        .filter((result) => result?.active !== false)
+        .map((result) => result?.result)
+        .filter((result) => typeof result === "number");
+
+      const isNatural19 = d20Results.includes(19);
+      const isNatural20 = (context?.natural20 ?? false) || d20Results.includes(20);
+
+      if (isNatural19 && !isNatural20) {
+        await message.update({
+          "flags.pf2e.context.outcome": "criticalSuccess",
+          "flags.pf2e.context.degreeOfSuccess": 3,
+        });
+
+        if (context) {
+          context.outcome = "criticalSuccess";
+          context.degreeOfSuccess = 3;
+        }
+
+        await message.item?.rollDamage({ message, critical: true });
+      }
+    }
+  }
+
+  if (!autoFortificationEnabled) return;
   if (context?.type !== "attack-roll" || context?.outcome !== "criticalSuccess") return;
 
   const targetUuid = context.target?.actor;
