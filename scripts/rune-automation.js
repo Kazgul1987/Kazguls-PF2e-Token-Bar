@@ -28,124 +28,94 @@ Hooks.once("init", () => {
 });
 
 Hooks.on("pf2e.prepareActorData", (actor) => {
-  if (!game.settings.get("pf2e-token-bar", "autoShadow")) return;
+  const options = actor.rollOptions.all ?? {};
 
-  const options = actor.rollOptions.all;
-  const rune = options["armor:rune:property:major-shadow"]
-    ? {
-        predicate: "armor:rune:property:major-shadow",
-        option: "major-shadow-rune",
-        label: "PF2E.ArmorRunePropertyMajorShadow.ItemBonus",
-        bonus: 3,
+  if (game.settings.get("pf2e-token-bar", "autoShadow")) {
+    const rune = options["armor:rune:property:major-shadow"]
+      ? {
+          predicate: "armor:rune:property:major-shadow",
+          option: "major-shadow-rune",
+          label: "PF2E.ArmorRunePropertyMajorShadow.ItemBonus",
+          bonus: 3,
+        }
+      : options["armor:rune:property:greater-shadow"]
+      ? {
+          predicate: "armor:rune:property:greater-shadow",
+          option: "greater-shadow-rune",
+          label: "PF2E.ArmorRunePropertyGreaterShadow.ItemBonus",
+          bonus: 2,
+        }
+      : options["armor:rune:property:shadow"]
+      ? {
+          predicate: "armor:rune:property:shadow",
+          option: "shadow-rune",
+          label: "PF2E.ArmorRunePropertyShadow.ItemBonus",
+          bonus: 1,
+        }
+      : null;
+
+    if (rune) {
+      actor.synthetics.toggles["skill-check"] ??= {};
+      actor.synthetics.toggles["skill-check"][rune.option] = {
+        itemId: `pf2e-token-bar.${rune.option}`,
+        label: game.i18n.localize(rune.label),
+        placement: "actions",
+        domain: "skill-check",
+        option: rune.option,
+        suboptions: [],
+        alwaysActive: false,
+        checked: false,
+        enabled: true,
+      };
+
+      const { FlatModifier } = game.pf2e.rules;
+      const modifier = new FlatModifier({
+        slug: rune.option,
+        label: game.i18n.localize(rune.label),
+        selector: "stealth",
+        type: "item",
+        value: rune.bonus,
+        predicate: [rune.predicate, rune.option],
+        custom: true,
+      });
+
+      actor.synthetics.statisticsModifiers.stealth ??= [];
+      actor.synthetics.statisticsModifiers.stealth.push(modifier);
+    }
+  }
+
+  if (game.settings.get("pf2e-token-bar", "autoKeen")) {
+    const keenOptions = [
+      "weapon:rune:property:keen",
+      "weapon:property-rune:keen",
+      "property-rune:keen",
+      "item:rune:property:keen",
+    ].filter((option) => options[option]);
+
+    if (keenOptions.length > 0) {
+      const label = game.i18n.localize("PF2E.PropertyRuneKeen");
+      const predicateBase = ["check:type:attack", "check:total:natural:19"];
+
+      actor.synthetics.degreeOfSuccessAdjustments["strike-attack-roll"] ??= [];
+
+      for (const option of keenOptions) {
+        actor.synthetics.degreeOfSuccessAdjustments["strike-attack-roll"].push({
+          slug: `pf2e-token-bar-keen-${option.replace(/[:]/g, "-")}`,
+          label,
+          predicate: { all: [...predicateBase, option] },
+          success: {
+            label,
+            amount: 1,
+          },
+        });
       }
-    : options["armor:rune:property:greater-shadow"]
-    ? {
-        predicate: "armor:rune:property:greater-shadow",
-        option: "greater-shadow-rune",
-        label: "PF2E.ArmorRunePropertyGreaterShadow.ItemBonus",
-        bonus: 2,
-      }
-    : options["armor:rune:property:shadow"]
-    ? {
-        predicate: "armor:rune:property:shadow",
-        option: "shadow-rune",
-        label: "PF2E.ArmorRunePropertyShadow.ItemBonus",
-        bonus: 1,
-      }
-    : null;
-  if (!rune) return;
-
-  actor.synthetics.toggles["skill-check"] ??= {};
-  actor.synthetics.toggles["skill-check"][rune.option] = {
-    itemId: `pf2e-token-bar.${rune.option}`,
-    label: game.i18n.localize(rune.label),
-    placement: "actions",
-    domain: "skill-check",
-    option: rune.option,
-    suboptions: [],
-    alwaysActive: false,
-    checked: false,
-    enabled: true,
-  };
-
-  const { FlatModifier } = game.pf2e.rules;
-  const modifier = new FlatModifier({
-    slug: rune.option,
-    label: game.i18n.localize(rune.label),
-    selector: "stealth",
-    type: "item",
-    value: rune.bonus,
-    predicate: [rune.predicate, rune.option],
-    custom: true,
-  });
-
-  actor.synthetics.statisticsModifiers.stealth ??= [];
-  actor.synthetics.statisticsModifiers.stealth.push(modifier);
+    }
+  }
 });
 
 Hooks.on("createChatMessage", async (message) => {
   const context = message.flags.pf2e?.context;
-  const autoKeenEnabled = game.settings.get("pf2e-token-bar", "autoKeen");
   const autoFortificationEnabled = game.settings.get("pf2e-token-bar", "autoFortification");
-
-  if (autoKeenEnabled && context?.type === "attack-roll" && context?.outcome !== "criticalSuccess") {
-    const optionValues = context.options instanceof Set
-      ? Array.from(context.options)
-      : Array.isArray(context?.options)
-      ? context.options
-      : [];
-    const keenOption = optionValues.some((option) =>
-      [
-        "weapon:rune:property:keen",
-        "weapon:property-rune:keen",
-        "property-rune:keen",
-        "item:rune:property:keen",
-      ].includes(option)
-    );
-
-    const runeProperty = message.item?.system?.runes?.property;
-    const hasKeenRune = Array.isArray(runeProperty)
-      ? runeProperty.includes("keen")
-      : runeProperty === "keen";
-
-    if (keenOption || hasKeenRune) {
-      const d20Results = (message.rolls ?? [])
-        .flatMap((roll) => roll.dice ?? [])
-        .filter((die) => die?.faces === 20)
-        .flatMap((die) => die.results ?? [])
-        .filter((result) => result?.active !== false)
-        .map((result) => result?.result)
-        .filter((result) => typeof result === "number");
-
-      const isNatural19 = d20Results.includes(19);
-      const isNatural20 = (context?.natural20 ?? false) || d20Results.includes(20);
-
-      const isSuccessOutcome = context?.degreeOfSuccess === 2 || context?.outcome === "success";
-
-      if (isNatural19 && !isNatural20 && isSuccessOutcome) {
-        await message.update({
-          "flags.pf2e.context.outcome": "criticalSuccess",
-          "flags.pf2e.context.degreeOfSuccess": 3,
-        });
-
-        if (context) {
-          context.outcome = "criticalSuccess";
-          context.degreeOfSuccess = 3;
-        }
-
-        const strike = message._strike;
-        const mapIncreases = context?.mapIncreases;
-        const altUsage = context?.altUsage;
-        const target = message.target?.token?.object;
-
-        if (strike?.critical) {
-          await strike.critical?.({ checkContext: context, mapIncreases, altUsage, target });
-        } else {
-          await message.item?.rollDamage?.({ message, critical: true });
-        }
-      }
-    }
-  }
 
   if (!autoFortificationEnabled) return;
   if (context?.type !== "attack-roll" || context?.outcome !== "criticalSuccess") return;
