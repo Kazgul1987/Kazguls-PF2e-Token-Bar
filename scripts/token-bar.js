@@ -834,6 +834,37 @@ class PF2ETokenBar {
     });
     controls.appendChild(questLogBtn);
 
+    const pointsTrackerBtn = document.createElement("button");
+    pointsTrackerBtn.innerHTML = '<i class="fas fa-flask"></i>';
+    const pointsTrackerTitle = game.i18n.localize("PF2ETokenBar.PointsTracker");
+    pointsTrackerBtn.title = pointsTrackerTitle;
+    pointsTrackerBtn.setAttribute("aria-label", pointsTrackerTitle);
+    const getPointsTrackerOpener = () => {
+      if (typeof game.pf2ePointsTracker?.open === "function") {
+        return () => game.pf2ePointsTracker.open();
+      }
+      if (typeof globalThis.openResearchTracker === "function") {
+        return () => globalThis.openResearchTracker();
+      }
+      return null;
+    };
+    const updatePointsTrackerBtn = () => {
+      const pointsTrackerModule = game.modules.get("pf2e-points-tracker");
+      const opener = getPointsTrackerOpener();
+      pointsTrackerBtn.disabled = !(pointsTrackerModule?.active && opener);
+    };
+    updatePointsTrackerBtn();
+    pointsTrackerBtn.addEventListener("click", () => {
+      const opener = getPointsTrackerOpener();
+      if (!opener) return;
+      try {
+        opener();
+      } catch (err) {
+        console.error("PF2ETokenBar | failed to open PF2e Points Tracker", err);
+      }
+    });
+    controls.appendChild(pointsTrackerBtn);
+
     if (encounterAvailable && game.user.isGM) {
       const encounterToggleBtn = document.createElement("button");
       const updateEncounterToggleBtn = () => {
