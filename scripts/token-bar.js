@@ -80,6 +80,14 @@ Hooks.once("init", () => {
     type: Boolean,
     default: false,
   });
+  game.settings.register("pf2e-token-bar", "autoNpcInitiative", {
+    name: game.i18n.localize("PF2ETokenBar.Settings.AutoNpcInitiative.Name"),
+    hint: game.i18n.localize("PF2ETokenBar.Settings.AutoNpcInitiative.Hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+  });
   game.settings.register("pf2e-token-bar", "encounterModeAvailable", {
     name: game.i18n.localize("PF2ETokenBar.Settings.EncounterModeAvailable.Name"),
     hint: game.i18n.localize("PF2ETokenBar.Settings.EncounterModeAvailable.Hint"),
@@ -1890,4 +1898,3 @@ Hooks.on("deleteCombat", () => {
   PF2ETokenBar.clearZeroHpTracking();
   PF2ETokenBar.render();
 });
-
