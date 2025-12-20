@@ -25,6 +25,10 @@
         "Name": "Initiativeabfrage bei 0 TP",
         "Hint": "Fragt, ob ein Gruppenmitglied bei 0 TP direkt vor den Angreifer in der Initiative einsortiert werden soll und erlaubt einen eigenen Wert."
       },
+      "AutoNpcInitiative": {
+        "Name": "NSC-Initiative automatisch würfeln",
+        "Hint": "Würfelt bei Bedarf automatisch die Initiative für NSC."
+      },
       "EncounterModeAvailable": {
         "Name": "Begegnungsmodus verfügbar",
         "Hint": "Erlaubt die Verwendung des Begegnungsmodus und zeigt den Umschalter an"

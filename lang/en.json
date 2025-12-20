@@ -25,6 +25,10 @@
         "Name": "Prompt Initiative Change at 0 HP",
         "Hint": "When a party member drops to 0 HP, ask to move them just before the attacker in initiative and allow entering a custom value."
       },
+      "AutoNpcInitiative": {
+        "Name": "Auto Roll NPC Initiative",
+        "Hint": "Automatically roll initiative for NPCs when needed."
+      },
       "EncounterModeAvailable": {
         "Name": "Encounter Mode Available",
         "Hint": "Allow use of encounter mode features and show the encounter toggle"
