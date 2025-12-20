@@ -194,6 +194,51 @@ class PF2ETokenBar {
     return combatant.actor?.hasPlayerOwner ?? false;
   }
 
+  static _getBestNpcInitiativeStatistic(actor) {
+    const skills = actor?.system?.skills ?? {};
+    let bestKey = null;
+    let bestMod = Number.NEGATIVE_INFINITY;
+
+    for (const [key, skill] of Object.entries(skills)) {
+      const mod = Number(
+        skill?.mod ??
+        skill?.value ??
+        skill?.check?.modifier ??
+        skill?.check?.mod ??
+        skill?.check?.value
+      );
+      if (!Number.isFinite(mod)) continue;
+      if (mod > bestMod) {
+        bestMod = mod;
+        bestKey = key;
+      }
+    }
+
+    if (bestKey) return bestKey;
+    return "perception";
+  }
+
+  static async autoRollNpcInitiative({ combat = game.combat, combatant = null } = {}) {
+    if (!game.user.isGM) return;
+    if (!game.settings.get("pf2e-token-bar", "autoNpcInitiative")) return;
+
+    const combatants = combatant ? [combatant] : Array.from(combat?.combatants ?? []);
+    const targets = combatants.filter(
+      c => !c.actor?.hasPlayerOwner && c.initiative == null
+    );
+
+    for (const npcCombatant of targets) {
+      const actor = npcCombatant.actor;
+      if (!actor?.initiative?.roll) continue;
+      const statistic = this._getBestNpcInitiativeStatistic(actor);
+      try {
+        await actor.initiative.roll({ statistic, createMessage: true, dialog: false });
+      } catch (err) {
+        console.error("PF2ETokenBar | autoRollNpcInitiative", err);
+      }
+    }
+  }
+
   static async _resolveActorFromContext(context) {
     if (!context) return null;
     const uuid = context.actor ?? context.token ?? context.uuid ?? null;
@@ -1847,7 +1892,10 @@ Hooks.on("canvasReady", () => PF2ETokenBar.render());
 Hooks.on("updateToken", () => PF2ETokenBar.render());
 Hooks.on("createToken", () => PF2ETokenBar.render());
 Hooks.on("deleteToken", () => PF2ETokenBar.render());
-Hooks.on("createCombatant", () => PF2ETokenBar.render());
+Hooks.on("createCombatant", combatant => {
+  PF2ETokenBar.render();
+  PF2ETokenBar.autoRollNpcInitiative({ combatant });
+});
 Hooks.on("deleteCombatant", () => PF2ETokenBar.render());
 Hooks.on("createChatMessage", message => {
   PF2ETokenBar.trackDamageAttacker(message);
@@ -1878,6 +1926,7 @@ Hooks.on("updateCombat", () => PF2ETokenBar.render());
 Hooks.on("combatStart", () => {
   PF2ETokenBar.clearZeroHpTracking();
   PF2ETokenBar.render();
+  PF2ETokenBar.autoRollNpcInitiative();
 });
 Hooks.on("combatEnd", async () => {
   PF2ETokenBar.clearZeroHpTracking();
