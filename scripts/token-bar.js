@@ -1369,11 +1369,18 @@ class PF2ETokenBar {
       title: game.i18n.localize("PF2ETokenBar.GiveXPTitle"),
       label: game.i18n.localize("PF2ETokenBar.Roll"),
       content: `<form><div class="form-group"><label>${game.i18n.localize("PF2ETokenBar.GiveXPLabel")}</label><input type="number" name="xp"/></div></form>`,
-      callback: html => {
+      callback: async html => {
         const xp = Number(html.find("input[name='xp']").val());
         for (const actor of game.actors.party?.members ?? []) {
           const curr = actor.system.details.xp.value;
-          actor.update({ "system.details.xp.value": curr + xp });
+          if (typeof actor.grantExperience === "function") {
+            await actor.grantExperience(xp, { skipLevelUp: true });
+          } else {
+            await actor.update(
+              { "system.details.xp.value": curr + xp },
+              { skipLevelUp: true }
+            );
+          }
         }
         ChatMessage.create({ content: game.i18n.format("PF2ETokenBar.GiveXPMessage", { xp }) });
       }
