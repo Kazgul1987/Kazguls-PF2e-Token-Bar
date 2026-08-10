@@ -4,6 +4,7 @@ import { WorkbenchIntegration } from "./integrations/workbench.js";
 import { PointsTrackerIntegration, QuestLogIntegration } from "./integrations/optional-modules.js";
 import { TokenProvider } from "./token-bar/token-provider.js";
 import { ModuleDialog } from "./ui/dialogs.js";
+import { TurnAssistant } from "./encounter/turn-assistant/turn-assistant.js";
 
 Hooks.once("init", () => {
   game.settings.register("pf2e-token-bar", "position", {
@@ -120,6 +121,15 @@ Hooks.once("init", () => {
     default: true,
     onChange: () => PF2ETokenBar.render(),
   });
+  const assistantSettings = [
+    ["turnAssistant", "Enabled", true, "world"], ["autoActions", "AutoActions", true, "world"],
+    ["autoReactions", "AutoReactions", true, "world"], ["showTurnWarnings", "ShowWarnings", true, "client"],
+    ["showActionHistory", "ShowHistory", true, "client"],
+  ];
+  for (const [key, label, defaultValue, scope] of assistantSettings) game.settings.register("pf2e-token-bar", key, {
+    name: game.i18n.localize(`PF2ETokenBar.Settings.TurnAssistant.${label}.Name`), hint: game.i18n.localize(`PF2ETokenBar.Settings.TurnAssistant.${label}.Hint`), scope, config: true, type: Boolean, default: defaultValue, onChange: () => PF2ETokenBar.render(),
+  });
+  game.settings.register("pf2e-token-bar", "trackingMode", { name: game.i18n.localize("PF2ETokenBar.Settings.TurnAssistant.TrackingMode.Name"), hint: game.i18n.localize("PF2ETokenBar.Settings.TurnAssistant.TrackingMode.Hint"), scope: "world", config: true, type: String, choices: { conservative: "PF2ETokenBar.Settings.TurnAssistant.TrackingMode.Conservative", automatic: "PF2ETokenBar.Settings.TurnAssistant.TrackingMode.Automatic" }, default: "conservative" });
 });
 
 class PF2ETokenBar {
@@ -482,7 +492,7 @@ class PF2ETokenBar {
       }
     }
 
-    tokens.forEach(token => {
+    tokens.forEach(async token => {
       const actor = token.actor;
       const wrapper = document.createElement("div");
       wrapper.classList.add("pf2e-token-wrapper");
@@ -823,6 +833,11 @@ class PF2ETokenBar {
         effectBar.appendChild(effectWrapper);
       }
       wrapper.appendChild(effectBar);
+
+      if (combatant?.id === activeCombat?.combatant?.id) {
+        const assistant = await TurnAssistant.render(combatant);
+        if (assistant && wrapper.isConnected) wrapper.appendChild(assistant);
+      }
 
       tokenContainer.appendChild(wrapper);
     });
@@ -1805,6 +1820,9 @@ globalThis.PF2ETokenBar = PF2ETokenBar;
 let keydownListener;
 
 Hooks.once("ready", () => {
+  TurnAssistant.exposeApi();
+  TurnAssistant.registerHooks(() => PF2ETokenBar.render());
+  if (game.combat?.started) TurnAssistant.startTurn(game.combat.combatant);
   game.socket.on("module.pf2e-token-bar", data => {
     if (data.action === "openLoot" && data.actorId) {
       const actor = game.actors.get(data.actorId);
