@@ -7,6 +7,7 @@ export class StrikeDetector {
     const actor = PF2eAdapter.resolveMessageActor(message);
     const item = PF2eAdapter.resolveMessageItem(message);
     if (!actor || !item?.isOfType?.("weapon", "melee")) return null;
-    return { actorId: actor.id, resource: "action", cost: 1, label: message.item?.name ?? "Strike", confidence: "high", identity: `message:${message.id}` };
+    // PF2e v14 creates this exact context for a completed Strike check; damage uses a different context type.
+    return { actorId: actor.id, resource: "action", cost: 1, label: message.item?.name ?? "Strike", confidence: "certain", identity: `message:${message.id}` };
   }
 }

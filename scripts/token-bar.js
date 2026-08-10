@@ -492,7 +492,7 @@ class PF2ETokenBar {
       }
     }
 
-    tokens.forEach(async token => {
+    for (const token of tokens) {
       const actor = token.actor;
       const wrapper = document.createElement("div");
       wrapper.classList.add("pf2e-token-wrapper");
@@ -836,11 +836,11 @@ class PF2ETokenBar {
 
       if (combatant?.id === activeCombat?.combatant?.id) {
         const assistant = await TurnAssistant.render(combatant);
-        if (assistant && wrapper.isConnected) wrapper.appendChild(assistant);
+        if (assistant) wrapper.appendChild(assistant);
       }
 
       tokenContainer.appendChild(wrapper);
-    });
+    }
 
     const controls = document.createElement("div");
     controls.classList.add("pf2e-token-bar-controls");
