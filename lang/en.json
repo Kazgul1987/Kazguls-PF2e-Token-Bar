@@ -66,6 +66,34 @@
           "RemasterDark": "Dark Mode (Remaster)",
           "RemasterRed": "Dark Mode (Red)"
         }
+      },
+      "TurnAssistant": {
+        "Enabled": {
+          "Name": "Enable Encounter Turn Assistant",
+          "Hint": "Show action resources and turn notes for the active combatant."
+        },
+        "AutoActions": {
+          "Name": "Enable Automatic Action Tracking",
+          "Hint": "Track explicitly identified PF2e action activities from chat messages."
+        },
+        "AutoReactions": {
+          "Name": "Enable Automatic Reaction Tracking",
+          "Hint": "Track explicitly identified PF2e reactions, including outside the actor’s turn."
+        },
+        "ShowWarnings": {
+          "Name": "Show Turn Warnings",
+          "Hint": "Show important PF2e conditions without automating their rules."
+        },
+        "ShowHistory": {
+          "Name": "Show Action History",
+          "Hint": "Show the most recent tracked or manual resource change."
+        },
+        "TrackingMode": {
+          "Name": "Tracking Mode",
+          "Hint": "Conservative tracks only certain events; Automatic also tracks high-confidence events.",
+          "Conservative": "Conservative",
+          "Automatic": "Automatic"
+        }
       }
     },
     "QuickLootConfirmTitle": "Quick Loot",
@@ -160,6 +188,20 @@
     "Confirm": "OK",
     "LootPermission": "You do not have permission to modify the Loot actor.",
     "ActorPermission": "You do not have permission to modify this actor.",
-    "DropFailed": "Failed to drop item."
+    "DropFailed": "Failed to drop item.",
+    "TurnAssistant": {
+      "Turn": "TURN",
+      "ActionsRemaining": "{count} actions remaining",
+      "ReactionAvailable": "Reaction available",
+      "ReactionSpent": "Reaction spent",
+      "Last": "Last: {label}",
+      "AdditionalAction": "Additional action detected after all actions were spent.",
+      "ManualSpend": "Manual action spent",
+      "ManualRestore": "Manual action restored",
+      "SpendAction": "Spend 1 action",
+      "RestoreAction": "Restore 1 action",
+      "Undo": "Undo",
+      "EndTurn": "End Turn"
+    }
   }
 }

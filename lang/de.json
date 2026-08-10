@@ -66,6 +66,34 @@
           "RemasterDark": "Dark Mode (Remaster)",
           "RemasterRed": "Dark Mode (Rot)"
         }
+      },
+      "TurnAssistant": {
+        "Enabled": {
+          "Name": "Encounter Turn Assistant aktivieren",
+          "Hint": "Zeigt Aktionsressourcen und Zughinweise für den aktiven Kampfteilnehmer."
+        },
+        "AutoActions": {
+          "Name": "Automatisches Action-Tracking aktivieren",
+          "Hint": "Verfolgt eindeutig identifizierte PF2e-Aktionsaktivitäten aus Chatnachrichten."
+        },
+        "AutoReactions": {
+          "Name": "Automatisches Reaction-Tracking aktivieren",
+          "Hint": "Verfolgt eindeutig identifizierte PF2e-Reaktionen, auch außerhalb des eigenen Zuges."
+        },
+        "ShowWarnings": {
+          "Name": "Zugwarnungen anzeigen",
+          "Hint": "Zeigt wichtige PF2e-Zustände an, ohne deren Regeln zu automatisieren."
+        },
+        "ShowHistory": {
+          "Name": "Aktionsverlauf anzeigen",
+          "Hint": "Zeigt die letzte automatische oder manuelle Ressourcenänderung."
+        },
+        "TrackingMode": {
+          "Name": "Tracking-Modus",
+          "Hint": "Konservativ bucht nur sichere Events; Automatisch auch Events mit hoher Sicherheit.",
+          "Conservative": "Konservativ",
+          "Automatic": "Automatisch"
+        }
       }
     },
     "QuickLootConfirmTitle": "Schnellbeute",
@@ -160,6 +188,20 @@
     "Confirm": "OK",
     "LootPermission": "Du hast keine Berechtigung, den Beute-Akteur zu bearbeiten.",
     "ActorPermission": "Du hast keine Berechtigung, diesen Akteur zu bearbeiten.",
-    "DropFailed": "Gegenstand konnte nicht abgelegt werden."
+    "DropFailed": "Gegenstand konnte nicht abgelegt werden.",
+    "TurnAssistant": {
+      "Turn": "ZUG",
+      "ActionsRemaining": "{count} Aktionen verbleibend",
+      "ReactionAvailable": "Reaktion verfügbar",
+      "ReactionSpent": "Reaktion verbraucht",
+      "Last": "Zuletzt: {label}",
+      "AdditionalAction": "Weitere Aktion erkannt, nachdem alle Aktionen verbraucht waren.",
+      "ManualSpend": "Aktion manuell verbraucht",
+      "ManualRestore": "Aktion manuell wiederhergestellt",
+      "SpendAction": "1 Aktion verbrauchen",
+      "RestoreAction": "1 Aktion wiederherstellen",
+      "Undo": "Rückgängig",
+      "EndTurn": "Zug beenden"
+    }
   }
 }

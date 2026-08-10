@@ -449,3 +449,24 @@
   justify-content:center;
   margin-top:4px;
 }
+
+/* Encounter Turn Assistant: PF2e supplies the action-glyph font and glyph meanings. */
+#pf2e-token-bar .pf2e-turn-assistant {
+  width: 132px;
+  margin-top: 5px;
+  padding: 5px;
+  color: var(--color-text-light-highlight, #fff);
+  background: rgba(0, 0, 0, 0.72);
+  border: 1px solid var(--color-border-light-tertiary, #777);
+  border-radius: 4px;
+  font-size: 11px;
+}
+#pf2e-token-bar .pf2e-turn-resources,
+#pf2e-token-bar .pf2e-turn-controls { display: flex; gap: 4px; align-items: center; margin-top: 3px; }
+#pf2e-token-bar .pf2e-turn-actions { display: flex; gap: 1px; min-width: 54px; }
+#pf2e-token-bar .action-glyph { font-size: 1.35rem; line-height: 1; }
+#pf2e-token-bar .action-glyph.spent { opacity: .3; filter: grayscale(1); }
+#pf2e-token-bar .pf2e-turn-controls button { min-width: 26px; height: 24px; padding: 2px 4px; }
+#pf2e-token-bar .pf2e-turn-controls button .action-glyph { font-size: 1rem; }
+#pf2e-token-bar .pf2e-turn-last { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 3px; }
+#pf2e-token-bar .pf2e-turn-warning, #pf2e-token-bar .pf2e-turn-warnings { color: #ffb347; margin: 3px 0 0; padding-left: 14px; }
