@@ -141,7 +141,7 @@ export class PF2ERingMenu {
         const options = conditions
           .map(({ slug, name }) => `<option value="${slug}">${name}</option>`)
           .join('');
-        const content = `<form><select name="condition">${options}</select></form>`;
+        const content = `<div class="pf2e-condition-dialog"><select name="condition">${options}</select></div>`;
         const slug = await ModuleDialog.prompt({
           title: game.i18n?.localize('PF2ETokenBar.Condition') || 'Condition',
           content,

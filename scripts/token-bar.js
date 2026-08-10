@@ -53,8 +53,8 @@ Hooks.once("init", () => {
     onChange: () => PF2ETokenBar.render(),
   });
   game.settings.register("pf2e-token-bar", "debug", {
-    name: "Debug Logging",
-    hint: "Output additional debug information to the console",
+    name: game.i18n.localize("PF2ETokenBar.Settings.Debug.Name"),
+    hint: game.i18n.localize("PF2ETokenBar.Settings.Debug.Hint"),
     scope: "client",
     config: true,
     type: Boolean,
@@ -1332,7 +1332,7 @@ class PF2ETokenBar {
     await ModuleDialog.prompt({
       title: game.i18n.localize("PF2ETokenBar.GiveXPTitle"),
       label: game.i18n.localize("PF2ETokenBar.Roll"),
-      content: `<form><div class="form-group"><label>${game.i18n.localize("PF2ETokenBar.GiveXPLabel")}</label><input type="number" name="xp"/></div></form>`,
+      content: `<div class="pf2e-xp-dialog"><div class="form-group"><label>${game.i18n.localize("PF2ETokenBar.GiveXPLabel")}</label><input type="number" name="xp"/></div></div>`,
       callback: async element => {
         const xp = Number(element.querySelector("input[name='xp']")?.value);
         for (const actor of PF2eAdapter.getPartyMembers()) {
@@ -1378,7 +1378,7 @@ class PF2ETokenBar {
       .join("");
 
     const content = `
-      <form class="pf2e-short-rest-dialog">
+      <div class="pf2e-short-rest-dialog">
         <div class="form-group">
           <label>${game.i18n.localize("PF2ETokenBar.ShortRestDialogHealerLabel")}</label>
           <select name="healer">
@@ -1387,7 +1387,7 @@ class PF2ETokenBar {
           </select>
         </div>
         <div class="targets"></div>
-      </form>
+      </div>
     `;
 
     await ModuleDialog.prompt({
@@ -1395,9 +1395,9 @@ class PF2ETokenBar {
       label: game.i18n.localize("PF2ETokenBar.ShortRestDialogTreat"),
       content,
       onRender: element => {
-        const form = element.querySelector("form.pf2e-short-rest-dialog");
-        const healerSelect = form.querySelector("select[name='healer']");
-        const targetsContainer = form.querySelector(".targets");
+        const container = element.querySelector(".pf2e-short-rest-dialog");
+        const healerSelect = container.querySelector("select[name='healer']");
+        const targetsContainer = container.querySelector(".targets");
 
         const updateTargets = () => {
           const existingSelections = new Map();

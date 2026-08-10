@@ -1,3 +1,5 @@
+const MODULE_ID = "pf2e-token-bar";
+
 Hooks.once("init", () => {
   game.settings.register("pf2e-token-bar", "autoFortification", {
     name: game.i18n.localize("PF2ETokenBar.Settings.AutoFortification.Name"),
@@ -68,19 +70,23 @@ Hooks.on("pf2e.prepareActorData", (actor) => {
         enabled: true,
       };
 
-      const { FlatModifier } = game.pf2e.rules;
-      const modifier = new FlatModifier({
-        slug: rune.option,
-        label: game.i18n.localize(rune.label),
-        selector: "stealth",
-        type: "item",
-        value: rune.bonus,
-        predicate: [rune.predicate, rune.option],
-        custom: true,
-      });
+      const FlatModifier = game.pf2e?.rules?.FlatModifier;
+      if (!FlatModifier) {
+        console.warn(`${MODULE_ID} | PF2e FlatModifier API unavailable`);
+      } else {
+        const modifier = new FlatModifier({
+          slug: rune.option,
+          label: game.i18n.localize(rune.label),
+          selector: "stealth",
+          type: "item",
+          value: rune.bonus,
+          predicate: [rune.predicate, rune.option],
+          custom: true,
+        });
 
-      actor.synthetics.statisticsModifiers.stealth ??= [];
-      actor.synthetics.statisticsModifiers.stealth.push(modifier);
+        actor.synthetics.statisticsModifiers.stealth ??= [];
+        actor.synthetics.statisticsModifiers.stealth.push(modifier);
+      }
     }
   }
 
