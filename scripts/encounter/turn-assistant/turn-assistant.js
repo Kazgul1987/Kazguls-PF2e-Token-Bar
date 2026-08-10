@@ -50,6 +50,7 @@ export class TurnAssistant {
 
   static registerHooks(render) {
     ActionTracker.onChange = render;
+    ActionTracker.registerSocket();
     Hooks.on("createChatMessage", message => ActionTracker.processMessage(message));
     Hooks.on("updateCombat", async combat => { if (combat.id === game.combat?.id && combat.started) await ActionTracker.startTurn(combat.combatant); });
     Hooks.on("combatStart", combat => ActionTracker.startTurn(combat.combatant));
@@ -61,10 +62,10 @@ export class TurnAssistant {
     const resolve = actor => ActionTracker.findCombatant(actor);
     game.pf2eTokenBar ??= {};
     game.pf2eTokenBar.actions = {
-      consume: (actor, cost = 1, label = "Macro") => ActionTracker.record(resolve(actor), { resource: "action", cost, label }),
-      refund: (actor, cost = 1) => ActionTracker.adjust(resolve(actor), Math.abs(cost)),
-      consumeReaction: (actor, label = "Macro") => ActionTracker.record(resolve(actor), { resource: "reaction", cost: 1, label }),
-      restoreReaction: async actor => { const combatant = resolve(actor); const state = await ActionState.read(combatant); if (!state) return false; state.reaction.available = true; return ActionState.write(combatant, state); },
+      consume: (actor, cost = 1, label = "Macro") => ActionTracker.consume(resolve(actor), cost, label),
+      refund: (actor, cost = 1) => ActionTracker.refund(resolve(actor), cost),
+      consumeReaction: (actor, label = "Macro") => ActionTracker.consumeReaction(resolve(actor), label),
+      restoreReaction: actor => ActionTracker.restoreReaction(resolve(actor)),
       record: ({ actor, type, cost = 0, label = "Macro" }) => ActionTracker.record(resolve(actor), { resource: type, cost, label }),
       undo: actor => ActionTracker.undo(resolve(actor)),
     };

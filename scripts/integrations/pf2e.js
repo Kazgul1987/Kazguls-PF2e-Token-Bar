@@ -42,10 +42,9 @@ export class PF2eAdapter {
     return message?.flags?.pf2e?.context ?? null;
   }
 
-  static getPreparedActionCount(actor) {
-    const prepared = actor?.system?.attributes?.actions;
-    const value = Number(prepared?.value ?? prepared?.max);
-    return Number.isInteger(value) && value >= 0 && value <= 3 ? value : null;
+  /** PF2e does not expose a prepared per-turn action total; conditions remain warnings. */
+  static getDefaultActionCount() {
+    return 3;
   }
   static getParty() {
     return game.actors?.party ?? null;
