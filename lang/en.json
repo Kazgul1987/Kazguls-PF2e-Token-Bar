@@ -5,6 +5,10 @@
         "Name": "PF2E Token Bar",
         "Hint": "Show the PF2E Token Bar"
       },
+      "Debug": {
+        "Name": "Debug Logging",
+        "Hint": "Output additional debug information to the console"
+      },
       "CloseCombatTracker": {
         "Name": "Close Combat Tracker",
         "Hint": "Prevent the standard combat tracker from opening automatically"

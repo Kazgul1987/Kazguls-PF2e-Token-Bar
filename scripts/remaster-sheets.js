@@ -35,9 +35,18 @@ function applyModeToRenderedSheets(mode) {
   }
 }
 
+function getApplicationElement(application) {
+  const element = application?.element;
+
+  if (element instanceof HTMLElement) return element;
+  if (element?.[0] instanceof HTMLElement) return element[0];
+  return null;
+}
+
 function themeRenderedSheet(application) {
   const mode = game.settings.get(MODULE_ID, "remasterSheetMode");
-  applySheetMode(application.element, mode);
+  const element = getApplicationElement(application);
+  if (element) applySheetMode(element, mode);
 }
 
 Hooks.on("renderCharacterSheetPF2e", themeRenderedSheet);
