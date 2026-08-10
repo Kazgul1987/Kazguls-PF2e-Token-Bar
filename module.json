@@ -4,14 +4,17 @@
   "description": "Displays tokens from the active party and allows roll requests",
   "version": "2.0.2",
   "compatibility": {
-    "minimum": "13",
-    "verified": "13"
+    "minimum": "14",
+    "verified": "14"
   },
-
-
-  "foundryVersion": "11",
-
-  "systems": ["pf2e"],
+  "relationships": {
+    "systems": [
+      {
+        "id": "pf2e",
+        "type": "system"
+      }
+    ]
+  },
   "authors": [
     {
       "name": "Kazgul"
