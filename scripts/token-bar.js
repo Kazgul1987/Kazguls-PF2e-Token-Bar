@@ -1,4 +1,9 @@
 import { PF2ERingMenu } from "./ring-menu.js";
+import { PF2eAdapter } from "./integrations/pf2e.js";
+import { WorkbenchIntegration } from "./integrations/workbench.js";
+import { PointsTrackerIntegration, QuestLogIntegration } from "./integrations/optional-modules.js";
+import { TokenProvider } from "./token-bar/token-provider.js";
+import { ModuleDialog } from "./ui/dialogs.js";
 
 Hooks.once("init", () => {
   game.settings.register("pf2e-token-bar", "position", {
@@ -348,12 +353,12 @@ class PF2ETokenBar {
 
     let initiative = null;
     try {
-      initiative = await Dialog.prompt({
+      initiative = await ModuleDialog.prompt({
         title: game.i18n.localize("PF2ETokenBar.ZeroHpPrompt.Title"),
         content,
         label: game.i18n.localize("PF2ETokenBar.ZeroHpPrompt.Confirm"),
-        callback: html => {
-          const input = html.find('input[name="initiative"]').get(0);
+        callback: element => {
+          const input = element.querySelector('input[name="initiative"]');
           const value = Number(input?.value ?? "");
           return Number.isFinite(value) ? value : null;
         },
@@ -745,18 +750,12 @@ class PF2ETokenBar {
                 documents: true,
                 rollData: doc?.actor?.getRollData?.()
               });
-              const dialog = new Dialog({
+              await ModuleDialog.prompt({
                 title: doc?.name ?? "",
                 content: enriched,
-                buttons: {
-                  chat: {
-                    label: '<i class="fas fa-comment"></i>',
-                    callback: () => ChatMessage.create({ content: enriched })
-                  }
-                }
+                label: '<i class="fas fa-comment"></i>',
+                callback: () => ChatMessage.create({ content: enriched }),
               });
-              dialog.render(true);
-              dialog.element.find('button').addClass('pf2e-effect-dialog-chat');
             } catch (err) {
               console.error("PF2ETokenBar | failed to show effect description", err);
             }
@@ -877,13 +876,11 @@ class PF2ETokenBar {
     questLogBtn.title = questLogTitle;
     questLogBtn.setAttribute("aria-label", questLogTitle);
     const updateQuestLogBtn = () => {
-      const questLogActive = game.modules.get("forien-quest-log")?.active ?? false;
-      questLogBtn.disabled = !questLogActive;
+      questLogBtn.disabled = !QuestLogIntegration.active;
     };
     updateQuestLogBtn();
     questLogBtn.addEventListener("click", () => {
-      if (!game.modules.get("forien-quest-log")?.active) return;
-      Hooks.callAll("ForienQuestLog.Open.QuestLog");
+      QuestLogIntegration.open();
     });
     controls.appendChild(questLogBtn);
 
@@ -892,26 +889,13 @@ class PF2ETokenBar {
     const pointsTrackerTitle = game.i18n.localize("PF2ETokenBar.PointsTracker");
     pointsTrackerBtn.title = pointsTrackerTitle;
     pointsTrackerBtn.setAttribute("aria-label", pointsTrackerTitle);
-    const getPointsTrackerOpener = () => {
-      if (typeof game.pf2ePointsTracker?.open === "function") {
-        return () => game.pf2ePointsTracker.open();
-      }
-      if (typeof globalThis.openResearchTracker === "function") {
-        return () => globalThis.openResearchTracker();
-      }
-      return null;
-    };
     const updatePointsTrackerBtn = () => {
-      const pointsTrackerModule = game.modules.get("pf2e-points-tracker");
-      const opener = getPointsTrackerOpener();
-      pointsTrackerBtn.disabled = !(pointsTrackerModule?.active && opener);
+      pointsTrackerBtn.disabled = !PointsTrackerIntegration.opener;
     };
     updatePointsTrackerBtn();
     pointsTrackerBtn.addEventListener("click", () => {
-      const opener = getPointsTrackerOpener();
-      if (!opener) return;
       try {
-        opener();
+        PointsTrackerIntegration.open();
       } catch (err) {
         console.error("PF2ETokenBar | failed to open PF2e Points Tracker", err);
       }
@@ -943,7 +927,7 @@ class PF2ETokenBar {
 
     const requestRollBtn = document.createElement("button");
     requestRollBtn.innerText = game.i18n.localize("PF2ETokenBar.RequestRoll");
-    requestRollBtn.addEventListener("click", () => game.pf2e.gm.checkPrompt({ actors }));
+    requestRollBtn.addEventListener("click", () => PF2eAdapter.requestCheck(actors));
 
     const encounterBtn = document.createElement("button");
     const encounterKey = activeCombat?.started ? "PF2ETokenBar.EndEncounter" : "PF2ETokenBar.StartEncounter";
@@ -952,7 +936,7 @@ class PF2ETokenBar {
       try {
         if (game.combat?.started) {
           if (game.user.isGM && game.settings.get("pf2e-token-bar", "quickLoot")) {
-            const confirmed = await Dialog.confirm({
+            const confirmed = await ModuleDialog.confirm({
               title: game.i18n.localize("PF2ETokenBar.QuickLootConfirmTitle"),
               content: `<p>${game.i18n.localize("PF2ETokenBar.QuickLootConfirmContent")}</p>`
             });
@@ -993,7 +977,7 @@ class PF2ETokenBar {
       clearEffectsBtn.innerHTML = '<i class="fas fa-broom"></i>';
       clearEffectsBtn.title = game.i18n.localize("PF2ETokenBar.ClearZeroHpEffects");
       clearEffectsBtn.addEventListener("click", async () => {
-        const confirmed = await Dialog.confirm({
+        const confirmed = await ModuleDialog.confirm({
           title: game.i18n.localize("PF2ETokenBar.ClearZeroHpEffects"),
           content: `<p>${game.i18n.localize("PF2ETokenBar.ClearZeroHpEffectsConfirm")}</p>`
         });
@@ -1178,46 +1162,26 @@ class PF2ETokenBar {
     }
   }
 
-    static _partyTokens() {
-      if (game.combat?.started) return [];
-      let actors = game.actors.party?.members || [];
-      if (game.settings.get("pf2e-token-bar", "partyOnlySelf") && !game.user.isGM) {
-        const userChar = game.user.character;
-        actors = actors.filter(a => (userChar && a.id === userChar.id) || a.isOwner);
-      }
-      this.debug(
-        `PF2ETokenBar | _partyTokens found ${actors.length} actors`,
-        actors.map(a => a.id)
-      );
-      return actors;
-    }
+  static _partyTokens() {
+    const actors = TokenProvider.partyActors();
+    this.debug(`PF2ETokenBar | _partyTokens found ${actors.length} actors`, actors.map(actor => actor.id));
+    return actors;
+  }
 
-    static _combatTokens() {
-      let combatants = Array.from(game.combat?.combatants ?? []);
-      combatants.sort((a, b) => {
-        const diff = (b.initiative ?? -Infinity) - (a.initiative ?? -Infinity);
-        if (diff !== 0) return diff;
-        const aIsPlayer = a.actor?.hasPlayerOwner ? 1 : 0;
-        const bIsPlayer = b.actor?.hasPlayerOwner ? 1 : 0;
-        return aIsPlayer - bIsPlayer;   // NPCs (0) vor PCs (1)
-      });
-      let tokens = combatants.map(c => canvas.tokens.get(c.tokenId)).filter(t => t);
-      tokens = tokens.filter(t => !t.document.hidden || game.user.isGM);
-      this.debug(
-        `PF2ETokenBar | _combatTokens found ${tokens.length} tokens`,
-        tokens.map(t => t.id)
-      );
-      return tokens;
-    }
+  static _combatTokens() {
+    const tokens = TokenProvider.combatTokens();
+    this.debug(`PF2ETokenBar | _combatTokens found ${tokens.length} tokens`, tokens.map(token => token.id));
+    return tokens;
+  }
 
   static _activePlayerTokens() {
-    const tokens = canvas.tokens.placeables.filter(t => t.actor?.hasPlayerOwner);
-    this.debug(`PF2ETokenBar | _activePlayerTokens filtered ${tokens.length} tokens`, tokens.map(t => t.actor?.id));
+    const tokens = TokenProvider.activePlayerTokens();
+    this.debug(`PF2ETokenBar | _activePlayerTokens filtered ${tokens.length} tokens`, tokens.map(token => token.actor?.id));
     return tokens;
   }
 
   static openPartyStash() {
-    const party = game.actors.party;
+    const party = PF2eAdapter.getParty();
     if (party?.sheet) {
       party.sheet.render(true, { tab: "inventory" });
     } else {
@@ -1244,7 +1208,7 @@ class PF2ETokenBar {
       return;
     }
     if (!lootActor.isOwner) {
-      ui.notifications.error("You do not have permission to modify the Loot actor.");
+      ui.notifications.error(game.i18n.localize("PF2ETokenBar.LootPermission"));
       return;
     }
 
@@ -1348,10 +1312,10 @@ class PF2ETokenBar {
       const actor = target && typeof target === "object"
         ? target
         : target === "party"
-          ? game.actors.party
+          ? PF2eAdapter.getParty()
           : game.actors.getName(target);
       if (!actor) throw new Error(game.i18n.format("PF2ETokenBar.TokenMissing", { name: target }));
-      if (!actor.isOwner) throw new Error("You do not have permission to modify this actor.");
+      if (!actor.isOwner) throw new Error(game.i18n.localize("PF2ETokenBar.ActorPermission"));
 
       if (sourceActor && sourceActor === actor) return;
 
@@ -1360,18 +1324,18 @@ class PF2ETokenBar {
       if (!isEffect && sourceActor && sourceActor !== actor) await item.delete();
     } catch (err) {
       console.error(err);
-      ui.notifications.error(err.message || "Failed to drop item.");
+      ui.notifications.error(err.message || game.i18n.localize("PF2ETokenBar.DropFailed"));
     }
   }
 
   static async awardXPDialog() {
-    await Dialog.prompt({
+    await ModuleDialog.prompt({
       title: game.i18n.localize("PF2ETokenBar.GiveXPTitle"),
       label: game.i18n.localize("PF2ETokenBar.Roll"),
       content: `<form><div class="form-group"><label>${game.i18n.localize("PF2ETokenBar.GiveXPLabel")}</label><input type="number" name="xp"/></div></form>`,
-      callback: async html => {
-        const xp = Number(html.find("input[name='xp']").val());
-        for (const actor of game.actors.party?.members ?? []) {
+      callback: async element => {
+        const xp = Number(element.querySelector("input[name='xp']")?.value);
+        for (const actor of PF2eAdapter.getPartyMembers()) {
           const curr = actor.system.details.xp.value;
           if (typeof actor.grantExperience === "function") {
             await actor.grantExperience(xp, { skipLevelUp: true });
@@ -1388,41 +1352,16 @@ class PF2ETokenBar {
   }
 
   static async executeWorkbenchMacro(macroName, ...args) {
-    if (!game.modules.get("xdy-pf2e-workbench")?.active) {
-      ui.notifications.warn(
-        game.i18n.localize("PF2ETokenBar.ShortRestDialogWorkbenchMissing")
-      );
+    if (!WorkbenchIntegration.active) {
+      ui.notifications.warn(game.i18n.localize("PF2ETokenBar.ShortRestDialogWorkbenchMissing"));
       return false;
     }
 
-    const macroCollection = game.macros;
-    const macro =
-      macroCollection?.getName?.(macroName) ??
-      macroCollection?.find(doc => doc?.name === macroName);
-    if (macro) {
-      await macro.execute(...args);
-      return true;
+    const executed = await WorkbenchIntegration.executeMacro(macroName, ...args);
+    if (!executed) {
+      ui.notifications.warn(game.i18n.format("PF2ETokenBar.ShortRestDialogWorkbenchMacroMissing", { name: macroName }));
     }
-
-    for (const pack of game.packs.filter(pack => pack.documentName === "Macro")) {
-      const index = await pack.getIndex();
-      const entry = index.find(item => item.name === macroName);
-      if (!entry) continue;
-
-      const document = await pack.getDocument(entry._id);
-      if (!document) continue;
-
-      await document.execute(...args);
-      return true;
-    }
-
-    ui.notifications.warn(
-      game.i18n.format("PF2ETokenBar.ShortRestDialogWorkbenchMacroMissing", {
-        name: macroName
-      })
-    );
-
-    return false;
+    return executed;
   }
 
   static async openTreatWoundsDialog() {
@@ -1451,23 +1390,23 @@ class PF2ETokenBar {
       </form>
     `;
 
-    await Dialog.prompt({
+    await ModuleDialog.prompt({
       title: game.i18n.localize("PF2ETokenBar.ShortRestDialogTitle"),
       label: game.i18n.localize("PF2ETokenBar.ShortRestDialogTreat"),
       content,
-      render: html => {
-        const form = html.find("form.pf2e-short-rest-dialog");
-        const healerSelect = form.find("select[name='healer']");
-        const targetsContainer = form.find(".targets");
+      onRender: element => {
+        const form = element.querySelector("form.pf2e-short-rest-dialog");
+        const healerSelect = form.querySelector("select[name='healer']");
+        const targetsContainer = form.querySelector(".targets");
 
         const updateTargets = () => {
           const existingSelections = new Map();
-          targetsContainer
-            .find("select[name^='target-']")
-            .each((_, select) => existingSelections.set(select.name, select.value));
-          targetsContainer.empty();
+          for (const select of targetsContainer.querySelectorAll("select[name^='target-']")) {
+            existingSelections.set(select.name, select.value);
+          }
+          targetsContainer.replaceChildren();
 
-          const healerId = healerSelect.val();
+          const healerId = healerSelect.value;
           const healer = actors.find(a => a.id === healerId);
           if (!healer) return;
 
@@ -1478,9 +1417,10 @@ class PF2ETokenBar {
           );
 
           if (!maxTargets) {
-            targetsContainer.append(
-              `<p class="notes">${game.i18n.localize("PF2ETokenBar.ShortRestDialogNoTargets")}</p>`
-            );
+            const note = document.createElement("p");
+            note.classList.add("notes");
+            note.textContent = game.i18n.localize("PF2ETokenBar.ShortRestDialogNoTargets");
+            targetsContainer.append(note);
             return;
           }
 
@@ -1499,19 +1439,19 @@ class PF2ETokenBar {
               </select>
             `;
             targetsContainer.append(group);
-            const select = targetsContainer.find(`select[name='${selectName}']`);
+            const select = targetsContainer.querySelector(`select[name='${selectName}']`);
             const previous = existingSelections.get(selectName);
             if (previous && availableTargets.some(actor => actor.id === previous)) {
-              select.val(previous);
+              select.value = previous;
             }
           }
         };
 
-        healerSelect.on("change", updateTargets);
+        healerSelect.addEventListener("change", updateTargets);
         updateTargets();
       },
-      callback: async html => {
-        const healerId = html.find("select[name='healer']").val();
+      callback: async element => {
+        const healerId = element.querySelector("select[name='healer']")?.value;
         const healer = actors.find(a => a.id === healerId);
         if (!healer) {
           ui.notifications.warn(
@@ -1520,11 +1460,10 @@ class PF2ETokenBar {
           return false;
         }
 
-        const selectedTargetIds = html
-          .find("select[name^='target-']")
-          .map((_, select) => select.value)
-          .get()
-          .filter(Boolean);
+        const selectedTargetIds = Array.from(
+          element.querySelectorAll("select[name^='target-']"),
+          select => select.value
+        ).filter(Boolean);
         const uniqueTargetIds = [...new Set(selectedTargetIds)];
 
         if (!uniqueTargetIds.length) {
@@ -1610,7 +1549,7 @@ class PF2ETokenBar {
               );
             }
 
-            const confirm = await Dialog.confirm({
+            const confirm = await ModuleDialog.confirm({
               title: game.i18n.localize("PF2ETokenBar.ShortRestDialogTreatAgainTitle"),
               content: `<p>${game.i18n.localize("PF2ETokenBar.ShortRestDialogTreatAgainContent")}</p>`
             });
@@ -1641,7 +1580,7 @@ class PF2ETokenBar {
   static async restAll() {
     const actors = this._partyTokens();
     if (!actors.length) return;
-    await game.pf2e.actions.restForTheNight({ actors });
+    await PF2eAdapter.restForTheNight(actors);
     this.render();
   }
 
@@ -1695,7 +1634,7 @@ class PF2ETokenBar {
   }
 
   static async healAll() {
-    const confirmed = await Dialog.confirm({
+    const confirmed = await ModuleDialog.confirm({
       title: game.i18n.localize("PF2ETokenBar.HealAll"),
       content: `<p>${game.i18n.localize("PF2ETokenBar.HealAllConfirm")}</p>`
     });
@@ -1891,9 +1830,9 @@ Hooks.once("ready", () => {
   document.addEventListener("keydown", keydownListener);
 });
 
-Hooks.once("close", () => {
+window.addEventListener("beforeunload", () => {
   if (keydownListener) document.removeEventListener("keydown", keydownListener);
-});
+}, { once: true });
 
 Hooks.on("canvasReady", () => PF2ETokenBar.render());
 Hooks.on("updateToken", () => PF2ETokenBar.render());

@@ -1,3 +1,6 @@
+import { PF2eAdapter } from "./integrations/pf2e.js";
+import { ModuleDialog } from "./ui/dialogs.js";
+
 export class PF2ERingMenu {
   static element = null;
   static token = null;
@@ -126,7 +129,7 @@ export class PF2ERingMenu {
 
   static async _openConditionMenu(token) {
     try {
-      const manager = game.pf2e?.ConditionManager;
+      const manager = PF2eAdapter.getConditionManager();
       if (manager) {
         const conditions = manager.conditionsSlugs
           .map(slug => {
@@ -139,16 +142,16 @@ export class PF2ERingMenu {
           .map(({ slug, name }) => `<option value="${slug}">${name}</option>`)
           .join('');
         const content = `<form><select name="condition">${options}</select></form>`;
-        const slug = await Dialog.prompt({
+        const slug = await ModuleDialog.prompt({
           title: game.i18n?.localize('PF2ETokenBar.Condition') || 'Condition',
           content,
-          label: 'OK',
-          callback: html => html[0].querySelector('[name=condition]').value,
+          label: game.i18n.localize("PF2ETokenBar.Confirm"),
+          callback: element => element.querySelector('[name="condition"]')?.value,
         });
         if (slug) await token.actor?.toggleCondition(slug);
       } else if (token?.hud?.render) {
         await token.hud.render(true);
-        token.hud.element.find('.status-effects').click();
+        token.hud.element?.querySelector('.status-effects')?.click();
       }
     } catch (err) {
       console.error('PF2ERingMenu | condition menu error', err);

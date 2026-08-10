@@ -152,6 +152,10 @@
       "Label": "Initiative",
       "Confirm": "Verschieben",
       "UnknownAttacker": "dem Angreifer"
-    }
+    },
+    "Confirm": "OK",
+    "LootPermission": "Du hast keine Berechtigung, den Beute-Akteur zu bearbeiten.",
+    "ActorPermission": "Du hast keine Berechtigung, diesen Akteur zu bearbeiten.",
+    "DropFailed": "Gegenstand konnte nicht abgelegt werden."
   }
 }

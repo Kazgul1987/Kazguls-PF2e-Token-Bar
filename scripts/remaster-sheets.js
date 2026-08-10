@@ -1,5 +1,8 @@
+const MODULE_ID = "pf2e-token-bar";
+const THEME_CLASSES = ["dark-theme", "dark-npc-theme", "remasterLight", "remasterDark", "remasterRed"];
+
 Hooks.once("init", () => {
-  game.settings.register("pf2e-token-bar", "remasterSheetMode", {
+  game.settings.register(MODULE_ID, "remasterSheetMode", {
     name: game.i18n.localize("PF2ETokenBar.Settings.RemasterSheetMode.Name"),
     hint: game.i18n.localize("PF2ETokenBar.Settings.RemasterSheetMode.Hint"),
     scope: "client",
@@ -12,43 +15,30 @@ Hooks.once("init", () => {
       remasterDark: game.i18n.localize("PF2ETokenBar.Settings.RemasterSheetMode.Choices.RemasterDark"),
       remasterRed: game.i18n.localize("PF2ETokenBar.Settings.RemasterSheetMode.Choices.RemasterRed"),
     },
-    onChange: (value) => {
-      for (const app of Object.values(ui.windows)) {
-        if (app instanceof ActorSheetPF2e) {
-          const element = app.element?.[0] ?? app.element;
-          applySheetMode(element, value);
-        }
-      }
-    },
+    onChange: applyModeToRenderedSheets,
   });
 });
 
 function applySheetMode(element, mode) {
-  if (!element) return;
-
-  element.classList.remove(
-    "dark-theme",
-    "dark-npc-theme",
-    "remasterLight",
-    "remasterDark",
-    "remasterRed"
-  );
-
+  if (!(element instanceof HTMLElement)) return;
+  element.classList.remove(...THEME_CLASSES);
   if (mode === "off") return;
 
-  const theme = element.classList.contains("npc") ? "dark-npc-theme" : "dark-theme";
-  element.classList.add(mode, theme);
+  const isNpc = element.classList.contains("npc") || element.matches('[data-document-type="npc"]');
+  element.classList.add(mode, isNpc ? "dark-npc-theme" : "dark-theme");
 }
 
-Hooks.on("renderCharacterSheetPF2e", (app) => {
-  const mode = game.settings.get("pf2e-token-bar", "remasterSheetMode");
-  const element = app.element?.[0] ?? app.element;
-  applySheetMode(element, mode);
-});
+function applyModeToRenderedSheets(mode) {
+  // Settings changes only need the live DOM; this avoids ui.windows and PF2e sheet globals.
+  for (const element of document.querySelectorAll(".application.actor.sheet, .app.actor.sheet")) {
+    applySheetMode(element, mode);
+  }
+}
 
-Hooks.on("renderNPCSheetPF2e", (app) => {
-  const mode = game.settings.get("pf2e-token-bar", "remasterSheetMode");
-  const element = app.element?.[0] ?? app.element;
-  applySheetMode(element, mode);
-});
+function themeRenderedSheet(application) {
+  const mode = game.settings.get(MODULE_ID, "remasterSheetMode");
+  applySheetMode(application.element, mode);
+}
 
+Hooks.on("renderCharacterSheetPF2e", themeRenderedSheet);
+Hooks.on("renderNPCSheetPF2e", themeRenderedSheet);

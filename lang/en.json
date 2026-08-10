@@ -152,6 +152,10 @@
       "Label": "Initiative",
       "Confirm": "Move",
       "UnknownAttacker": "the attacker"
-    }
+    },
+    "Confirm": "OK",
+    "LootPermission": "You do not have permission to modify the Loot actor.",
+    "ActorPermission": "You do not have permission to modify this actor.",
+    "DropFailed": "Failed to drop item."
   }
 }
