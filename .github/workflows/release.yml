@@ -1,0 +1,162 @@
+name: Build and Publish Release
+
+on:
+
+# Wenn ein Release manuell über die GitHub-Weboberfläche veröffentlicht wird
+
+release:
+types: [published]
+
+# Wenn ein Versions-Tag gepusht wird, z. B. v5.1.0
+
+push:
+tags:
+- "v*"
+
+# Erforderlich, um Releases zu erstellen und Assets hochzuladen
+
+permissions:
+contents: write
+
+jobs:
+release:
+name: Build Foundry Module
+runs-on: ubuntu-latest
+
+```
+steps:
+  # ------------------------------------------------------------
+  # Repository auschecken
+  # ------------------------------------------------------------
+  - name: Checkout repository
+    uses: actions/checkout@v4
+    with:
+      # Bei einem manuellen Release soll exakt dessen Tag gebaut werden.
+      # Bei einem Tag-Push wird automatisch github.ref verwendet.
+      ref: ${{ github.event_name == 'release' && github.event.release.tag_name || github.ref }}
+
+  # ------------------------------------------------------------
+  # Modul-Metadaten aus module.json lesen
+  # ------------------------------------------------------------
+  - name: Read module metadata
+    id: module
+    shell: bash
+    run: |
+      MODULE_ID="$(jq -r '.id' module.json)"
+      VERSION="$(jq -r '.version' module.json)"
+
+      if [ -z "$MODULE_ID" ] || [ "$MODULE_ID" = "null" ]; then
+        echo "::error::module.json enthält keine gültige id."
+        exit 1
+      fi
+
+      if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
+        echo "::error::module.json enthält keine gültige version."
+        exit 1
+      fi
+
+      echo "id=$MODULE_ID" >> "$GITHUB_OUTPUT"
+      echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+      echo "zip=${MODULE_ID}.zip" >> "$GITHUB_OUTPUT"
+
+      echo "Module:  $MODULE_ID"
+      echo "Version: $VERSION"
+
+  # ------------------------------------------------------------
+  # ZIP-Datei erstellen
+  #
+  # Die Dateien liegen direkt im Root des ZIPs.
+  # Dadurch liegt module.json nach dem Entpacken direkt im
+  # Modulverzeichnis und nicht in einem zusätzlichen Repo-Ordner.
+  # ------------------------------------------------------------
+  - name: Build module ZIP
+    shell: bash
+    run: |
+      ZIP_NAME="${{ steps.module.outputs.zip }}"
+
+      zip -r "$ZIP_NAME" . \
+        -x ".git/*" \
+        -x ".github/*" \
+        -x ".gitignore" \
+        -x ".gitattributes" \
+        -x ".DS_Store" \
+        -x "node_modules/*" \
+        -x "tests/*" \
+        -x "*.zip"
+
+      echo
+      echo "Created $ZIP_NAME"
+      unzip -l "$ZIP_NAME"
+
+  # ------------------------------------------------------------
+  # Bei Tag-Push:
+  # Release automatisch erzeugen, falls noch keiner existiert.
+  #
+  # Beispiel:
+  # git tag v5.1.0
+  # git push origin v5.1.0
+  # ------------------------------------------------------------
+  - name: Create release from pushed tag
+    if: github.event_name == 'push'
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG_NAME: ${{ github.ref_name }}
+    shell: bash
+    run: |
+      if gh release view "$TAG_NAME" >/dev/null 2>&1; then
+        echo "Release $TAG_NAME already exists."
+      else
+        echo "Creating release $TAG_NAME..."
+
+        gh release create "$TAG_NAME" \
+          --title "$TAG_NAME" \
+          --generate-notes
+      fi
+
+  # ------------------------------------------------------------
+  # Tag des Releases bestimmen
+  # ------------------------------------------------------------
+  - name: Determine release tag
+    id: release
+    shell: bash
+    run: |
+      if [ "${{ github.event_name }}" = "release" ]; then
+        TAG="${{ github.event.release.tag_name }}"
+      else
+        TAG="${{ github.ref_name }}"
+      fi
+
+      echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+      echo "Release tag: $TAG"
+
+  # ------------------------------------------------------------
+  # ZIP an GitHub Release hängen
+  #
+  # --clobber ersetzt eine bereits vorhandene gleichnamige ZIP.
+  # Das macht den Workflow auch bei erneutem Lauf robust.
+  # ------------------------------------------------------------
+  - name: Upload module ZIP to release
+    env:
+      GH_TOKEN: ${{ github.token }}
+    shell: bash
+    run: |
+      gh release upload \
+        "${{ steps.release.outputs.tag }}" \
+        "${{ steps.module.outputs.zip }}" \
+        --clobber
+
+  # ------------------------------------------------------------
+  # Zusammenfassung
+  # ------------------------------------------------------------
+  - name: Write job summary
+    shell: bash
+    run: |
+      {
+        echo "## Foundry Module Release"
+        echo
+        echo "- **Module:** \`${{ steps.module.outputs.id }}\`"
+        echo "- **Version:** \`${{ steps.module.outputs.version }}\`"
+        echo "- **Tag:** \`${{ steps.release.outputs.tag }}\`"
+        echo "- **Asset:** \`${{ steps.module.outputs.zip }}\`"
+      } >> "$GITHUB_STEP_SUMMARY"
+```
