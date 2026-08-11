@@ -42,6 +42,11 @@ export class PF2eAdapter {
     return message?.flags?.pf2e?.context ?? null;
   }
 
+  static isRerollMessage(message) {
+    const context = this.getMessageContext(message);
+    return context?.isReroll === true || message?.isReroll === true;
+  }
+
   /** PF2e does not expose a prepared per-turn action total; conditions remain warnings. */
   static getDefaultActionCount() {
     return 3;
