@@ -3,6 +3,7 @@ import { PF2eAdapter } from "../../../integrations/pf2e.js";
 export class StrikeDetector {
   static detect(message) {
     const context = PF2eAdapter.getMessageContext(message);
+    if (PF2eAdapter.isRerollMessage(message)) return null;
     if (context?.type !== "attack-roll") return null;
     const actor = PF2eAdapter.resolveMessageActor(message);
     const item = PF2eAdapter.resolveMessageItem(message);
