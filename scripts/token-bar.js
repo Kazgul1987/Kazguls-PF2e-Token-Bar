@@ -399,7 +399,7 @@ class PF2ETokenBar {
     });
   }
 
-  static render() {
+  static async render() {
     PF2ERingMenu.close();
     if (!canvas?.ready) return;
     if (!game.settings.get("pf2e-token-bar", "enabled")) {
