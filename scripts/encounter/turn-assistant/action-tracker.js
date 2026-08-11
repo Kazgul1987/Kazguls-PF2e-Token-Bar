@@ -2,6 +2,7 @@ import { PF2eAdapter } from "../../integrations/pf2e.js";
 import { ActionState } from "./action-state.js";
 import { ActivityDetector } from "./detectors/activity-detector.js";
 import { StrikeDetector } from "./detectors/strike-detector.js";
+import { SystemActionDetector } from "./detectors/system-action-detector.js";
 import { MovementIntent } from "./movement-intent.js";
 
 const MODULE_ID = "pf2e-token-bar";
@@ -10,7 +11,7 @@ const MUTATION_TYPE = "action-tracker-mutation";
 const RESOURCES = new Set(["action", "reaction", "free"]);
 
 export class ActionTracker {
-  static detectors = [ActivityDetector, StrikeDetector];
+  static detectors = [StrikeDetector, SystemActionDetector, ActivityDetector];
   static onChange = () => {};
   static socketRegistered = false;
   static handledRequests = new Set();
@@ -109,7 +110,8 @@ export class ActionTracker {
     const old = await ActionState.read(combatant);
     const key = `${combatant.combat?.round ?? 0}:${combatant.combat?.turn ?? 0}`;
     if (old?.turn === key && old?.combatId === combatant.combat?.id) return;
-    await ActionState.write(combatant, ActionState.create(combatant, PF2eAdapter.getDefaultActionCount(), old));
+    const economy = PF2eAdapter.getTurnStartActionEconomy(combatant.actor);
+    await ActionState.write(combatant, ActionState.create(combatant, economy, old));
   }
 
   static record(combatant, event) {

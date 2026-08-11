@@ -31,6 +31,11 @@ export class TurnAssistant {
     actions.title = game.i18n.format("PF2ETokenBar.TurnAssistant.ActionsRemaining", { count: state.actions.remaining }); resources.append(actions);
     const reaction = glyph("reaction"); reaction.classList.toggle("spent", !state.reaction.available); reaction.title = game.i18n.localize(`PF2ETokenBar.TurnAssistant.Reaction${state.reaction.available ? "Available" : "Spent"}`); resources.append(reaction); root.append(resources);
 
+    if (state.reasons?.some(reason => reason.type === "quickened")) {
+      const quickened = document.createElement("div"); quickened.className = "pf2e-turn-economy";
+      quickened.textContent = game.i18n.localize("PF2ETokenBar.TurnAssistant.Quickened"); root.append(quickened);
+    }
+
     const last = state.history.at(-1);
     if (last && game.settings.get(MODULE_ID, "showActionHistory")) {
       const history = document.createElement("div"); history.className = "pf2e-turn-last";

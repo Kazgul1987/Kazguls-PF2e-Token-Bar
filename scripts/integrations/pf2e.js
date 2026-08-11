@@ -10,6 +10,12 @@ function warnOnce(api) {
 /** The deliberately small boundary around PF2e's public, version-sensitive APIs. */
 export class PF2eAdapter {
   static MOVEMENT_ACTION_SLUGS = new Set(["stride", "step", "climb", "swim", "crawl", "sneak", "leap", "high-jump", "long-jump", "fly"]);
+  // PF2e 7.8 (Foundry V14) SystemActions definitions. Used only if the public
+  // game.pf2e.actions collection is unavailable or does not contain the action.
+  static MOVEMENT_ACTION_COSTS = new Map([
+    ["stride", 1], ["step", 1], ["climb", 1], ["swim", 1], ["crawl", 1],
+    ["sneak", 1], ["leap", 1], ["high-jump", 2], ["long-jump", 2], ["fly", 1],
+  ]);
   static ACTION_GLYPHS = Object.freeze({ action: "1", action2: "2", action3: "3", reaction: "R", free: "F" });
 
   static getActionGlyph(type = "action", value = 1) {
@@ -53,12 +59,72 @@ export class PF2eAdapter {
     return message?.flags?.pf2e?.context ?? null;
   }
 
+  /** Resolve a unique supported action from PF2e's sorted check roll options. */
+  static getMessageActionSlug(message) {
+    const options = this.getMessageContext(message)?.options;
+    if (!Array.isArray(options)) return null;
+    const candidates = [...new Set(options
+      .filter(option => typeof option === "string" && option.startsWith("action:"))
+      .map(option => option.slice("action:".length))
+      .filter(slug => this.MOVEMENT_ACTION_SLUGS.has(slug)))];
+    if (candidates.length === 1) return candidates[0];
+    if (candidates.length < 2) return null;
+
+    // High Jump and Long Jump deliberately include action:stride and action:leap.
+    // PF2e's action definition identifies the primary slug and lists those two
+    // prerequisite roll options, allowing an unambiguous, data-driven choice.
+    const matches = candidates.filter(slug => {
+      const action = this.getSystemAction(slug);
+      const related = Array.isArray(action?.rollOptions)
+        ? action.rollOptions.filter(option => option.startsWith("action:")).map(option => option.slice(7))
+        : [];
+      return related.length > 0 && candidates.every(candidate => candidate === slug || related.includes(candidate));
+    });
+    return matches.length === 1 ? matches[0] : null;
+  }
+
+  static getMessageTraits(message) {
+    const traits = this.getMessageContext(message)?.traits;
+    return Array.isArray(traits) ? traits : [];
+  }
+
+  static getSystemAction(slug) {
+    return game.pf2e?.actions?.get?.(slug) ?? null;
+  }
+
+  static getSystemActionCost(slug) {
+    const cost = this.getSystemAction(slug)?.cost;
+    return Number.isInteger(cost) && cost > 0 ? cost : this.MOVEMENT_ACTION_COSTS.get(slug) ?? null;
+  }
+
+  static getSystemActionLabel(slug, message) {
+    const name = this.getSystemAction(slug)?.name;
+    if (typeof name === "string" && name) return game.i18n.localize(name);
+    const title = this.getMessageContext(message)?.title;
+    if (typeof title === "string" && title) return game.i18n.localize(title);
+    return message?.flavor ?? slug;
+  }
+
   static isRerollMessage(message) {
     const context = this.getMessageContext(message);
     return context?.isReroll === true || message?.isReroll === true;
   }
 
-  /** PF2e does not expose a prepared per-turn action total; conditions remain warnings. */
+  static getCondition(actor, slug) {
+    return actor?.conditions?.bySlug?.(slug, { active: true })?.[0] ?? null;
+  }
+
+  /** PF2e V14 has no prepared action total: apply only start-of-turn quickened/slowed. */
+  static getTurnStartActionEconomy(actor) {
+    const quickened = actor?.conditions?.hasType?.("quickened") === true || !!this.getCondition(actor, "quickened");
+    const slowed = this.getCondition(actor, "slowed");
+    const slowedValue = Math.max(0, Number(slowed?.badge?.value ?? slowed?.system?.badge?.value) || 0);
+    const reasons = [];
+    if (quickened) reasons.push({ type: "quickened", value: 1 });
+    if (slowedValue) reasons.push({ type: "slowed", value: slowedValue });
+    return { actions: Math.max(0, 3 + (quickened ? 1 : 0) - slowedValue), reaction: true, reasons };
+  }
+
   static getDefaultActionCount() {
     return 3;
   }

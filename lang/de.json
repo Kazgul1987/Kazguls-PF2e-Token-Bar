@@ -222,7 +222,8 @@
       "RestoreAction": "1 Aktion wiederherstellen",
       "Undo": "Rückgängig",
       "EndTurn": "Zug beenden",
-      "Movement": "Bewegung"
+      "Movement": "Bewegung",
+      "Quickened": "Beschleunigt (die zusätzliche Aktion kann Einschränkungen haben)"
     }
   }
 }
