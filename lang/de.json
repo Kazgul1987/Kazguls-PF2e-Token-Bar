@@ -25,6 +25,10 @@
         "Name": "Schnellbeute",
         "Hint": "Überträgt nach dem Kampf automatisch die Beute besiegter NSC und öffnet den Beute-Akteur."
       },
+      "AwardXPOnEncounterEnd": {
+        "Name": "XP-Vergabe beim Encounter-Ende anbieten",
+        "Hint": "Öffnet nach dem Beenden eines Encounters über die Token Bar den Dialog zur XP-Vergabe."
+      },
       "ZeroHpInitiativePrompt": {
         "Name": "Initiativeabfrage bei 0 TP",
         "Hint": "Fragt, ob ein Gruppenmitglied bei 0 TP direkt vor den Angreifer in der Initiative einsortiert werden soll und erlaubt einen eigenen Wert."

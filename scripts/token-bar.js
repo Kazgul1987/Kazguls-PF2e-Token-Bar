@@ -78,6 +78,14 @@ Hooks.once("init", () => {
     type: Boolean,
     default: true,
   });
+  game.settings.register("pf2e-token-bar", "awardXPOnEncounterEnd", {
+    name: game.i18n.localize("PF2ETokenBar.Settings.AwardXPOnEncounterEnd.Name"),
+    hint: game.i18n.localize("PF2ETokenBar.Settings.AwardXPOnEncounterEnd.Hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true,
+  });
   game.settings.register("pf2e-token-bar", "zeroHpInitiativePrompt", {
     name: game.i18n.localize("PF2ETokenBar.Settings.ZeroHpInitiativePrompt.Name"),
     hint: game.i18n.localize("PF2ETokenBar.Settings.ZeroHpInitiativePrompt.Hint"),
@@ -964,6 +972,9 @@ class PF2ETokenBar {
     encounterBtn.addEventListener("click", async () => {
       try {
         if (game.combat?.started) {
+          const shouldOfferXP = game.user.isGM
+            && game.settings.get("pf2e-token-bar", "awardXPOnEncounterEnd");
+
           if (game.user.isGM && game.settings.get("pf2e-token-bar", "quickLoot")) {
             const confirmed = await ModuleDialog.confirm({
               title: game.i18n.localize("PF2ETokenBar.QuickLootConfirmTitle"),
@@ -974,7 +985,21 @@ class PF2ETokenBar {
               PF2ETokenBar.openLootActor("Loot", true);
             }
           }
-          await game.combat.endCombat();
+
+          try {
+            await game.combat.endCombat();
+          } catch (error) {
+            console.error("PF2ETokenBar | Failed to end combat", error);
+            return;
+          }
+
+          if (shouldOfferXP) {
+            try {
+              await PF2ETokenBar.awardXPDialog();
+            } catch (error) {
+              console.error("PF2ETokenBar | Failed to open XP award dialog", error);
+            }
+          }
         } else {
           await game.combat.startCombat();
 

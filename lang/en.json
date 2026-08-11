@@ -25,6 +25,10 @@
         "Name": "Quick Loot",
         "Hint": "Automatically transfer defeated NPC loot and open the Loot actor on combat end."
       },
+      "AwardXPOnEncounterEnd": {
+        "Name": "Offer XP Award on Encounter End",
+        "Hint": "Opens the XP award dialog after ending an encounter from the token bar."
+      },
       "ZeroHpInitiativePrompt": {
         "Name": "Prompt Initiative Change at 0 HP",
         "Hint": "When a party member drops to 0 HP, ask to move them just before the attacker in initiative and allow entering a custom value."
