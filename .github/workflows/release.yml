@@ -23,6 +23,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event_name == 'release' && github.event.release.tag_name || github.ref }}
+          submodules: false
 
       - name: Read module metadata
         id: module
@@ -59,9 +60,11 @@ jobs:
             -x ".github/*" \
             -x ".gitignore" \
             -x ".gitattributes" \
+            -x ".gitmodules" \
             -x ".DS_Store" \
             -x "node_modules/*" \
             -x "tests/*" \
+            -x "reference/*" \
             -x "*.zip"
 
           echo
@@ -71,6 +74,16 @@ jobs:
           echo
           echo "ZIP contents:"
           unzip -l "$ZIP_NAME"
+
+          echo
+          echo "Checking that development files are excluded..."
+
+          if unzip -l "$ZIP_NAME" | grep -qE 'reference/|\.gitmodules'; then
+            echo "::error::Reference/submodule files were included in the release ZIP."
+            exit 1
+          fi
+
+          echo "Reference files successfully excluded."
 
       - name: Determine release tag
         id: release
@@ -139,7 +152,6 @@ jobs:
           if ! gh release view "$TAG_NAME" \
             --json assets \
             --jq '.assets[].name' | grep -Fxq "$ZIP_NAME"; then
-
             echo "::error::Expected release asset $ZIP_NAME was not found."
             exit 1
           fi
@@ -156,4 +168,5 @@ jobs:
             echo "- **Version:** \`${{ steps.module.outputs.version }}\`"
             echo "- **Tag:** \`${{ steps.release.outputs.tag }}\`"
             echo "- **Asset:** \`${{ steps.module.outputs.zip }}\`"
+            echo "- **PF2e reference submodule:** excluded"
           } >> "$GITHUB_STEP_SUMMARY"
