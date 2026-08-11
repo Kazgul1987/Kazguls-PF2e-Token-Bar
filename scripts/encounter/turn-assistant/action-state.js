@@ -1,9 +1,13 @@
+import { generalSlot, migrateReactions, REACTION_SCHEMA_VERSION } from "./reaction/reaction-state.js";
+
 const MODULE_ID = "pf2e-token-bar";
 const FLAG = "turnAssistant";
 
 export class ActionState {
   static async read(combatant) {
-    return combatant?.getFlag(MODULE_ID, FLAG) ?? null;
+    const state = await combatant?.getFlag(MODULE_ID, FLAG) ?? null;
+    if (state) migrateReactions(state);
+    return state;
   }
 
   static async write(combatant, state) {
@@ -20,7 +24,7 @@ export class ActionState {
       actorId: combatant.actorId,
       turn: `${combatant.combat?.round ?? 0}:${combatant.combat?.turn ?? 0}`,
       actions: { max: maximum, remaining: maximum },
-      reaction: { available: typeof economy === "number" ? true : economy.reaction },
+      reactions: { version: REACTION_SCHEMA_VERSION, general: generalSlot(typeof economy === "number" || economy.reaction ? 1 : 0), bonus: [] },
       reasons: typeof economy === "number" ? [] : economy.reasons,
       history: [], pending: null, overSpent: false,
       processed: previous?.processed?.slice(-100) ?? [],

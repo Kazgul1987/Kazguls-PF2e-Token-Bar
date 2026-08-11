@@ -83,6 +83,12 @@ export class PF2eAdapter {
     return matches.length === 1 ? matches[0] : null;
   }
 
+  static getAllMessageActionSlugs(message) {
+    const options = this.getMessageContext(message)?.options;
+    if (!Array.isArray(options)) return [];
+    return [...new Set(options.filter(option => typeof option === "string" && option.startsWith("action:")).map(option => option.slice(7)))];
+  }
+
   static getMessageTraits(message) {
     const traits = this.getMessageContext(message)?.traits;
     return Array.isArray(traits) ? traits : [];

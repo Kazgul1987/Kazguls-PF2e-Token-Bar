@@ -3,6 +3,7 @@ import { ActionState } from "./action-state.js";
 import { ActionTracker } from "./action-tracker.js";
 import { TurnWarnings } from "./turn-warnings.js";
 import { MovementTracker } from "./movement-tracker.js";
+import { allReactionSlots } from "./reaction/reaction-state.js";
 
 const MODULE_ID = "pf2e-token-bar";
 
@@ -29,7 +30,12 @@ export class TurnAssistant {
     const actions = document.createElement("span"); actions.className = "pf2e-turn-actions";
     for (let i = 0; i < state.actions.remaining; i++) actions.append(glyph("action"));
     actions.title = game.i18n.format("PF2ETokenBar.TurnAssistant.ActionsRemaining", { count: state.actions.remaining }); resources.append(actions);
-    const reaction = glyph("reaction"); reaction.classList.toggle("spent", !state.reaction.available); reaction.title = game.i18n.localize(`PF2ETokenBar.TurnAssistant.Reaction${state.reaction.available ? "Available" : "Spent"}`); resources.append(reaction); root.append(resources);
+    const reactions = document.createElement("span"); reactions.className = "pf2e-turn-reactions";
+    for (const slot of allReactionSlots(state.reactions)) for (let i = 0; i < slot.max; i++) {
+      const reaction = document.createElement("span"); reaction.className = "reaction-slot"; reaction.classList.toggle("spent", i >= slot.remaining);
+      reaction.append(glyph("reaction")); reaction.title = `${slot.label}\n${slot.restriction?.type ?? "general"}`; reactions.append(reaction);
+    }
+    resources.append(reactions); root.append(resources);
 
     if (state.reasons?.some(reason => reason.type === "quickened")) {
       const quickened = document.createElement("div"); quickened.className = "pf2e-turn-economy";
@@ -59,7 +65,7 @@ export class TurnAssistant {
     ActionTracker.registerSocket();
     MovementTracker.registerHooks();
     Hooks.on("createChatMessage", message => ActionTracker.processMessage(message));
-    Hooks.on("updateCombat", async combat => { if (combat.id === game.combat?.id && combat.started) await ActionTracker.startTurn(combat.combatant); });
+    Hooks.on("updateCombat", async combat => { if (combat.id === game.combat?.id && combat.started) { await ActionTracker.advanceReactionTurn(combat); await ActionTracker.startTurn(combat.combatant); } });
     Hooks.on("combatStart", combat => ActionTracker.startTurn(combat.combatant));
     Hooks.on("deleteCombatant", combatant => { if (combatant.id === game.combat?.combatant?.id) render(); });
     Hooks.on("deleteCombat", render);
@@ -75,6 +81,13 @@ export class TurnAssistant {
       restoreReaction: actor => ActionTracker.restoreReaction(resolve(actor)),
       record: ({ actor, type, cost = 0, label = "Macro" }) => ActionTracker.record(resolve(actor), { resource: type, cost, label }),
       undo: actor => ActionTracker.undo(resolve(actor)),
+    };
+    game.pf2eTokenBar.reactions = {
+      grant: (actor, options = {}) => ActionTracker.grantReaction(resolve(actor), options),
+      spend: (actor, options = {}) => ActionTracker.consumeReaction(resolve(actor), options.label ?? "Reaction", options),
+      restore: (actor, options = {}) => ActionTracker.restoreReaction(resolve(actor), options.slotId),
+      reset: actor => ActionTracker.resetReactions(resolve(actor)),
+      getState: actor => ActionTracker.getReactionState(resolve(actor)),
     };
   }
 }
