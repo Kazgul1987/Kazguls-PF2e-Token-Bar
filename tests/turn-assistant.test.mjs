@@ -73,6 +73,9 @@ const { ReactionTracker } = await import("../scripts/encounter/turn-assistant/re
 const { StrikeDetector } = await import("../scripts/encounter/turn-assistant/detectors/strike-detector.js");
 const { ReactionSourceProvider } = await import("../scripts/encounter/turn-assistant/reaction/reaction-source-provider.js");
 const { generalSlot } = await import("../scripts/encounter/turn-assistant/reaction/reaction-state.js");
+const { ActivityDetector } = await import("../scripts/encounter/turn-assistant/detectors/activity-detector.js");
+const { ActionState } = await import("../scripts/encounter/turn-assistant/action-state.js");
+const { ActionTracker } = await import("../scripts/encounter/turn-assistant/action-tracker.js");
 
 function reactionState(slugs = []) {
   const actor = { items: slugs.map((slug, i) => ({ id: `i${i}`, slug })) };
@@ -122,6 +125,61 @@ test("reaction refresh is source-specific and temporary expiration is supported"
   assert.equal(state.reactions.bonus[0].remaining, 0);
   ReactionTracker.refresh(state, "end-current-turn"); assert.equal(state.reactions.bonus.some(s => s.id === "enemy"), false);
   ReactionTracker.refresh(state, "start-own-turn"); assert.equal(state.reactions.bonus[0].remaining, 1);
+});
+
+test("first-turn gate distinguishes unavailable, initialized, and spent", () => {
+  const combatant = { id: "c", actorId: "a", combat: { id: "combat", round: 1, turn: 1 } };
+  const state = ActionState.create(combatant, 3, null, { reactionsInitialized: false });
+  assert.equal(state.reactions.initialized, false);
+  assert.equal(state.reactions.general.remaining, 0);
+  ReactionTracker.reconcile(state, { items: [{ id: "q", slug: "quick-shield-block" }] });
+  assert.equal(state.reactions.bonus[0].remaining, 0);
+  assert.equal(ReactionTracker.spend(state, { actionSlug: "shield-block" }), null);
+  assert.equal(state.reactions.initialized, false, "attempted use must not initialize reactions");
+  ReactionTracker.refresh(state, "start-own-turn");
+  assert.equal(state.reactions.initialized, true);
+  assert.deepEqual([state.reactions.general.remaining, state.reactions.bonus[0].remaining], [1, 1]);
+  ReactionTracker.spend(state, { actionSlug: "shield-block" });
+  assert.deepEqual([state.reactions.general.remaining, state.reactions.bonus[0].remaining], [1, 0]);
+  ReactionTracker.refresh(state, "start-own-turn");
+  assert.deepEqual([state.reactions.general.remaining, state.reactions.bonus[0].remaining], [1, 1]);
+});
+
+function reactionCard(slug, { id = slug, context = false, origin = true } = {}) {
+  const actor = { id: "reactor" };
+  const item = { id: `item-${slug}`, name: slug, slug, actor, uuid: `Actor.reactor.Item.${slug}`,
+    sourceId: `Compendium.pf2e.actionspf2e.Item.${slug}`, actionCost: { type: "reaction", value: 1 } };
+  return { id, actor, item, flags: { pf2e: {
+    ...(context ? { context: { type: "roll" } } : {}),
+    ...(origin ? { origin: { uuid: item.uuid, sourceId: item.sourceId, type: "feat" } } : {}),
+  } } };
+}
+
+test("Shield Block and Reactive Strike item-use cards need no PF2e context", () => {
+  for (const slug of ["shield-block", "reactive-strike"]) {
+    const event = ActivityDetector.detect(reactionCard(slug));
+    assert.equal(event.resource, "reaction");
+    assert.equal(event.actionSlug, slug);
+    assert.equal(event.source, "pf2e-reaction-card");
+  }
+});
+
+test("reaction cards require a matching PF2e item origin and ignore rerolls", () => {
+  assert.equal(ActivityDetector.detect(reactionCard("shield-block", { origin: false })), null);
+  const mismatch = reactionCard("shield-block"); mismatch.flags.pf2e.origin.uuid = "Actor.other.Item.other";
+  mismatch.flags.pf2e.origin.sourceId = "Compendium.other";
+  assert.equal(ActivityDetector.detect(mismatch), null);
+  const reroll = reactionCard("shield-block"); reroll.isReroll = true;
+  assert.equal(ActivityDetector.detect(reroll), null);
+});
+
+test("reaction strike intent suppresses exactly one correlated strike roll", () => {
+  ActionTracker.reactionStrikeIntents.clear();
+  ActionTracker.addReactionStrikeIntent("reactor", "reactive-strike", 100);
+  assert.equal(ActionTracker.consumeReactionStrikeIntent("reactor", "reactive-strike", 101), true);
+  assert.equal(ActionTracker.consumeReactionStrikeIntent("reactor", "reactive-strike", 102), false);
+  ActionTracker.addReactionStrikeIntent("reactor", "reactive-strike", 100);
+  assert.equal(ActionTracker.consumeReactionStrikeIntent("reactor", "reactive-strike", 10101), false);
 });
 
 test("reaction strike detector prevents normal action charging and rerolls", () => {

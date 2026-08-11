@@ -8,7 +8,8 @@ export class ReactionTracker {
     const existing = new Map(reactions.bonus.map(slot => [slot.id, slot]));
     const permanent = ReactionSourceProvider.getSources(actor).map(source => {
       const old = existing.get(source.id);
-      return { ...source, max: source.amount, remaining: old ? Math.min(source.amount, old.remaining) : source.initialRemaining,
+      const gated = source.refresh === "start-own-turn" && !reactions.initialized;
+      return { ...source, max: source.amount, remaining: old ? Math.min(source.amount, old.remaining) : gated ? 0 : source.initialRemaining,
         refresh: { type: source.refresh }, expires: { type: source.expires }, restriction: structuredClone(source.restriction) };
     });
     const temporary = reactions.bonus.filter(slot => slot.kind === "temporary");
@@ -34,6 +35,7 @@ export class ReactionTracker {
 
   static refresh(state, type) {
     const reactions = migrateReactions(state);
+    if (type === "start-own-turn") reactions.initialized = true;
     for (const slot of allReactionSlots(reactions)) if (slot.refresh?.type === type) slot.remaining = slot.max;
     reactions.bonus = reactions.bonus.filter(slot => slot.expires?.type !== type);
   }

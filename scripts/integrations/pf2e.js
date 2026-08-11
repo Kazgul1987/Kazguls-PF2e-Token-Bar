@@ -59,6 +59,18 @@ export class PF2eAdapter {
     return message?.flags?.pf2e?.context ?? null;
   }
 
+  /** PF2e V14 item.toMessage/createUseActionMessage cards carry an item origin, even without a roll context. */
+  static isItemUsageMessage(message, item) {
+    const origin = message?.flags?.pf2e?.origin;
+    if (!origin || !item || message?.item !== item) return false;
+    const actor = this.resolveMessageActor(message);
+    if (!actor || (item.actor && item.actor.id !== actor.id)) return false;
+    const uuidMatches = typeof origin.uuid === "string" && origin.uuid === item.uuid;
+    const sourceId = item.sourceId ?? item.flags?.core?.sourceId;
+    const sourceMatches = typeof origin.sourceId === "string" && origin.sourceId === sourceId;
+    return uuidMatches || sourceMatches;
+  }
+
   /** Resolve a unique supported action from PF2e's sorted check roll options. */
   static getMessageActionSlug(message) {
     const options = this.getMessageContext(message)?.options;

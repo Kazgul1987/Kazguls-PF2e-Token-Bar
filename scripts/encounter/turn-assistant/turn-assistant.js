@@ -3,7 +3,6 @@ import { ActionState } from "./action-state.js";
 import { ActionTracker } from "./action-tracker.js";
 import { TurnWarnings } from "./turn-warnings.js";
 import { MovementTracker } from "./movement-tracker.js";
-import { allReactionSlots } from "./reaction/reaction-state.js";
 
 const MODULE_ID = "pf2e-token-bar";
 
@@ -30,12 +29,7 @@ export class TurnAssistant {
     const actions = document.createElement("span"); actions.className = "pf2e-turn-actions";
     for (let i = 0; i < state.actions.remaining; i++) actions.append(glyph("action"));
     actions.title = game.i18n.format("PF2ETokenBar.TurnAssistant.ActionsRemaining", { count: state.actions.remaining }); resources.append(actions);
-    const reactions = document.createElement("span"); reactions.className = "pf2e-turn-reactions";
-    for (const slot of allReactionSlots(state.reactions)) for (let i = 0; i < slot.max; i++) {
-      const reaction = document.createElement("span"); reaction.className = "reaction-slot"; reaction.classList.toggle("spent", i >= slot.remaining);
-      reaction.append(glyph("reaction")); reaction.title = `${slot.label}\n${slot.restriction?.type ?? "general"}`; reactions.append(reaction);
-    }
-    resources.append(reactions); root.append(resources);
+    root.append(resources);
 
     if (state.reasons?.some(reason => reason.type === "quickened")) {
       const quickened = document.createElement("div"); quickened.className = "pf2e-turn-economy";

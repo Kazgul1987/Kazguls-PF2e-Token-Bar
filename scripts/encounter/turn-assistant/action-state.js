@@ -16,7 +16,7 @@ export class ActionState {
     return state;
   }
 
-  static create(combatant, economy = 3, previous = null) {
+  static create(combatant, economy = 3, previous = null, { reactionsInitialized = true } = {}) {
     const maximum = typeof economy === "number" ? economy : economy.actions;
     return {
       combatId: combatant.combat?.id ?? game.combat?.id,
@@ -24,7 +24,8 @@ export class ActionState {
       actorId: combatant.actorId,
       turn: `${combatant.combat?.round ?? 0}:${combatant.combat?.turn ?? 0}`,
       actions: { max: maximum, remaining: maximum },
-      reactions: { version: REACTION_SCHEMA_VERSION, general: generalSlot(typeof economy === "number" || economy.reaction ? 1 : 0), bonus: [] },
+      reactions: { version: REACTION_SCHEMA_VERSION, initialized: reactionsInitialized,
+        general: generalSlot(reactionsInitialized && (typeof economy === "number" || economy.reaction) ? 1 : 0), bonus: [] },
       reasons: typeof economy === "number" ? [] : economy.reasons,
       history: [], pending: null, overSpent: false,
       processed: previous?.processed?.slice(-100) ?? [],

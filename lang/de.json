@@ -218,6 +218,12 @@
       "ActionsRemaining": "{count} Aktionen verbleibend",
       "ReactionAvailable": "Reaktion verfügbar",
       "ReactionSpent": "Reaktion verbraucht",
+      "Reactions": {
+        "Available": "Verfügbar",
+        "Spent": "Verbraucht",
+        "FirstTurn": "Verfügbar zu Beginn des ersten eigenen Zuges",
+        "NextTurn": "Wird zu Beginn des nächsten eigenen Zuges erneuert"
+      },
       "Last": "Zuletzt: {label}",
       "AdditionalAction": "Weitere Aktion erkannt, nachdem alle Aktionen verbraucht waren.",
       "ManualSpend": "Aktion manuell verbraucht",

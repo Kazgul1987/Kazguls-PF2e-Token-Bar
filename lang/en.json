@@ -218,6 +218,12 @@
       "ActionsRemaining": "{count} actions remaining",
       "ReactionAvailable": "Reaction available",
       "ReactionSpent": "Reaction spent",
+      "Reactions": {
+        "Available": "Available",
+        "Spent": "Spent",
+        "FirstTurn": "Available at the start of this combatant's first turn",
+        "NextTurn": "Refreshes at the start of this combatant's next turn"
+      },
       "Last": "Last: {label}",
       "AdditionalAction": "Additional action detected after all actions were spent.",
       "ManualSpend": "Manual action spent",

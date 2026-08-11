@@ -5,6 +5,7 @@ import { PointsTrackerIntegration, QuestLogIntegration } from "./integrations/op
 import { TokenProvider } from "./token-bar/token-provider.js";
 import { ModuleDialog } from "./ui/dialogs.js";
 import { TurnAssistant } from "./encounter/turn-assistant/turn-assistant.js";
+import { ReactionDisplay } from "./encounter/turn-assistant/reaction/reaction-display.js";
 
 Hooks.once("init", () => {
   game.settings.register("pf2e-token-bar", "position", {
@@ -856,6 +857,10 @@ class PF2ETokenBar {
       }
       wrapper.appendChild(effectBar);
 
+      if (combatant) {
+        const reactionDisplay = await ReactionDisplay.render(combatant);
+        if (reactionDisplay) wrapper.appendChild(reactionDisplay);
+      }
       if (combatant?.id === activeCombat?.combatant?.id) {
         const assistant = await TurnAssistant.render(combatant);
         if (assistant) wrapper.appendChild(assistant);
