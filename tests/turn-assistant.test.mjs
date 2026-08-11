@@ -68,3 +68,66 @@ test("calculates only quickened and slowed at turn start", () => {
     assert.equal(PF2eAdapter.getTurnStartActionEconomy(actorWith(conditions)).actions, expected);
   }
 });
+
+const { ReactionTracker } = await import("../scripts/encounter/turn-assistant/reaction/reaction-tracker.js");
+const { StrikeDetector } = await import("../scripts/encounter/turn-assistant/detectors/strike-detector.js");
+const { ReactionSourceProvider } = await import("../scripts/encounter/turn-assistant/reaction/reaction-source-provider.js");
+const { generalSlot } = await import("../scripts/encounter/turn-assistant/reaction/reaction-state.js");
+
+function reactionState(slugs = []) {
+  const actor = { items: slugs.map((slug, i) => ({ id: `i${i}`, slug })) };
+  const state = { reactions: { version: 2, general: generalSlot(), bonus: [] } };
+  ReactionTracker.reconcile(state, actor); return state;
+}
+
+test("reaction providers keep general and restricted sources separate", () => {
+  assert.equal(ReactionSourceProvider.getSources({ items: [] }).length, 0);
+  for (const [slug, type, action] of [
+    ["esoteric-reflexes", "thaumaturge-implement"],
+    ["quick-shield-block", "exact-action", "shield-block"],
+    ["tactical-reflexes", "exact-action", "reactive-strike"],
+  ]) {
+    const state = reactionState([slug]); assert.equal(state.reactions.bonus.length, 1);
+    assert.equal(state.reactions.bonus[0].restriction.type, type);
+    if (action) assert.deepEqual(state.reactions.bonus[0].restriction.values, [action]);
+  }
+});
+
+test("specific reaction slot is spent first and undo snapshot is exact", () => {
+  const state = reactionState(["quick-shield-block"]);
+  const result = ReactionTracker.spend(state, { actionSlug: "shield-block" });
+  assert.match(result.slot.id, /^source:/); assert.equal(result.slot.remaining, 0);
+  assert.equal(state.reactions.general.remaining, 1);
+  Object.assign(result.slot, result.before); assert.equal(result.slot.remaining, 1);
+  const fallback = ReactionTracker.spend(state, { actionSlug: "aid" });
+  assert.equal(fallback.slot.id, "general");
+});
+
+test("five independent reaction resources survive sequential matching", () => {
+  const state = reactionState(["esoteric-reflexes", "quick-shield-block", "tactical-reflexes"]);
+  ReactionTracker.grantTemporary(state, { id: "temporary", restriction: { type: "exact-action", values: ["temp-action"] } });
+  assert.equal(1 + state.reactions.bonus.length, 5);
+  for (const event of [
+    { actionSlug: "implements-interruption", groups: ["thaumaturge-implement"] },
+    { actionSlug: "shield-block" }, { actionSlug: "reactive-strike" }, { actionSlug: "other" }, { actionSlug: "temp-action" },
+  ]) assert.ok(ReactionTracker.spend(state, event));
+  assert.ok([state.reactions.general, ...state.reactions.bonus].every(slot => slot.remaining === 0));
+});
+
+test("reaction refresh is source-specific and temporary expiration is supported", () => {
+  const state = reactionState(["quick-shield-block"]); ReactionTracker.spend(state, { actionSlug: "shield-block" });
+  ReactionTracker.grantTemporary(state, { id: "enemy", refresh: "start-enemy-turn", expires: "end-current-turn" });
+  ReactionTracker.refresh(state, "start-enemy-turn");
+  assert.equal(state.reactions.bonus.find(s => s.id === "enemy").remaining, 1);
+  assert.equal(state.reactions.bonus[0].remaining, 0);
+  ReactionTracker.refresh(state, "end-current-turn"); assert.equal(state.reactions.bonus.some(s => s.id === "enemy"), false);
+  ReactionTracker.refresh(state, "start-own-turn"); assert.equal(state.reactions.bonus[0].remaining, 1);
+});
+
+test("reaction strike detector prevents normal action charging and rerolls", () => {
+  const weapon = { isOfType: (...types) => types.includes("weapon") };
+  const reactive = { id: "rx", actor: { id: "a" }, item: weapon, flags: { pf2e: { context: { type: "attack-roll", options: ["action:reactive-strike"] } } } };
+  const event = StrikeDetector.detect(reactive);
+  assert.equal(event.resource, "reaction"); assert.equal(event.cost, 1);
+  reactive.flags.pf2e.context.isReroll = true; assert.equal(StrikeDetector.detect(reactive), null);
+});

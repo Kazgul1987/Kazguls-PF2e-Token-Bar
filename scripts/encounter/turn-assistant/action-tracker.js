@@ -4,6 +4,8 @@ import { ActivityDetector } from "./detectors/activity-detector.js";
 import { StrikeDetector } from "./detectors/strike-detector.js";
 import { SystemActionDetector } from "./detectors/system-action-detector.js";
 import { MovementIntent } from "./movement-intent.js";
+import { ReactionTracker } from "./reaction/reaction-tracker.js";
+import { allReactionSlots } from "./reaction/reaction-state.js";
 
 const MODULE_ID = "pf2e-token-bar";
 const SOCKET_CHANNEL = `module.${MODULE_ID}`;
@@ -85,6 +87,8 @@ export class ActionTracker {
       case "refund": return Number.isFinite(payload.cost) && payload.cost >= 0 && (payload.label == null || typeof payload.label === "string");
       case "consumeReaction": return payload.label == null || typeof payload.label === "string";
       case "restoreReaction":
+      case "grantReaction":
+      case "resetReactions":
       case "undo": return true;
       case "record": return RESOURCES.has(payload.resource) && Number.isFinite(payload.cost) && payload.cost >= 0 && typeof payload.label === "string";
       default: return false;
@@ -97,8 +101,10 @@ export class ActionTracker {
       case "adjust": return this.adjustLocal(combatant, payload.amount, payload.identity);
       case "consume": return this.recordLocal(combatant, { resource: "action", cost: payload.cost, label: payload.label ?? "Macro", identity: payload.identity });
       case "refund": return this.adjustLocal(combatant, Math.abs(payload.cost), payload.identity);
-      case "consumeReaction": return this.recordLocal(combatant, { resource: "reaction", cost: 1, label: payload.label ?? "Macro", identity: payload.identity });
-      case "restoreReaction": return this.restoreReactionLocal(combatant, payload.identity);
+      case "consumeReaction": return this.recordLocal(combatant, { resource: "reaction", cost: 1, label: payload.label ?? "Macro", identity: payload.identity, ...payload });
+      case "restoreReaction": return this.restoreReactionLocal(combatant, payload.identity, payload.slotId);
+      case "grantReaction": return this.grantReactionLocal(combatant, payload, payload.identity);
+      case "resetReactions": return this.resetReactionsLocal(combatant, payload.identity);
       case "undo": return this.undoLocal(combatant);
       case "record": return this.recordLocal(combatant, { resource: payload.resource, cost: payload.cost, label: payload.label, identity: payload.identity, automatic: payload.automatic, source: payload.source });
       default: return false;
@@ -111,7 +117,29 @@ export class ActionTracker {
     const key = `${combatant.combat?.round ?? 0}:${combatant.combat?.turn ?? 0}`;
     if (old?.turn === key && old?.combatId === combatant.combat?.id) return;
     const economy = PF2eAdapter.getTurnStartActionEconomy(combatant.actor);
-    await ActionState.write(combatant, ActionState.create(combatant, economy, old));
+    const state = ActionState.create(combatant, economy, old);
+    if (old) { state.reactions = old.reactions; ReactionTracker.reconcile(state, combatant.actor); ReactionTracker.refresh(state, "start-own-turn"); ReactionTracker.refresh(state, "start-next-own-turn"); }
+    else ReactionTracker.reconcile(state, combatant.actor);
+    await ActionState.write(combatant, state);
+  }
+
+  static async advanceReactionTurn(combat) {
+    if (!combat || !this.isAuthority()) return;
+    const current = combat.combatant;
+    for (const combatant of combat.combatants) {
+      const state = await ActionState.read(combatant); if (!state) continue;
+      ReactionTracker.refresh(state, "end-current-turn");
+      ReactionTracker.reconcile(state, combatant.actor);
+      if (current && current.id !== combatant.id) {
+        ReactionTracker.refresh(state, "start-creature-turn");
+        const ownerDisposition = combatant.token?.disposition;
+        const currentDisposition = current.token?.disposition;
+        if (ownerDisposition != null && currentDisposition != null && ownerDisposition !== 0 && currentDisposition === -ownerDisposition) {
+          ReactionTracker.refresh(state, "start-enemy-turn");
+        }
+      }
+      await ActionState.write(combatant, state);
+    }
   }
 
   static record(combatant, event) {
@@ -126,13 +154,17 @@ export class ActionTracker {
     return this.requestMutation("refund", combatant, { cost: Number(cost) });
   }
 
-  static consumeReaction(combatant, label = "Macro") {
-    return this.requestMutation("consumeReaction", combatant, { label });
+  static consumeReaction(combatant, label = "Macro", options = {}) {
+    return this.requestMutation("consumeReaction", combatant, { label, ...options });
   }
 
-  static restoreReaction(combatant) {
-    return this.requestMutation("restoreReaction", combatant);
+  static restoreReaction(combatant, slotId = "general") {
+    return this.requestMutation("restoreReaction", combatant, { slotId });
   }
+
+  static grantReaction(combatant, options) { return this.requestMutation("grantReaction", combatant, options); }
+  static resetReactions(combatant) { return this.requestMutation("resetReactions", combatant); }
+  static async getReactionState(combatant) { const state = await ActionState.read(combatant); return state?.reactions ?? null; }
 
   static adjust(combatant, delta) {
     return this.requestMutation("adjust", combatant, { amount: Number(delta) });
@@ -146,13 +178,19 @@ export class ActionTracker {
     if (!combatant || !event) return false;
     const state = await ActionState.read(combatant) ?? ActionState.create(combatant, PF2eAdapter.getDefaultActionCount());
     if (event.identity && state.processed.includes(event.identity)) return false;
-    const before = { actions: state.actions.remaining, reaction: state.reaction.available };
+    ReactionTracker.reconcile(state, combatant.actor);
+    const before = { actions: state.actions.remaining };
     if (event.resource === "action") {
       const spend = Math.max(0, Number(event.cost) || 0);
       state.overSpent ||= spend > state.actions.remaining;
       state.actions.remaining = Math.max(0, state.actions.remaining - spend);
-    } else if (event.resource === "reaction") state.reaction.available = false;
-    state.history.push({ id: event.identity ?? foundry.utils.randomID(), label: event.label, resource: event.resource, cost: event.cost, automatic: event.automatic ?? false, source: event.source, timestamp: Date.now(), before });
+    } else if (event.resource === "reaction") {
+      const spent = ReactionTracker.spend(state, event);
+      if (!spent) return false;
+      before.slotId = spent.slot.id; before.slot = spent.before;
+      this.debug("Reaction slot spent", { actionSlug: event.actionSlug ?? event.slug, matchingSlots: spent.matches, spent: spent.slot.id });
+    }
+    state.history.push({ id: event.identity ?? foundry.utils.randomID(), label: event.label, resource: event.resource, cost: event.cost, slotId: before.slotId, automatic: event.automatic ?? false, source: event.source, timestamp: Date.now(), before });
     if (event.identity) state.processed.push(event.identity);
     state.processed = state.processed.slice(-100);
     await ActionState.write(combatant, state);
@@ -185,7 +223,7 @@ export class ActionTracker {
     if (delta < 0) return this.recordLocal(combatant, { resource: "action", cost: Math.abs(delta), label: game.i18n.localize("PF2ETokenBar.TurnAssistant.ManualSpend"), identity });
     const state = await ActionState.read(combatant);
     if (!state || (identity && state.processed.includes(identity))) return false;
-    const before = { actions: state.actions.remaining, reaction: state.reaction.available };
+    const before = { actions: state.actions.remaining };
     state.actions.remaining = Math.min(state.actions.max, state.actions.remaining + delta);
     state.history.push({ id: identity ?? foundry.utils.randomID(), label: game.i18n.localize("PF2ETokenBar.TurnAssistant.ManualRestore"), resource: "refund", cost: delta, automatic: false, timestamp: Date.now(), before });
     if (identity) state.processed.push(identity);
@@ -193,22 +231,39 @@ export class ActionTracker {
     await ActionState.write(combatant, state); this.onChange(); return true;
   }
 
-  static async restoreReactionLocal(combatant, identity) {
+  static async restoreReactionLocal(combatant, identity, slotId = "general") {
     const state = await ActionState.read(combatant);
     if (!state || (identity && state.processed.includes(identity))) return false;
-    const before = { actions: state.actions.remaining, reaction: state.reaction.available };
-    state.reaction.available = true;
+    const before = { actions: state.actions.remaining, slotId, slot: structuredClone(allReactionSlots(state.reactions).find(slot => slot.id === slotId)) };
+    if (!ReactionTracker.restore(state, slotId)) return false;
     state.history.push({ id: identity ?? foundry.utils.randomID(), label: "Restore Reaction", resource: "reaction-refund", cost: 0, automatic: false, timestamp: Date.now(), before });
     if (identity) state.processed.push(identity);
     state.processed = state.processed.slice(-100);
     await ActionState.write(combatant, state); this.onChange(); return true;
   }
 
+  static async grantReactionLocal(combatant, options, identity) {
+    const state = await ActionState.read(combatant) ?? ActionState.create(combatant);
+    if (identity && state.processed.includes(identity)) return false;
+    const slot = ReactionTracker.grantTemporary(state, options);
+    state.history.push({ id: identity, label: `Grant ${slot.label}`, resource: "reaction-grant", slotId: slot.id, before: { actions: state.actions.remaining } });
+    if (identity) state.processed.push(identity); await ActionState.write(combatant, state); this.onChange(); return slot;
+  }
+
+  static async resetReactionsLocal(combatant, identity) {
+    const state = await ActionState.read(combatant); if (!state) return false;
+    for (const slot of allReactionSlots(state.reactions)) slot.remaining = slot.max;
+    if (identity) state.processed.push(identity); await ActionState.write(combatant, state); this.onChange(); return true;
+  }
+
   static async undoLocal(combatant) {
     const state = await ActionState.read(combatant); const entry = state?.history.pop();
     if (!entry) return false;
     state.actions.remaining = Math.min(state.actions.max, entry.before.actions);
-    state.reaction.available = entry.before.reaction;
+    if (entry.before.slot) {
+      const slot = allReactionSlots(state.reactions).find(candidate => candidate.id === entry.before.slotId);
+      if (slot) Object.assign(slot, entry.before.slot);
+    } else if (entry.resource === "reaction-grant") state.reactions.bonus = state.reactions.bonus.filter(slot => slot.id !== entry.slotId);
     state.overSpent = false;
     await ActionState.write(combatant, state); this.onChange(); return true;
   }

@@ -19,7 +19,8 @@ export class ActivityDetector {
       label: item.name ?? message.flavor ?? "PF2e Activity",
       confidence: "certain", identity: `message:${message.id}`,
       movement: PF2eAdapter.isMovementActivity(item),
-      slug: PF2eAdapter.getActivitySlug(item),
+      slug: PF2eAdapter.getActivitySlug(item), actionSlug: PF2eAdapter.getActivitySlug(item),
+      actionUuid: item.uuid ?? null, sourceUuid: item.sourceId ?? item.flags?.core?.sourceId ?? null,
     };
   }
 }
