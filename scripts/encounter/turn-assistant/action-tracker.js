@@ -6,6 +6,7 @@ import { SystemActionDetector } from "./detectors/system-action-detector.js";
 import { MovementIntent } from "./movement-intent.js";
 import { ReactionTracker } from "./reaction/reaction-tracker.js";
 import { allReactionSlots } from "./reaction/reaction-state.js";
+import { REACTION_STRIKE_SLUGS } from "./reaction/reaction-registry.js";
 
 const MODULE_ID = "pf2e-token-bar";
 const SOCKET_CHANNEL = `module.${MODULE_ID}`;
@@ -17,6 +18,7 @@ export class ActionTracker {
   static onChange = () => {};
   static socketRegistered = false;
   static handledRequests = new Set();
+  static reactionStrikeIntents = new Map();
 
   static getAuthorityUser() {
     return game.users?.filter(user => user.active && user.isGM).sort((a, b) => a.id.localeCompare(b.id))[0] ?? null;
@@ -120,6 +122,8 @@ export class ActionTracker {
     const state = ActionState.create(combatant, economy, old);
     if (old) { state.reactions = old.reactions; ReactionTracker.reconcile(state, combatant.actor); ReactionTracker.refresh(state, "start-own-turn"); ReactionTracker.refresh(state, "start-next-own-turn"); }
     else ReactionTracker.reconcile(state, combatant.actor);
+    this.debug("Own turn started: initializing/refreshing reactions", { actor: combatant.actor?.name, initialized: state.reactions.initialized,
+      slots: allReactionSlots(state.reactions).map(slot => ({ label: slot.label, remaining: slot.remaining })) });
     await ActionState.write(combatant, state);
   }
 
@@ -176,7 +180,8 @@ export class ActionTracker {
 
   static async recordLocal(combatant, event) {
     if (!combatant || !event) return false;
-    const state = await ActionState.read(combatant) ?? ActionState.create(combatant, PF2eAdapter.getDefaultActionCount());
+    const state = await ActionState.read(combatant)
+      ?? ActionState.create(combatant, PF2eAdapter.getDefaultActionCount(), null, { reactionsInitialized: false });
     if (event.identity && state.processed.includes(event.identity)) return false;
     ReactionTracker.reconcile(state, combatant.actor);
     const before = { actions: state.actions.remaining };
@@ -186,7 +191,11 @@ export class ActionTracker {
       state.actions.remaining = Math.max(0, state.actions.remaining - spend);
     } else if (event.resource === "reaction") {
       const spent = ReactionTracker.spend(state, event);
-      if (!spent) return false;
+      if (!spent) {
+        this.debug("Reaction state has no available matching slot", { actor: combatant.actor?.name,
+          firstTurnReached: state.reactions.initialized, availableSlots: allReactionSlots(state.reactions).filter(slot => slot.remaining > 0).length });
+        return false;
+      }
       before.slotId = spent.slot.id; before.slot = spent.before;
       this.debug("Reaction slot spent", { actionSlug: event.actionSlug ?? event.slug, matchingSlots: spent.matches, spent: spent.slot.id });
     }
@@ -209,14 +218,31 @@ export class ActionTracker {
       if (["action", "free"].includes(event.resource) && !game.settings.get(MODULE_ID, "autoActions")) return;
       const combatant = this.findCombatant(event.actorId);
       if (combatant) {
+        if (event.source === "pf2e-reaction-strike" && this.consumeReactionStrikeIntent(event.actorId, event.actionSlug)) {
+          this.debug("Reaction strike roll deduplicated from reaction card", { actorId: event.actorId, actionSlug: event.actionSlug });
+          return;
+        }
         this.debug("Detected action", { label: event.label, actorId: event.actorId, cost: event.cost, confidence: event.confidence, messageId: message.id });
         const recorded = await this.recordLocal(combatant, { ...event, automatic: true });
+        if (recorded && event.source === "pf2e-reaction-card" && REACTION_STRIKE_SLUGS.has(event.actionSlug)) {
+          this.addReactionStrikeIntent(event.actorId, event.actionSlug);
+        }
         if (recorded && event.movement && event.resource === "action") {
           MovementIntent.add({ actorId: event.actorId, combatantId: combatant.id, slug: event.slug, cost: event.cost, identity: event.identity });
         }
       }
       return;
     }
+  }
+
+  static addReactionStrikeIntent(actorId, slug, now = Date.now()) {
+    this.reactionStrikeIntents.set(`${actorId}:${slug}`, now + 10000);
+  }
+
+  static consumeReactionStrikeIntent(actorId, slug, now = Date.now()) {
+    const key = `${actorId}:${slug}`; const expires = this.reactionStrikeIntents.get(key);
+    this.reactionStrikeIntents.delete(key);
+    return Number.isFinite(expires) && expires >= now;
   }
 
   static async adjustLocal(combatant, delta, identity) {

@@ -469,6 +469,9 @@
 #pf2e-token-bar .pf2e-turn-reactions { display: inline-flex; gap: .1rem; }
 #pf2e-token-bar .reaction-slot { display: inline-flex; }
 #pf2e-token-bar .reaction-slot.spent { opacity: .3; filter: grayscale(1); }
+#pf2e-token-bar .pf2e-reaction-display { display: flex; justify-content: center; gap: 2px; margin-top: 4px; }
+#pf2e-token-bar .reaction-slot.available { opacity: 1; }
+#pf2e-token-bar .reaction-slot.unavailable { opacity: .18; filter: grayscale(1); }
 #pf2e-token-bar .pf2e-turn-controls button { min-width: 26px; height: 24px; padding: 2px 4px; }
 #pf2e-token-bar .pf2e-turn-controls button .action-glyph { font-size: 1rem; }
 #pf2e-token-bar .pf2e-turn-last { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 3px; }
