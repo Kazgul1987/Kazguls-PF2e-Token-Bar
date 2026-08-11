@@ -93,6 +93,26 @@
           "Hint": "Konservativ bucht nur sichere Events; Automatisch auch Events mit hoher Sicherheit.",
           "Conservative": "Konservativ",
           "Automatic": "Automatisch"
+        },
+        "AutomaticMovementTracking": {
+          "Name": "Automatisches Token-Movement-Tracking aktivieren",
+          "Hint": "Verbraucht eine Aktion, nachdem der aktive Kampfteilnehmer eine zusammenhängende Tokenbewegung beendet hat."
+        },
+        "OnlyTrackActiveCombatant": {
+          "Name": "Nur aktiven Kampfteilnehmer tracken",
+          "Hint": "Ignoriert implizite Tokenbewegungen von Kampfteilnehmern, die nicht am Zug sind."
+        },
+        "IgnoreGMMovementOfPlayerTokens": {
+          "Name": "SL-Bewegung von Spieler-Tokens ignorieren",
+          "Hint": "Verbraucht keine Aktion, wenn ein SL einen spielerkontrollierten Akteur verschiebt; aktive NSC werden weiterhin getrackt."
+        },
+        "MovementDetectionDelay": {
+          "Name": "Movement-Erkennungsverzögerung (ms)",
+          "Hint": "Zeit ohne Positionsupdate, nach der eine zusammenhängende Bewegung als beendet gilt."
+        },
+        "MovementIntentTimeout": {
+          "Name": "Movement-Intent-Zeitlimit (ms)",
+          "Hint": "Zeitraum, in dem eine bereits bezahlte PF2e-Bewegungsaktivität die folgende implizite Bewegungsbuchung unterdrückt."
         }
       }
     },
@@ -201,7 +221,8 @@
       "SpendAction": "1 Aktion verbrauchen",
       "RestoreAction": "1 Aktion wiederherstellen",
       "Undo": "Rückgängig",
-      "EndTurn": "Zug beenden"
+      "EndTurn": "Zug beenden",
+      "Movement": "Bewegung"
     }
   }
 }

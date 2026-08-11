@@ -9,6 +9,7 @@ function warnOnce(api) {
 
 /** The deliberately small boundary around PF2e's public, version-sensitive APIs. */
 export class PF2eAdapter {
+  static MOVEMENT_ACTION_SLUGS = new Set(["stride", "step", "climb", "swim", "crawl", "sneak", "leap", "high-jump", "long-jump", "fly"]);
   static ACTION_GLYPHS = Object.freeze({ action: "1", action2: "2", action3: "3", reaction: "R", free: "F" });
 
   static getActionGlyph(type = "action", value = 1) {
@@ -28,6 +29,16 @@ export class PF2eAdapter {
     const value = cost.type === "action" ? Number(cost.value) : cost.type === "reaction" ? 1 : 0;
     if (cost.type === "action" && ![1, 2, 3].includes(value)) return null;
     return { type: cost.type, value };
+  }
+
+  static getActivitySlug(item) {
+    return item?.slug ?? item?.system?.slug ?? null;
+  }
+
+  static isMovementActivity(item) {
+    const traits = item?.system?.traits?.value ?? item?.traits;
+    if (traits?.has?.("move") || (Array.isArray(traits) && traits.includes("move"))) return true;
+    return this.MOVEMENT_ACTION_SLUGS.has(this.getActivitySlug(item));
   }
 
   static resolveMessageActor(message) {

@@ -93,6 +93,26 @@
           "Hint": "Conservative tracks only certain events; Automatic also tracks high-confidence events.",
           "Conservative": "Conservative",
           "Automatic": "Automatic"
+        },
+        "AutomaticMovementTracking": {
+          "Name": "Enable Automatic Token Movement Tracking",
+          "Hint": "Spend one action after the active combatant completes a continuous token movement."
+        },
+        "OnlyTrackActiveCombatant": {
+          "Name": "Only Track Active Combatant",
+          "Hint": "Ignore implicit token movement by combatants whose turn is not active."
+        },
+        "IgnoreGMMovementOfPlayerTokens": {
+          "Name": "Ignore GM Movement of Player Tokens",
+          "Hint": "Do not spend actions when a GM repositions a player-owned actor; active NPC movement is still tracked."
+        },
+        "MovementDetectionDelay": {
+          "Name": "Movement Detection Delay (ms)",
+          "Hint": "Time without position updates before a continuous movement is considered complete."
+        },
+        "MovementIntentTimeout": {
+          "Name": "Movement Intent Timeout (ms)",
+          "Hint": "How long a paid PF2e movement activity can suppress the following implicit movement cost."
         }
       }
     },
@@ -201,7 +221,8 @@
       "SpendAction": "Spend 1 action",
       "RestoreAction": "Restore 1 action",
       "Undo": "Undo",
-      "EndTurn": "End Turn"
+      "EndTurn": "End Turn",
+      "Movement": "Movement"
     }
   }
 }
