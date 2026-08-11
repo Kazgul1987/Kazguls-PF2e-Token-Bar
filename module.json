@@ -2,7 +2,7 @@
   "id": "pf2e-token-bar",
   "title": "PF2e Token Bar",
   "description": "Displays tokens from the active party and allows roll requests",
-  "version": "5.0.6",
+  "version": "5.0.7",
   "compatibility": {
     "minimum": "14",
     "verified": "14"
@@ -36,6 +36,6 @@
   ],
 
   "manifest": "https://raw.githubusercontent.com/Kazgul1987/Kazguls-PF2e-Token-Bar/main/module.json",
-  "download": "https://github.com/Kazgul1987/Kazguls-PF2e-Token-Bar/releases/latest/download/module.zip"
+  "download": "https://github.com/Kazgul1987/Kazguls-PF2e-Token-Bar/releases/latest/download/pf2e-token-bar.zip"
 
 }
