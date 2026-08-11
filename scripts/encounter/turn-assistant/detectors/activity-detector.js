@@ -18,6 +18,8 @@ export class ActivityDetector {
       actorId: actor.id, resource: cost.type, cost: cost.value,
       label: item.name ?? message.flavor ?? "PF2e Activity",
       confidence: "certain", identity: `message:${message.id}`,
+      movement: PF2eAdapter.isMovementActivity(item),
+      slug: PF2eAdapter.getActivitySlug(item),
     };
   }
 }

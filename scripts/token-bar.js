@@ -130,6 +130,20 @@ Hooks.once("init", () => {
     name: game.i18n.localize(`PF2ETokenBar.Settings.TurnAssistant.${label}.Name`), hint: game.i18n.localize(`PF2ETokenBar.Settings.TurnAssistant.${label}.Hint`), scope, config: true, type: Boolean, default: defaultValue, onChange: () => PF2ETokenBar.render(),
   });
   game.settings.register("pf2e-token-bar", "trackingMode", { name: game.i18n.localize("PF2ETokenBar.Settings.TurnAssistant.TrackingMode.Name"), hint: game.i18n.localize("PF2ETokenBar.Settings.TurnAssistant.TrackingMode.Hint"), scope: "world", config: true, type: String, choices: { conservative: "PF2ETokenBar.Settings.TurnAssistant.TrackingMode.Conservative", automatic: "PF2ETokenBar.Settings.TurnAssistant.TrackingMode.Automatic" }, default: "conservative" });
+  const movementBooleans = [
+    ["automaticMovementTracking", "AutomaticMovementTracking", true],
+    ["onlyTrackActiveCombatant", "OnlyTrackActiveCombatant", true],
+    ["ignoreGMMovementOfPlayerTokens", "IgnoreGMMovementOfPlayerTokens", true],
+  ];
+  for (const [key, label, defaultValue] of movementBooleans) game.settings.register("pf2e-token-bar", key, {
+    name: game.i18n.localize(`PF2ETokenBar.Settings.TurnAssistant.${label}.Name`), hint: game.i18n.localize(`PF2ETokenBar.Settings.TurnAssistant.${label}.Hint`), scope: "world", config: true, type: Boolean, default: defaultValue,
+  });
+  for (const [key, label, defaultValue, range] of [
+    ["movementDetectionDelay", "MovementDetectionDelay", 400, { min: 100, max: 2000, step: 100 }],
+    ["movementIntentTimeout", "MovementIntentTimeout", 8000, { min: 1000, max: 30000, step: 1000 }],
+  ]) game.settings.register("pf2e-token-bar", key, {
+    name: game.i18n.localize(`PF2ETokenBar.Settings.TurnAssistant.${label}.Name`), hint: game.i18n.localize(`PF2ETokenBar.Settings.TurnAssistant.${label}.Hint`), scope: "world", config: true, type: Number, range, default: defaultValue,
+  });
 });
 
 class PF2ETokenBar {

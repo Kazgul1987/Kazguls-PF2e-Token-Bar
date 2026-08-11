@@ -2,6 +2,7 @@ import { PF2eAdapter } from "../../integrations/pf2e.js";
 import { ActionState } from "./action-state.js";
 import { ActivityDetector } from "./detectors/activity-detector.js";
 import { StrikeDetector } from "./detectors/strike-detector.js";
+import { MovementIntent } from "./movement-intent.js";
 
 const MODULE_ID = "pf2e-token-bar";
 const SOCKET_CHANNEL = `module.${MODULE_ID}`;
@@ -98,7 +99,7 @@ export class ActionTracker {
       case "consumeReaction": return this.recordLocal(combatant, { resource: "reaction", cost: 1, label: payload.label ?? "Macro", identity: payload.identity });
       case "restoreReaction": return this.restoreReactionLocal(combatant, payload.identity);
       case "undo": return this.undoLocal(combatant);
-      case "record": return this.recordLocal(combatant, { resource: payload.resource, cost: payload.cost, label: payload.label, identity: payload.identity });
+      case "record": return this.recordLocal(combatant, { resource: payload.resource, cost: payload.cost, label: payload.label, identity: payload.identity, automatic: payload.automatic, source: payload.source });
       default: return false;
     }
   }
@@ -149,7 +150,7 @@ export class ActionTracker {
       state.overSpent ||= spend > state.actions.remaining;
       state.actions.remaining = Math.max(0, state.actions.remaining - spend);
     } else if (event.resource === "reaction") state.reaction.available = false;
-    state.history.push({ id: event.identity ?? foundry.utils.randomID(), label: event.label, resource: event.resource, cost: event.cost, automatic: event.automatic ?? false, timestamp: Date.now(), before });
+    state.history.push({ id: event.identity ?? foundry.utils.randomID(), label: event.label, resource: event.resource, cost: event.cost, automatic: event.automatic ?? false, source: event.source, timestamp: Date.now(), before });
     if (event.identity) state.processed.push(event.identity);
     state.processed = state.processed.slice(-100);
     await ActionState.write(combatant, state);
@@ -169,7 +170,10 @@ export class ActionTracker {
       const combatant = this.findCombatant(event.actorId);
       if (combatant) {
         this.debug("Detected action", { label: event.label, actorId: event.actorId, cost: event.cost, confidence: event.confidence, messageId: message.id });
-        await this.recordLocal(combatant, { ...event, automatic: true });
+        const recorded = await this.recordLocal(combatant, { ...event, automatic: true });
+        if (recorded && event.movement && event.resource === "action") {
+          MovementIntent.add({ actorId: event.actorId, combatantId: combatant.id, slug: event.slug, cost: event.cost, identity: event.identity });
+        }
       }
       return;
     }
