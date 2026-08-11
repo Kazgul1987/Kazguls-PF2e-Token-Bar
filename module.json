@@ -2,7 +2,7 @@
   "id": "pf2e-token-bar",
   "title": "PF2e Token Bar",
   "description": "Displays tokens from the active party and allows roll requests",
-  "version": "5.1.2",
+  "version": "5.1.3",
   "compatibility": {
     "minimum": "14",
     "verified": "14"
