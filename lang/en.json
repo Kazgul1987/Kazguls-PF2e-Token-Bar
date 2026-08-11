@@ -222,7 +222,8 @@
       "RestoreAction": "Restore 1 action",
       "Undo": "Undo",
       "EndTurn": "End Turn",
-      "Movement": "Movement"
+      "Movement": "Movement",
+      "Quickened": "Quickened (the extra action may have usage restrictions)"
     }
   }
 }

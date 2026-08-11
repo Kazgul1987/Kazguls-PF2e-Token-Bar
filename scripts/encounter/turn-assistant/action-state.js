@@ -12,14 +12,16 @@ export class ActionState {
     return state;
   }
 
-  static create(combatant, maximum = 3, previous = null) {
+  static create(combatant, economy = 3, previous = null) {
+    const maximum = typeof economy === "number" ? economy : economy.actions;
     return {
       combatId: combatant.combat?.id ?? game.combat?.id,
       combatantId: combatant.id,
       actorId: combatant.actorId,
       turn: `${combatant.combat?.round ?? 0}:${combatant.combat?.turn ?? 0}`,
       actions: { max: maximum, remaining: maximum },
-      reaction: { available: true },
+      reaction: { available: typeof economy === "number" ? true : economy.reaction },
+      reasons: typeof economy === "number" ? [] : economy.reasons,
       history: [], pending: null, overSpent: false,
       processed: previous?.processed?.slice(-100) ?? [],
     };
