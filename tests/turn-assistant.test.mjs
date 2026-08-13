@@ -1,10 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
+const settingValues = new Map();
 globalThis.game = {
   pf2e: { actions: new Map() },
   i18n: { localize: value => value },
-  settings: { get: () => false },
+  settings: { get: (_module, key) => settingValues.get(key) ?? false },
   actors: new Map(),
 };
 
@@ -76,6 +77,7 @@ const { generalSlot } = await import("../scripts/encounter/turn-assistant/reacti
 const { ActivityDetector } = await import("../scripts/encounter/turn-assistant/detectors/activity-detector.js");
 const { ActionState } = await import("../scripts/encounter/turn-assistant/action-state.js");
 const { ActionTracker } = await import("../scripts/encounter/turn-assistant/action-tracker.js");
+const { ProneTracker } = await import("../scripts/encounter/turn-assistant/prone-tracker.js");
 
 function reactionState(slugs = []) {
   const actor = { items: slugs.map((slug, i) => ({ id: `i${i}`, slug })) };
@@ -188,4 +190,55 @@ test("reaction strike detector prevents normal action charging and rerolls", () 
   const event = StrikeDetector.detect(reactive);
   assert.equal(event.resource, "reaction"); assert.equal(event.cost, 1);
   reactive.flags.pf2e.context.isReroll = true; assert.equal(StrikeDetector.detect(reactive), null);
+});
+
+test("Kip Up detection uses the verified feat slug or source, never its localized name", () => {
+  assert.equal(PF2eAdapter.hasKipUp({ items: [{ type: "feat", slug: "kip-up", name: "Aufspringen" }] }), true);
+  assert.equal(PF2eAdapter.hasKipUp({ items: [{ type: "feat", slug: "other", name: "Kip Up" }] }), false);
+  assert.equal(PF2eAdapter.hasKipUp({ items: [{ type: "feat", slug: "renamed", sourceId: PF2eAdapter.KIP_UP_SOURCE_ID }] }), true);
+});
+
+test("prone removal charges only the active combatant, supports Kip Up, overspend, dedupe, and undo", async () => {
+  settingValues.set("turnAssistant", true); settingValues.set("autoActions", true);
+  game.user = { id: "gm" };
+  game.users = [{ id: "gm", active: true, isGM: true }];
+  game.paused = false;
+
+  const actor = { id: "actor", name: "Valeros", items: [] };
+  let state;
+  const combatant = {
+    id: "combatant", actorId: actor.id, actor,
+    combat: { id: "combat", round: 2, turn: 1 },
+    getFlag: async () => state,
+    setFlag: async (_module, _key, value) => { state = structuredClone(value); },
+  };
+  game.combat = { id: "combat", round: 2, turn: 1, started: true, combatant };
+  state = ActionState.create(combatant, 3);
+  const prone = { id: "prone-id", type: "condition", slug: "prone", actor };
+
+  assert.equal(await ProneTracker.onDeleteItem({ ...prone, slug: "frightened" }), false);
+  assert.equal(await ProneTracker.onDeleteItem(prone), true);
+  assert.equal(state.actions.remaining, 2);
+  assert.equal(state.history.at(-1).source, "prone-removed");
+  assert.equal(state.history.at(-1).label, "PF2ETokenBar.TurnAssistant.Stand");
+  assert.equal(await ProneTracker.onDeleteItem(prone), false, "the deterministic identity deduplicates a repeated hook/signal");
+  assert.equal(state.actions.remaining, 2);
+  await ActionTracker.undoLocal(combatant); assert.equal(state.actions.remaining, 3);
+
+  actor.items = [{ type: "feat", slug: "kip-up" }];
+  assert.equal(await ProneTracker.onDeleteItem({ ...prone, id: "kip" }), false);
+  assert.equal(state.actions.remaining, 3);
+
+  actor.items = [];
+  game.combat.combatant = { ...combatant, actorId: "other", actor: { id: "other" } };
+  assert.equal(await ProneTracker.onDeleteItem({ ...prone, id: "inactive" }), false);
+  assert.equal(state.actions.remaining, 3);
+
+  game.combat.combatant = combatant; state.actions.remaining = 0;
+  assert.equal(await ProneTracker.onDeleteItem({ ...prone, id: "overspend" }), true);
+  assert.equal(state.actions.remaining, 0); assert.equal(state.overSpent, true);
+
+  game.combat.started = false;
+  assert.equal(await ProneTracker.onDeleteItem({ ...prone, id: "cleanup" }), false);
+  settingValues.clear();
 });

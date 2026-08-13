@@ -233,6 +233,8 @@
       "Undo": "Rückgängig",
       "EndTurn": "Zug beenden",
       "Movement": "Bewegung",
+      "Stand": "Aufstehen",
+      "KipUp": "Aufspringen",
       "Quickened": "Beschleunigt (die zusätzliche Aktion kann Einschränkungen haben)"
     }
   }
