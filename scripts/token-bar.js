@@ -155,10 +155,25 @@ Hooks.once("init", () => {
   });
 });
 
-class PF2ETokenBar {
+export class PF2ETokenBar {
   static hoveredToken = null;
   static zeroHpAttackers = new Map();
   static zeroHpPreviousHp = new Map();
+  static renderGeneration = 0;
+
+  static removeAllBars(root = document) {
+    root.querySelectorAll("#pf2e-token-bar").forEach(element => element.remove());
+  }
+
+  static commitRender(generation, bar, root = document) {
+    if (generation !== this.renderGeneration) return false;
+
+    // Keep this replacement synchronous: no render can supersede this one
+    // between the generation check and the DOM commit.
+    this.removeAllBars(root);
+    root.body.appendChild(bar);
+    return true;
+  }
 
   static debug(...args) {
     if (game.settings.get("pf2e-token-bar", "debug")) console.debug(...args);
@@ -423,10 +438,11 @@ class PF2ETokenBar {
   }
 
   static async render() {
+    const generation = ++this.renderGeneration;
     PF2ERingMenu.close();
     if (!canvas?.ready) return;
     if (!game.settings.get("pf2e-token-bar", "enabled")) {
-      document.getElementById("pf2e-token-bar")?.remove();
+      this.removeAllBars();
       return;
     }
 
@@ -453,9 +469,7 @@ class PF2ETokenBar {
 
     this.debug("PF2ETokenBar | found tokens", tokens.map(t => t.id));
     if (!tokens.length) return;
-    let bar = document.getElementById("pf2e-token-bar");
-    if (bar) bar.remove();
-    bar = document.createElement("div");
+    const bar = document.createElement("div");
     bar.id = "pf2e-token-bar";
     const scale = game.settings.get("pf2e-token-bar", "scale");
     bar.style.transform = `scale(${scale})`;
@@ -859,10 +873,12 @@ class PF2ETokenBar {
 
       if (combatant) {
         const reactionDisplay = await ReactionDisplay.render(combatant);
+        if (generation !== this.renderGeneration) return;
         if (reactionDisplay) wrapper.appendChild(reactionDisplay);
       }
       if (combatant?.id === activeCombat?.combatant?.id) {
         const assistant = await TurnAssistant.render(combatant);
+        if (generation !== this.renderGeneration) return;
         if (assistant) wrapper.appendChild(assistant);
       }
 
@@ -1205,7 +1221,7 @@ class PF2ETokenBar {
       document.addEventListener("mouseup", onMouseUp);
     });
 
-    document.body.appendChild(bar);
+    if (!this.commitRender(generation, bar)) return;
     this.scrollActiveToken("instant");
   }
 
