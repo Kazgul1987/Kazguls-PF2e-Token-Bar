@@ -233,6 +233,8 @@
       "Undo": "Undo",
       "EndTurn": "End Turn",
       "Movement": "Movement",
+      "Stand": "Stand",
+      "KipUp": "Kip Up",
       "Quickened": "Quickened (the extra action may have usage restrictions)"
     }
   }

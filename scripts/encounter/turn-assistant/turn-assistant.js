@@ -3,6 +3,7 @@ import { ActionState } from "./action-state.js";
 import { ActionTracker } from "./action-tracker.js";
 import { TurnWarnings } from "./turn-warnings.js";
 import { MovementTracker } from "./movement-tracker.js";
+import { ProneTracker } from "./prone-tracker.js";
 
 const MODULE_ID = "pf2e-token-bar";
 
@@ -58,6 +59,7 @@ export class TurnAssistant {
     ActionTracker.onChange = render;
     ActionTracker.registerSocket();
     MovementTracker.registerHooks();
+    ProneTracker.registerHooks();
     Hooks.on("createChatMessage", message => ActionTracker.processMessage(message));
     Hooks.on("updateCombat", async combat => { if (combat.id === game.combat?.id && combat.started) { await ActionTracker.advanceReactionTurn(combat); await ActionTracker.startTurn(combat.combatant); } });
     Hooks.on("combatStart", combat => ActionTracker.startTurn(combat.combatant));

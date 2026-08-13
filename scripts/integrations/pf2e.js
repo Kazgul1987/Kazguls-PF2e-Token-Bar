@@ -9,6 +9,8 @@ function warnOnce(api) {
 
 /** The deliberately small boundary around PF2e's public, version-sensitive APIs. */
 export class PF2eAdapter {
+  static KIP_UP_SLUG = "kip-up";
+  static KIP_UP_SOURCE_ID = "Compendium.pf2e.feats-srd.Item.gBSPbQRXdagZTUwY";
   static MOVEMENT_ACTION_SLUGS = new Set(["stride", "step", "climb", "swim", "crawl", "sneak", "leap", "high-jump", "long-jump", "fly"]);
   // PF2e 7.8 (Foundry V14) SystemActions definitions. Used only if the public
   // game.pf2e.actions collection is unavailable or does not contain the action.
@@ -39,6 +41,17 @@ export class PF2eAdapter {
 
   static getActivitySlug(item) {
     return item?.slug ?? item?.system?.slug ?? null;
+  }
+
+  static hasFeat(actor, slug, sourceId = null) {
+    return actor?.items?.some?.(item => item?.type === "feat" && (
+      this.getActivitySlug(item) === slug
+      || (sourceId && (item.sourceId ?? item.flags?.core?.sourceId ?? item._stats?.compendiumSource) === sourceId)
+    )) ?? false;
+  }
+
+  static hasKipUp(actor) {
+    return this.hasFeat(actor, this.KIP_UP_SLUG, this.KIP_UP_SOURCE_ID);
   }
 
   static isMovementActivity(item) {
