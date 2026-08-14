@@ -8,12 +8,12 @@ export class MovementIntent {
     return `${actorId}:${combatantId}`;
   }
 
-  static add({ actorId, combatantId, slug, cost, identity }) {
+  static add({ actorId, combatantId, slug, movementType = null, cost, identity, paid = false }) {
     if (!actorId || !combatantId) return;
     this.prune();
     const key = this.key(actorId, combatantId);
     const queue = this.intents.get(key) ?? [];
-    queue.push({ actorId, combatantId, slug, cost, identity, paid: true, createdAt: Date.now() });
+    queue.push({ actorId, combatantId, slug, movementType, cost, identity, paid, createdAt: Date.now() });
     this.intents.set(key, queue);
   }
 

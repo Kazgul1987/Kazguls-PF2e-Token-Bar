@@ -100,7 +100,7 @@
         },
         "AutomaticMovementTracking": {
           "Name": "Enable Automatic Token Movement Tracking",
-          "Hint": "Spend one action after the active combatant completes a continuous token movement."
+          "Hint": "Spend actions from the active combatant based on continuous token-movement distance and current speed."
         },
         "OnlyTrackActiveCombatant": {
           "Name": "Only Track Active Combatant",
@@ -233,6 +233,8 @@
       "Undo": "Undo",
       "EndTurn": "End Turn",
       "Movement": "Movement",
+      "DistanceUnits": "ft",
+      "MovementType": { "land": "Move", "fly": "Fly", "climb": "Climb", "swim": "Swim" },
       "Stand": "Stand",
       "KipUp": "Kip Up",
       "Quickened": "Quickened (the extra action may have usage restrictions)"

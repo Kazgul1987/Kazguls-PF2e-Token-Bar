@@ -11,20 +11,23 @@ export class ActivityDetector {
     if (!actor || !item || !cost) return null;
 
     if (!context) {
-      if (cost.type !== "reaction" || !PF2eAdapter.isItemUsageMessage(message, item)) return null;
+      if (!PF2eAdapter.hasVerifiedItemOrigin(message, item)) return null;
+      if (PF2eAdapter.getActivitySlug(item) === "stand") return null;
       return {
-        actorId: actor.id, resource: "reaction", cost: 1,
-        label: item.name ?? "PF2e Reaction", confidence: "certain", identity: `message:${message.id}`,
+        actorId: actor.id, resource: cost.type, cost: cost.value,
+        label: item.name ?? "PF2e Activity", confidence: "certain", identity: `message:${message.id}`,
+        movement: PF2eAdapter.isMovementActivity(item),
         slug: PF2eAdapter.getActivitySlug(item), actionSlug: PF2eAdapter.getActivitySlug(item),
         actionUuid: item.uuid ?? null, sourceUuid: item.sourceId ?? item.flags?.core?.sourceId ?? null,
-        source: "pf2e-reaction-card",
+        source: cost.type === "reaction" ? "pf2e-reaction-card" : "pf2e-chat-activity",
       };
     }
 
     const type = String(context.type ?? "");
     if (type.includes("damage") || type.includes("healing")) return null;
-    const executed = type.includes("roll") || type === "spell-cast" || type === "self-effect" || context.outcome != null;
+    const executed = type.includes("roll") || type === "check" || type === "spell-cast" || type === "self-effect" || context.outcome != null;
     if (!executed) return null;
+    if (PF2eAdapter.getActivitySlug(item) === "stand") return null;
     return {
       actorId: actor.id, resource: cost.type, cost: cost.value,
       label: item.name ?? message.flavor ?? "PF2e Activity",
@@ -32,6 +35,7 @@ export class ActivityDetector {
       movement: PF2eAdapter.isMovementActivity(item),
       slug: PF2eAdapter.getActivitySlug(item), actionSlug: PF2eAdapter.getActivitySlug(item),
       actionUuid: item.uuid ?? null, sourceUuid: item.sourceId ?? item.flags?.core?.sourceId ?? null,
+      source: "pf2e-chat-activity",
     };
   }
 }
