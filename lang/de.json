@@ -100,7 +100,7 @@
         },
         "AutomaticMovementTracking": {
           "Name": "Automatisches Token-Movement-Tracking aktivieren",
-          "Hint": "Verbraucht eine Aktion, nachdem der aktive Kampfteilnehmer eine zusammenhängende Tokenbewegung beendet hat."
+          "Hint": "Verbraucht Aktionen anhand der Distanz einer zusammenhängenden Tokenbewegung und der aktuellen Bewegungsrate."
         },
         "OnlyTrackActiveCombatant": {
           "Name": "Nur aktiven Kampfteilnehmer tracken",
@@ -233,6 +233,8 @@
       "Undo": "Rückgängig",
       "EndTurn": "Zug beenden",
       "Movement": "Bewegung",
+      "DistanceUnits": "Fuß",
+      "MovementType": { "land": "Bewegung", "fly": "Fliegen", "climb": "Klettern", "swim": "Schwimmen" },
       "Stand": "Aufstehen",
       "KipUp": "Aufspringen",
       "Quickened": "Beschleunigt (die zusätzliche Aktion kann Einschränkungen haben)"

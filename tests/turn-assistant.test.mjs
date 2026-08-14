@@ -78,6 +78,8 @@ const { ActivityDetector } = await import("../scripts/encounter/turn-assistant/d
 const { ActionState } = await import("../scripts/encounter/turn-assistant/action-state.js");
 const { ActionTracker } = await import("../scripts/encounter/turn-assistant/action-tracker.js");
 const { ProneTracker } = await import("../scripts/encounter/turn-assistant/prone-tracker.js");
+const { MovementTracker } = await import("../scripts/encounter/turn-assistant/movement-tracker.js");
+const { MovementIntent } = await import("../scripts/encounter/turn-assistant/movement-intent.js");
 
 function reactionState(slugs = []) {
   const actor = { items: slugs.map((slug, i) => ({ id: `i${i}`, slug })) };
@@ -175,6 +177,78 @@ test("reaction cards require a matching PF2e item origin and ignore rerolls", ()
   assert.equal(ActivityDetector.detect(reroll), null);
 });
 
+function activityMessage(cost, { id = `activity-${cost.type}-${cost.value}`, context = null, external = false } = {}) {
+  const actor = { id: "activity-actor" };
+  const item = { actor, name: "Structured Activity", slug: "structured-activity",
+    uuid: "Actor.activity-actor.Item.activity", actionCost: cost };
+  return { id, actor, item, flags: { pf2e: {
+    origin: { uuid: item.uuid, type: "action" },
+    ...(context ? { context } : {}),
+    ...(external ? { externalModule: true } : {}),
+  } }, content: "<p>Localized text is intentionally irrelevant</p>" };
+}
+
+test("structured PF2e item cards support 1/2/3 actions, free actions, and external modules", () => {
+  for (const value of [1, 2, 3]) {
+    const event = ActivityDetector.detect(activityMessage({ type: "action", value }, { external: true }));
+    assert.equal(event.resource, "action"); assert.equal(event.cost, value);
+    assert.equal(event.source, "pf2e-chat-activity");
+  }
+  const free = ActivityDetector.detect(activityMessage({ type: "free", value: null }));
+  assert.equal(free.resource, "free"); assert.equal(free.cost, 0);
+  const rolled = ActivityDetector.detect(activityMessage({ type: "action", value: 2 }, { context: { type: "check", outcome: "success", options: [] } }));
+  assert.equal(rolled.cost, 2);
+});
+
+test("chat HTML without structured PF2e actor/item/origin data is ignored", () => {
+  assert.equal(ActivityDetector.detect({ id: "text", content: "<p>Stride</p>", flavor: "Aktion" }), null);
+});
+
+test("Stand remains deferred to ProneTracker", () => {
+  const card = activityMessage({ type: "action", value: 1 }); card.item.slug = "stand";
+  assert.equal(ActivityDetector.detect(card), null);
+});
+
+test("movement cost uses exact speed boundaries and permits overspend-sized costs", () => {
+  for (const [distance, expected] of [[0, 0], [10, 1], [30, 1], [31, 2], [50, 2], [60, 2], [61, 3], [90, 3], [100, 4]]) {
+    assert.equal(MovementTracker.actionsRequired(distance, 30), expected);
+  }
+  assert.equal(MovementTracker.actionsRequired(50, 40), 2, "fly speed");
+  assert.equal(MovementTracker.actionsRequired(25, 15), 2, "climb speed");
+});
+
+test("multi-segment movement sums every measured turn rather than its endpoints", () => {
+  globalThis.canvas = {
+    dimensions: { size: 100 },
+    grid: { measurePath: ([from, to]) => ({ distance: Math.abs(to.x - from.x) / 5 + Math.abs(to.y - from.y) / 5 }) },
+  };
+  const token = { width: 1, height: 1 };
+  const points = [{ x: 0, y: 0, elevation: 0 }, { x: 100, y: 0, elevation: 0 },
+    { x: 100, y: 100, elevation: 0 }, { x: 150, y: 100, elevation: 0 }];
+  const distance = points.slice(1).reduce((sum, point, index) => sum + MovementTracker.measureSegment(token, points[index], point), 0);
+  assert.equal(distance, 50); assert.equal(MovementTracker.actionsRequired(distance, 30), 2);
+  delete globalThis.canvas;
+});
+
+test("PF2e derived movement speeds and movement slug classification are used", () => {
+  const actor = { movement: { speeds: { land: { value: 30 }, fly: { value: 40 }, climb: { value: 15 }, swim: null } } };
+  assert.equal(PF2eAdapter.getMovementSpeed(actor), 30);
+  assert.equal(PF2eAdapter.getMovementSpeed(actor, "fly"), 40);
+  assert.equal(PF2eAdapter.getMovementSpeed(actor, "climb"), 15);
+  assert.equal(PF2eAdapter.getMovementSpeed(actor, "swim"), null);
+  assert.deepEqual(["stride", "sneak", "fly", "climb", "swim"].map(slug => PF2eAdapter.getMovementType(slug)),
+    ["land", "land", "fly", "climb", "swim"]);
+  for (const slug of ["step", "crawl", "leap", "high-jump", "long-jump", "stand"]) assert.equal(PF2eAdapter.getMovementType(slug), null);
+});
+
+test("movement intent carries type and paid state for chat/token deduplication", () => {
+  settingValues.set("movementIntentTimeout", 8000); MovementIntent.clear();
+  MovementIntent.add({ actorId: "a", combatantId: "c", slug: "fly", movementType: "fly", cost: 1, identity: "message:m", paid: false });
+  const intent = MovementIntent.consume("a", "c");
+  assert.equal(intent.movementType, "fly"); assert.equal(intent.paid, false); assert.equal(intent.identity, "message:m");
+  assert.equal(MovementIntent.consume("a", "c"), null);
+});
+
 test("reaction strike intent suppresses exactly one correlated strike roll", () => {
   ActionTracker.reactionStrikeIntents.clear();
   ActionTracker.addReactionStrikeIntent("reactor", "reactive-strike", 100);
@@ -223,6 +297,14 @@ test("prone removal charges only the active combatant, supports Kip Up, overspen
   assert.equal(state.history.at(-1).label, "PF2ETokenBar.TurnAssistant.Stand");
   assert.equal(await ProneTracker.onDeleteItem(prone), false, "the deterministic identity deduplicates a repeated hook/signal");
   assert.equal(state.actions.remaining, 2);
+  await ActionTracker.undoLocal(combatant); assert.equal(state.actions.remaining, 3);
+
+  assert.equal(await ActionTracker.recordLocal(combatant, { resource: "action", cost: 2, label: "Move 50 ft", identity: "movement:test" }), true);
+  assert.equal(state.actions.remaining, 1); assert.equal(state.history.at(-1).cost, 2);
+  await ActionTracker.undoLocal(combatant); assert.equal(state.actions.remaining, 3, "one undo restores the whole movement session");
+
+  assert.equal(await ActionTracker.recordLocal(combatant, { resource: "action", cost: 4, label: "Move 100 ft", identity: "movement:overspend" }), true);
+  assert.equal(state.actions.remaining, 0); assert.equal(state.overSpent, true); assert.equal(state.history.at(-1).cost, 4);
   await ActionTracker.undoLocal(combatant); assert.equal(state.actions.remaining, 3);
 
   actor.items = [{ type: "feat", slug: "kip-up" }];

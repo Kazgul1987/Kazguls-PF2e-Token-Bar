@@ -222,13 +222,22 @@ export class ActionTracker {
           this.debug("Reaction strike roll deduplicated from reaction card", { actorId: event.actorId, actionSlug: event.actionSlug });
           return;
         }
-        this.debug("Detected action", { label: event.label, actorId: event.actorId, cost: event.cost, confidence: event.confidence, messageId: message.id });
+        const movementType = event.movement ? PF2eAdapter.getMovementType(event.slug) : null;
+        if (movementType) {
+          MovementIntent.add({ actorId: event.actorId, combatantId: combatant.id, slug: event.slug,
+            movementType, cost: event.cost, identity: event.identity, paid: false });
+          this.debug("Chat movement intent detected", { actor: combatant.actor?.name, slug: event.slug, movementType, messageId: message.id });
+          return;
+        }
+        this.debug("Chat action detected", { actor: combatant.actor?.name, slug: event.slug, cost: event.cost,
+          source: event.source, contextPresent: !!PF2eAdapter.getMessageContext(message), decision: `spend ${event.cost}` });
         const recorded = await this.recordLocal(combatant, { ...event, automatic: true });
         if (recorded && event.source === "pf2e-reaction-card" && REACTION_STRIKE_SLUGS.has(event.actionSlug)) {
           this.addReactionStrikeIntent(event.actorId, event.actionSlug);
         }
         if (recorded && event.movement && event.resource === "action") {
-          MovementIntent.add({ actorId: event.actorId, combatantId: combatant.id, slug: event.slug, cost: event.cost, identity: event.identity });
+          MovementIntent.add({ actorId: event.actorId, combatantId: combatant.id, slug: event.slug,
+            movementType: PF2eAdapter.getMovementType(event.slug), cost: event.cost, identity: event.identity, paid: true });
         }
       }
       return;

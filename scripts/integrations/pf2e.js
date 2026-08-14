@@ -12,6 +12,10 @@ export class PF2eAdapter {
   static KIP_UP_SLUG = "kip-up";
   static KIP_UP_SOURCE_ID = "Compendium.pf2e.feats-srd.Item.gBSPbQRXdagZTUwY";
   static MOVEMENT_ACTION_SLUGS = new Set(["stride", "step", "climb", "swim", "crawl", "sneak", "leap", "high-jump", "long-jump", "fly"]);
+  static DISTANCE_MOVEMENT_TYPES = new Map([
+    ["stride", "land"], ["sneak", "land"], ["fly", "fly"], ["climb", "climb"], ["swim", "swim"],
+  ]);
+  static FIXED_MOVEMENT_SLUGS = new Set(["step", "crawl", "leap", "high-jump", "long-jump"]);
   // PF2e 7.8 (Foundry V14) SystemActions definitions. Used only if the public
   // game.pf2e.actions collection is unavailable or does not contain the action.
   static MOVEMENT_ACTION_COSTS = new Map([
@@ -37,6 +41,17 @@ export class PF2eAdapter {
     const value = cost.type === "action" ? Number(cost.value) : cost.type === "reaction" ? 1 : 0;
     if (cost.type === "action" && ![1, 2, 3].includes(value)) return null;
     return { type: cost.type, value };
+  }
+
+  /** PF2e V14 exposes current, derived creature speeds at actor.movement.speeds. */
+  static getMovementSpeed(actor, movementType = "land") {
+    const speed = actor?.movement?.speeds?.[movementType];
+    const value = Number(speed?.value ?? speed?.total ?? speed);
+    return Number.isFinite(value) && value > 0 ? value : null;
+  }
+
+  static getMovementType(slug) {
+    return this.DISTANCE_MOVEMENT_TYPES.get(slug) ?? null;
   }
 
   static getActivitySlug(item) {
@@ -82,6 +97,10 @@ export class PF2eAdapter {
     const sourceId = item.sourceId ?? item.flags?.core?.sourceId;
     const sourceMatches = typeof origin.sourceId === "string" && origin.sourceId === sourceId;
     return uuidMatches || sourceMatches;
+  }
+
+  static hasVerifiedItemOrigin(message, item) {
+    return this.isItemUsageMessage(message, item);
   }
 
   /** Resolve a unique supported action from PF2e's sorted check roll options. */
