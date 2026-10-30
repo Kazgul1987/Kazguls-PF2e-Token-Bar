@@ -120,6 +120,9 @@ Hooks.on("pf2e.prepareActorData", (actor) => {
 });
 
 Hooks.on("createChatMessage", async (message) => {
+  // This hook runs on every client; only the active GM should post the check.
+  if (!game.user?.isGM || game.users.activeGM?.id !== game.user.id) return;
+
   const context = message.flags.pf2e?.context;
   const autoFortificationEnabled = game.settings.get("pf2e-token-bar", "autoFortification");
 
